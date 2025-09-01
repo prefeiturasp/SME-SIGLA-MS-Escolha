@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Cargo, Concurso
+from .models import Cargo, Concurso, Escolha
 
-
+# TODO REMOVE AFTER TEST
 class CargoSerializer(serializers.ModelSerializer):
     """
     Serializer para o modelo Cargo.
@@ -11,7 +11,7 @@ class CargoSerializer(serializers.ModelSerializer):
         fields = ['uuid', 'nome', 'criado_em', 'atualizado_em']
         read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
 
-
+# TODO REMOVE AFTER TEST
 class CargoListSerializer(serializers.ModelSerializer):
     """
     Serializer para listagem de cargos.
@@ -20,7 +20,7 @@ class CargoListSerializer(serializers.ModelSerializer):
         model = Cargo
         fields = ['uuid', 'nome']
 
-
+# TODO REMOVE AFTER TEST
 class CargoSelectSerializer(serializers.ModelSerializer):
     """
     Serializer para selects/dropdowns no frontend.
@@ -32,7 +32,7 @@ class CargoSelectSerializer(serializers.ModelSerializer):
         model = Cargo
         fields = ['value', 'label']
 
-
+# TODO REMOVE AFTER TEST
 class ConcursoSerializer(serializers.ModelSerializer):
     """
     Serializer para o modelo Concurso.
@@ -72,7 +72,7 @@ class ConcursoSerializer(serializers.ModelSerializer):
         
         return instance
 
-
+# TODO REMOVE AFTER TEST
 class ConcursoListSerializer(serializers.ModelSerializer):
     """
     Serializer para listagem de concursos.
@@ -83,7 +83,7 @@ class ConcursoListSerializer(serializers.ModelSerializer):
         model = Concurso
         fields = ['uuid', 'nome', 'cargos']
 
-
+# TODO REMOVE AFTER TEST
 class ConcursoSelectSerializer(serializers.ModelSerializer):
     """
     Serializer para selects/dropdowns no frontend.
@@ -95,3 +95,36 @@ class ConcursoSelectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concurso
         fields = ['value', 'label', 'cargos']
+
+
+class EscolhaSerializer(serializers.ModelSerializer):
+    """
+    Serializer para o modelo Escolha.
+    """
+    class Meta:
+        model = Escolha
+        fields = ['uuid', 'nome', 'criado_em', 'atualizado_em']
+        read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
+
+
+class EscolhaSelectSerializer(serializers.ModelSerializer):
+    """
+    Serializer para selects/dropdowns no frontend.
+    """
+    value = serializers.UUIDField(source='uuid')
+    label = serializers.CharField(source='nome')
+    
+    class Meta:
+        model = Escolha
+        fields = ['value', 'label']
+
+class EscolhaListSerializer(serializers.ModelSerializer):
+    """
+    Serializer para listagem de escolhas.
+    """
+    class Meta:
+        model = Escolha
+        fields = ['uuid', 'nome']        
+
+
+ 

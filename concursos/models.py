@@ -57,8 +57,24 @@ class Concurso(BaseModel):
     
 
 
+class Escolha(BaseModel):
+    """
+    Model para escolhas .
+    """
+    history = AuditlogHistoryField()
+    nome = models.CharField(max_length=200, verbose_name="Nome da Escolha")
+
+    class Meta:
+        db_table = 'escolhas'
+        verbose_name = "Escolha"
+        verbose_name_plural = "Escolhas"
+        ordering = ['nome']
+
+    def __str__(self):
+        return self.nome
 
 
 
-auditlog.register(Cargo)
-auditlog.register(Concurso)
+auditlog.register(Cargo)#TODO REMOVE AFTER TESTS
+auditlog.register(Concurso)#TODO REMOVE AFTER TESTS
+auditlog.register(Escolha)
