@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'auditlog',
-    'concursos',
+    'escolhas',
 ]
 
 MIDDLEWARE = [
@@ -70,7 +70,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': DB_ENGINE,
-            'NAME': os.environ.get('DB_NAME', 'concursos'),
+            'NAME': os.environ.get('DB_NAME', 'escolhas'),
             'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
             'HOST': os.environ.get('DB_HOST', 'localhost'),

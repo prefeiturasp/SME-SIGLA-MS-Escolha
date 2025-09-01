@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
                     "cargos",
                     models.ManyToManyField(
                         related_name="concursos",
-                        to="concursos.cargo",
+                        to="escolhas.cargo",
                         verbose_name="Cargos",
                     ),
                 ),
