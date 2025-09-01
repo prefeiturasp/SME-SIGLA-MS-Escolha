@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
-from concursos.models import Cargo, Concurso
+from escolhas.models import Cargo, Concurso
 import uuid
 
 
