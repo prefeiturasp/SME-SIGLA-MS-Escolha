@@ -1,7 +1,6 @@
 import pytest
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
-from escolhas.models import Cargo, Concurso
+from escolhas.models import Escolha
 import uuid
 
 
@@ -14,107 +13,64 @@ def api_client():
 
 
 @pytest.fixture
-def user():
+def escolha_matematica():
     """
-    Fixture para criar um usuário de teste.
+    Fixture para criar uma escolha de matemática.
     """
-    return User.objects.create_user(
-        username='testuser',
-        password='testpass123',
-        email='test@example.com'
-    )
+    return Escolha.objects.create(nome='Professor de Matemática')
 
 
 @pytest.fixture
-def authenticated_client(api_client, user):
+def escolha_portugues():
     """
-    Fixture para criar um cliente API autenticado.
+    Fixture para criar uma escolha de português.
     """
-    api_client.force_authenticate(user=user)
-    return api_client
+    return Escolha.objects.create(nome='Professor de Português')
 
 
 @pytest.fixture
-def cargo_analista():
+def escolha_historia():
     """
-    Fixture para criar um cargo de analista.
+    Fixture para criar uma escolha de história.
     """
-    return Cargo.objects.create(nome='Analista de Sistemas')
+    return Escolha.objects.create(nome='Professor de História')
 
 
 @pytest.fixture
-def cargo_desenvolvedor():
+def escolha_ciencias():
     """
-    Fixture para criar um cargo de desenvolvedor.
+    Fixture para criar uma escolha de ciências.
     """
-    return Cargo.objects.create(nome='Desenvolvedor Backend')
+    return Escolha.objects.create(nome='Professor de Ciências')
 
 
 @pytest.fixture
-def cargo_professor():
+def escolhas_multiplas(escolha_matematica, escolha_portugues, escolha_historia, escolha_ciencias):
     """
-    Fixture para criar um cargo de professor.
-    """
-    return Cargo.objects.create(nome='Professor de Matemática')
-
-
-@pytest.fixture
-def cargos(cargo_analista, cargo_desenvolvedor, cargo_professor):
-    """
-    Fixture para criar múltiplos cargos de teste.
+    Fixture para criar múltiplas escolhas de teste.
     """
     return {
-        'analista': cargo_analista,
-        'desenvolvedor': cargo_desenvolvedor,
-        'professor': cargo_professor
+        'matematica': escolha_matematica,
+        'portugues': escolha_portugues,
+        'historia': escolha_historia,
+        'ciencias': escolha_ciencias
     }
 
 
 @pytest.fixture
-def concurso_analista(cargo_analista):
+def escolha_data():
     """
-    Fixture para criar um concurso de analista.
-    """
-    concurso = Concurso.objects.create(nome='Concurso de Analista')
-    concurso.cargos.add(cargo_analista)
-    return concurso
-
-
-@pytest.fixture
-def concurso_professor(cargo_professor):
-    """
-    Fixture para criar um concurso de professor.
-    """
-    concurso = Concurso.objects.create(nome='Concurso de Professor')
-    concurso.cargos.add(cargo_professor)
-    return concurso
-
-
-@pytest.fixture
-def concursos(concurso_analista, concurso_professor):
-    """
-    Fixture para criar múltiplos concursos de teste.
+    Fixture para dados de escolha válidos.
     """
     return {
-        'analista': concurso_analista,
-        'professor': concurso_professor
+        'nome': 'Nova Escolha de Teste'
     }
 
 
 @pytest.fixture
-def cargo_data():
+def escolha_data_invalid():
     """
-    Fixture para dados de cargo válidos.
-    """
-    return {
-        'nome': 'Novo Cargo de Teste'
-    }
-
-
-@pytest.fixture
-def cargo_data_invalid():
-    """
-    Fixture para dados de cargo inválidos.
+    Fixture para dados de escolha inválidos.
     """
     return {
         'nome': ''  # Nome vazio é inválido
@@ -122,9 +78,9 @@ def cargo_data_invalid():
 
 
 @pytest.fixture
-def cargo_data_long_name():
+def escolha_data_long_name():
     """
-    Fixture para dados de cargo com nome muito longo.
+    Fixture para dados de escolha com nome muito longo.
     """
     return {
         'nome': 'A' * 201  # Mais que max_length=200
@@ -132,57 +88,12 @@ def cargo_data_long_name():
 
 
 @pytest.fixture
-def concurso_data(cargo_analista):
+def escolha_data_updated():
     """
-    Fixture para dados de concurso válidos.
-    """
-    return {
-        'nome': 'Novo Concurso de Teste',
-        'cargos_ids': [str(cargo_analista.uuid)]
-    }
-
-
-@pytest.fixture
-def concurso_data_multiple_cargos(cargo_analista, cargo_desenvolvedor):
-    """
-    Fixture para dados de concurso com múltiplos cargos.
+    Fixture para dados de escolha atualizados.
     """
     return {
-        'nome': 'Concurso com Múltiplos Cargos',
-        'cargos_ids': [str(cargo_analista.uuid), str(cargo_desenvolvedor.uuid)]
-    }
-
-
-@pytest.fixture
-def concurso_data_no_cargos():
-    """
-    Fixture para dados de concurso sem cargos.
-    """
-    return {
-        'nome': 'Concurso Sem Cargos'
-    }
-
-
-@pytest.fixture
-def concurso_data_invalid():
-    """
-    Fixture para dados de concurso inválidos.
-    """
-    return {
-        'nome': '',  # Nome vazio é inválido
-        'cargos_ids': ['invalid-uuid']
-    }
-
-
-@pytest.fixture
-def concurso_data_invalid_cargo_ids():
-    """
-    Fixture para dados de concurso com IDs de cargo inválidos.
-    """
-    fake_uuid = uuid.uuid4()
-    return {
-        'nome': 'Concurso com Cargo Inválido',
-        'cargos_ids': [str(fake_uuid)]
+        'nome': 'Escolha Atualizada'
     }
 
 
@@ -195,24 +106,43 @@ def fake_uuid():
 
 
 @pytest.fixture
-def multiple_cargos():
+def multiple_escolhas():
     """
-    Fixture para criar múltiplos cargos para testes de paginação.
+    Fixture para criar múltiplas escolhas para testes de paginação.
     """
-    cargos = []
+    escolhas = []
     for i in range(25):
-        cargo = Cargo.objects.create(nome=f'Cargo Teste {i}')
-        cargos.append(cargo)
-    return cargos
+        escolha = Escolha.objects.create(nome=f'Escolha Teste {i:02d}')
+        escolhas.append(escolha)
+    return escolhas
 
 
 @pytest.fixture
-def multiple_concursos():
+def escolhas_ordenadas():
     """
-    Fixture para criar múltiplos concursos para testes de paginação.
+    Fixture para criar escolhas com nomes específicos para teste de ordenação.
     """
-    concursos = []
-    for i in range(25):
-        concurso = Concurso.objects.create(nome=f'Concurso Teste {i}')
-        concursos.append(concurso)
-    return concursos 
+    escolhas = []
+    nomes = ['Zebra', 'Alpha', 'Beta', 'Gamma']
+    for nome in nomes:
+        escolha = Escolha.objects.create(nome=nome)
+        escolhas.append(escolha)
+    return escolhas
+
+
+@pytest.fixture
+def escolhas_para_busca():
+    """
+    Fixture para criar escolhas específicas para teste de busca.
+    """
+    escolhas = []
+    nomes = [
+        'Professor de Matemática',
+        'Professor de Física',
+        'Coordenador Pedagógico',
+        'Diretor de Escola'
+    ]
+    for nome in nomes:
+        escolha = Escolha.objects.create(nome=nome)
+        escolhas.append(escolha)
+    return escolhas
