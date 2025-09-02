@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -20,7 +20,7 @@ from .utils import CustomPagination
 class EscolhaViewSet(viewsets.ModelViewSet):
     queryset = Escolha.objects.all()
     serializer_class = EscolhaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['nome']
     ordering_fields = ['criado_em']

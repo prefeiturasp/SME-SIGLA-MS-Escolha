@@ -70,7 +70,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': DB_ENGINE,
-            'NAME': os.environ.get('DB_NAME', 'escolhas'),
+            'NAME': os.environ.get('DB_NAME', 'db_sigla'),
             'USER': os.environ.get('DB_USER', 'postgres'),
             'PASSWORD': os.environ.get('DB_PASSWORD', 'postgres'),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
