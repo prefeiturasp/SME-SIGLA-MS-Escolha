@@ -3,6 +3,8 @@ source = .
 omit = 
     */tests/*
     */migrations/*
+    */management/*
+    */config/*
     */__pycache__/*
     */venv/*
     */.venv/*

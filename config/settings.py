@@ -4,6 +4,9 @@ Django settings for convocacao_processes project.
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
@@ -162,3 +165,7 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+
+SMEINTEGRACAO_API_URL = os.environ.get('SMEINTEGRACAO_API_URL')
+SMEINTEGRACAO_API_TOKEN = os.environ.get('SMEINTEGRACAO_API_TOKEN')
