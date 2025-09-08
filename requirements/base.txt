@@ -6,3 +6,4 @@ django-filter==25.1
 psycopg2-binary==2.9.9
 requests==2.32.4
 django-auditlog==3.2.1
+python-dotenv==1.1.1
