@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from http import HTTPStatus
+from rest_framework import status
 
 from escolhas.models import VagasEscolas, Escola, Dre
 from escolhas.services.vagas_escolas import (
@@ -261,7 +261,7 @@ class TestProcessarCriacaoVagasLote:
         """Testa processamento bem-sucedido de criação em lote."""
         response_data, status_code = processar_criacao_vagas_lote(request_data_valido)
         
-        assert status_code == HTTPStatus.CREATED
+        assert status_code == status.HTTP_201_CREATED
         assert response_data["vagas_criadas"] == 2
         assert response_data["total_processadas"] == 2
         assert "vagas criadas com sucesso" in response_data["mensagem"]
@@ -271,14 +271,14 @@ class TestProcessarCriacaoVagasLote:
         """Testa processamento com dados inválidos."""
         response_data, status_code = processar_criacao_vagas_lote(request_data_invalido)
         
-        assert status_code == HTTPStatus.BAD_REQUEST
+        assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
 
     def test_processar_criacao_lista_vazia(self, request_data_vazio):
         """Testa processamento com lista vazia."""
         response_data, status_code = processar_criacao_vagas_lote(request_data_vazio)
         
-        assert status_code == HTTPStatus.BAD_REQUEST
+        assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
 
     def test_processar_criacao_escolas_nao_encontradas(self):
@@ -299,7 +299,7 @@ class TestProcessarCriacaoVagasLote:
         
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         
-        assert status_code == HTTPStatus.BAD_REQUEST
+        assert status_code == status.HTTP_400_BAD_REQUEST
         assert response_data["vagas_criadas"] == 0
         assert response_data["total_processadas"] == 1
         assert "erros" in response_data
@@ -332,7 +332,7 @@ class TestProcessarCriacaoVagasLote:
         
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         
-        assert status_code == HTTPStatus.MULTI_STATUS
+        assert status_code == status.HTTP_207_MULTI_STATUS
         assert response_data["vagas_criadas"] == 1
         assert response_data["total_processadas"] == 2
         assert "erros" in response_data
@@ -352,7 +352,7 @@ class TestProcessarCriacaoVagasLote:
         
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         
-        assert status_code == HTTPStatus.BAD_REQUEST
+        assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
 
     def test_processar_criacao_chave_vagas_faltando(self):
@@ -363,7 +363,7 @@ class TestProcessarCriacaoVagasLote:
         
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         
-        assert status_code == HTTPStatus.BAD_REQUEST
+        assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
 
 
@@ -400,7 +400,7 @@ class TestIntegracaoVagasEscolas:
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         
         # Verifica resposta
-        assert status_code == HTTPStatus.CREATED
+        assert status_code == status.HTTP_201_CREATED
         assert response_data["vagas_criadas"] == 2
         
         # Verifica se as vagas foram realmente criadas no banco
