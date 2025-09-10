@@ -1,47 +1,12 @@
 from rest_framework import serializers
-from .models import Escolha, Escola, Dre
-
-
-class EscolhaSerializer(serializers.ModelSerializer):
-    """
-    Serializer para o modelo Escolha.
-    """
-    class Meta:
-        model = Escolha
-        fields = ['uuid', 'nome', 'criado_em', 'atualizado_em']
-        read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
-
-
-class EscolhaSelectSerializer(serializers.ModelSerializer):
-    """
-    Serializer para selects/dropdowns no frontend.
-    """
-    value = serializers.UUIDField(source='uuid')
-    label = serializers.CharField(source='nome')
-
-    class Meta:
-        model = Escolha
-        fields = ['value', 'label']
-
-class EscolhaListSerializer(serializers.ModelSerializer):
-    """
-    Serializer para listagem de escolhas.
-    """
-    class Meta:
-        model = Escolha
-        fields = ['uuid', 'nome']
-
-
-class DreSerializer(serializers.ModelSerializer):
-    """Serializer para o modelo Dre."""
-    class Meta:
-        model = Dre
-        fields = ['uuid', 'codigo', 'nome', 'sigla']
+from ..models import Escola
+from .dre import DreSerializer
 
 
 class EscolaSerializer(serializers.ModelSerializer):
     """Serializer para o modelo Escola."""
     dre = DreSerializer(read_only=True)
+    
     class Meta:
         model = Escola
         fields = [
