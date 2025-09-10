@@ -1,5 +1,6 @@
 import logging
 from typing import List, Dict, Any, Tuple
+from http import HTTPStatus
 from django.db import transaction
 from django.core.exceptions import ValidationError
 
@@ -82,7 +83,7 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
     if not serializer.is_valid():
         return {
             'errors': serializer.errors
-        }, 400
+        }, HTTPStatus.BAD_REQUEST
     
     # Processa a criação em lote
     vagas_data = serializer.validated_data['vagas']
@@ -102,12 +103,12 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
     # Determina status da resposta
     if not created_vagas and errors:
         # Nenhuma vaga criada, apenas erros
-        status_code = 400
+        status_code = HTTPStatus.BAD_REQUEST
     elif errors:
         # Algumas vagas criadas, mas houve erros
-        status_code = 207
+        status_code = HTTPStatus.MULTI_STATUS
     else:
         # Sucesso total
-        status_code = 201
+        status_code = HTTPStatus.CREATED
     
     return response_data, status_code
