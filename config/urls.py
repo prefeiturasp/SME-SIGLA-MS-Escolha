@@ -7,7 +7,8 @@ def healthcheck(_request):
     return JsonResponse({"status": "ok"})
 
 urlpatterns = [
-    path('', healthcheck, name='healthcheck'),
+    path('ms-escolha/api/v1/', include('escolhas.urls')),
+    path('ms-escolha/', healthcheck, name='healthcheck'),
     path('admin/', admin.site.urls),
-    path('api/v1/', include('escolhas.urls')),
+
 ]
