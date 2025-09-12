@@ -21,4 +21,4 @@ RUN apt-get update && \
 
 
 # Expose port
-EXPOSE 8001
+EXPOSE 8000
