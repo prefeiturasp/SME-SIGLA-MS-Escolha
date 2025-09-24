@@ -32,12 +32,12 @@ runserver:
 # Executa testes com relatório de cobertura
 coverage:
 	@echo "Executando testes com cobertura..."
-	pytest --ds=config.settings --cov=escolhas --cov-report=term-missing --cov-report=html
+	pytest --ds=config.settings_test --cov=escolhas --cov-report=term-missing --cov-report=html
 
 # Executa todos os testes
 test:
 	@echo "Executando todos os testes..."
-	pytest --ds=config.settings
+	pytest --ds=config.settings_test
 
 # Remove arquivos temporários
 clean:

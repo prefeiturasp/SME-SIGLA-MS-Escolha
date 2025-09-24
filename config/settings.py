@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'auditlog',
+    'drf_spectacular',
     'escolhas',
 ]
 
@@ -121,6 +122,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # CORS settings
@@ -143,6 +145,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # Para facilitar testes
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # AuditLog settings
@@ -163,6 +166,13 @@ LOGGING = {
     },
 }
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Escolha Sigla API',
+    'DESCRIPTION': 'API para o sistema de escolha de sigla',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 SMEINTEGRACAO_API_URL = os.environ.get('SMEINTEGRACAO_API_URL')
 SMEINTEGRACAO_API_TOKEN = os.environ.get('SMEINTEGRACAO_API_TOKEN')
+
