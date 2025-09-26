@@ -29,12 +29,31 @@ class VagasEscolas(BaseModel):
         verbose_name="Escola",
         related_name='vagas_escolas'
     )
+    
+    # Campos de concurso para integração com MS-ImportaArquivos
+    concurso_uuid = models.UUIDField(
+        verbose_name="UUID do concurso", 
+        null=True, 
+        blank=True,
+        help_text="UUID do concurso relacionado (opcional)"
+    )
+    concurso_nome = models.CharField(
+        max_length=255, 
+        verbose_name="Nome do concurso", 
+        null=True, 
+        blank=True,
+        help_text="Nome do concurso relacionado (opcional)"
+    )
 
     class Meta:
         db_table = 'vagas_escolas'
         verbose_name = 'Vagas da Escola'
         verbose_name_plural = 'Vagas das Escolas'
         ordering = ['-data_fechamento_modulo', 'escola__nome_oficial']
+        indexes = [
+            models.Index(fields=['concurso_uuid']),
+            models.Index(fields=['concurso_nome']),
+        ]
 
     def __str__(self):
         return f"{self.escola.nome_oficial} - {self.cargo_descricao}"
