@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DJANGO_ENVIRONMENT = os.environ.get('DJANGO_ENVIRONMENT', 'local')
+MS_PATH = os.environ.get('MS_PATH', '/ms-escolha')
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
@@ -111,20 +114,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -175,4 +164,3 @@ SPECTACULAR_SETTINGS = {
 
 SMEINTEGRACAO_API_URL = os.environ.get('SMEINTEGRACAO_API_URL')
 SMEINTEGRACAO_API_TOKEN = os.environ.get('SMEINTEGRACAO_API_TOKEN')
-
