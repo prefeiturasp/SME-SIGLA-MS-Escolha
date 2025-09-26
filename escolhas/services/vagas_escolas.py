@@ -10,12 +10,14 @@ from ..serializers import VagasEscolasCreateSerializer
 logger = logging.getLogger(__name__)
 
 
-def criar_vagas_em_lote(vagas_data: List[Dict[str, Any]]) -> Tuple[List[VagasEscolas], List[Dict[str, Any]]]:
+def criar_vagas_em_lote(vagas_data: List[Dict[str, Any]], concurso_uuid: str = None, concurso_nome: str = None) -> Tuple[List[VagasEscolas], List[Dict[str, Any]]]:
     """
     Cria múltiplas vagas em lote.
     
     Args:
         vagas_data: Lista de dicionários com os dados das vagas
+        concurso_uuid: UUID do concurso relacionado (opcional)
+        concurso_nome: Nome do concurso relacionado (opcional)
         
     Returns:
         Tuple contendo:
@@ -46,9 +48,11 @@ def criar_vagas_em_lote(vagas_data: List[Dict[str, Any]]) -> Tuple[List[VagasEsc
                     })
                     continue
                 
-                # Cria a vaga
+                # Cria a vaga com campos de concurso se fornecidos
                 vaga = VagasEscolas.objects.create(
                     escola=escola,
+                    concurso_uuid=concurso_uuid,
+                    concurso_nome=concurso_nome,
                     **vaga_data
                 )
                 created_vagas.append(vaga)
@@ -70,7 +74,7 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
     Processa a criação de vagas em lote a partir dos dados da requisição.
     
     Args:
-        request_data: Dados da requisição contendo a chave 'vagas'
+        request_data: Dados da requisição contendo a chave 'vagas' e opcionalmente 'concurso_uuid' e 'concurso_nome'
         
     Returns:
         Tuple contendo:
@@ -85,9 +89,13 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
             'errors': serializer.errors
         }, status.HTTP_400_BAD_REQUEST
     
-    # Processa a criação em lote
+    # Extrai dados validados
     vagas_data = serializer.validated_data['vagas']
-    created_vagas, errors = criar_vagas_em_lote(vagas_data)
+    concurso_uuid = serializer.validated_data.get('concurso_uuid')
+    concurso_nome = serializer.validated_data.get('concurso_nome')
+    
+    # Processa a criação em lote
+    created_vagas, errors = criar_vagas_em_lote(vagas_data, concurso_uuid, concurso_nome)
     
     # Prepara resposta
     response_data = {
@@ -95,6 +103,12 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
         'vagas_criadas': len(created_vagas),
         'total_processadas': len(vagas_data)
     }
+    
+    # Adiciona informações de concurso se fornecidas
+    if concurso_uuid:
+        response_data['concurso_uuid'] = str(concurso_uuid)
+    if concurso_nome:
+        response_data['concurso_nome'] = concurso_nome
     
     if errors:
         response_data['erros'] = errors

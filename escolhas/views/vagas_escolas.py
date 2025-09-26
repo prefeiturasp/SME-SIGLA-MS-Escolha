@@ -21,7 +21,7 @@ class VagasEscolasViewSet(ModelViewSet):
     serializer_class = VagasEscolasSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo']
+    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'concurso_uuid', 'concurso_nome']
     
     def create(self, request, *args, **kwargs):
         """
@@ -29,6 +29,8 @@ class VagasEscolasViewSet(ModelViewSet):
         
         Payload esperado:
         {
+            "concurso_uuid": "123e4567-e89b-12d3-a456-426614174000", // opcional
+            "concurso_nome": "Concurso Professor 2024", // opcional
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
