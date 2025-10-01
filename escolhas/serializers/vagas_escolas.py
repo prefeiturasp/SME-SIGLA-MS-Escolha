@@ -11,24 +11,26 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
     escola = EscolaSimpleSerializer(read_only=True)
+    lote_uuid = serializers.UUIDField(source='lote.uuid', read_only=True)
     
     class Meta:
         model = VagasEscolas
         fields = [
-            'uuid', 'data_fechamento_modulo', 'cargo_codigo', 'cargo_descricao',
+            'uuid', 'lote_uuid', 'data_fechamento_modulo', 'cargo_codigo', 'cargo_descricao',
             'vagas_precarias', 'vagas_definitivas', 'status', 'escola',
-            'concurso_uuid', 'concurso_nome', 'criado_em', 'atualizado_em'
+            'criado_em', 'atualizado_em'
         ]
         read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
 
 
 class VagasEscolasCreateSerializer(serializers.Serializer):
+    """Serializer para criação de vagas em lote."""
+    processo_uuid = serializers.UUIDField()
+    processo_nome = serializers.CharField(allow_blank=True, required=False)
     vagas = serializers.ListField(
         child=serializers.DictField(),
         write_only=True
     )
-    concurso_uuid = serializers.UUIDField(required=False, help_text="UUID do concurso relacionado")
-    concurso_nome = serializers.CharField(max_length=255, required=False, help_text="Nome do concurso relacionado")
     
     def validate_vagas(self, value):
         """Valida a lista de vagas e converte status descritivos."""
