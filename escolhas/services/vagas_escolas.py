@@ -39,7 +39,7 @@ def criar_vagas_em_lote(vagas_data: List[Dict[str, Any]], lote: VagasEscolasLote
             logger.error(error_msg)
             errors.append({'vaga_index': i + 1, 'error': error_msg})
             continue
-    
+
     return created_vagas, errors
 
 

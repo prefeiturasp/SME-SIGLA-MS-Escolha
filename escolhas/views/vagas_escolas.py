@@ -21,7 +21,7 @@ class VagasEscolasViewSet(ModelViewSet):
     serializer_class = VagasEscolasSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'concurso_uuid', 'concurso_nome']
+    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'processo_uuid', 'processo_nome']
     
     def list(self, request, *args, **kwargs):
         processo_uuid = request.query_params.get('processo_uuid')
