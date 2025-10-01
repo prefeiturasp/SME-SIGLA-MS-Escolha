@@ -2,6 +2,7 @@ from django.db import models
 from auditlog.registry import auditlog
 from .base import BaseModel
 from .escola import Escola
+from .vagas_lote import VagasEscolasLote
 
 
 class VagasEscolas(BaseModel):
@@ -12,6 +13,14 @@ class VagasEscolas(BaseModel):
         ('3', 'Cancelado'),
     ]
 
+    lote = models.ForeignKey(
+        VagasEscolasLote,
+        on_delete=models.CASCADE,
+        related_name='vagas',
+        verbose_name='Lote do Processo',
+        null=True,
+        blank=True,
+    )
     data_fechamento_modulo = models.DateField(verbose_name="Data de Fechamento do Módulo")
     cargo_codigo = models.IntegerField(verbose_name="Código do Cargo")
     cargo_descricao = models.CharField(max_length=200, verbose_name="Descrição do Cargo")
@@ -29,31 +38,12 @@ class VagasEscolas(BaseModel):
         verbose_name="Escola",
         related_name='vagas_escolas'
     )
-    
-    # Campos de concurso para integração com MS-ImportaArquivos
-    concurso_uuid = models.UUIDField(
-        verbose_name="UUID do concurso", 
-        null=True, 
-        blank=True,
-        help_text="UUID do concurso relacionado (opcional)"
-    )
-    concurso_nome = models.CharField(
-        max_length=255, 
-        verbose_name="Nome do concurso", 
-        null=True, 
-        blank=True,
-        help_text="Nome do concurso relacionado (opcional)"
-    )
 
     class Meta:
         db_table = 'vagas_escolas'
         verbose_name = 'Vagas da Escola'
         verbose_name_plural = 'Vagas das Escolas'
         ordering = ['-data_fechamento_modulo', 'escola__nome_oficial']
-        indexes = [
-            models.Index(fields=['concurso_uuid']),
-            models.Index(fields=['concurso_nome']),
-        ]
 
     def __str__(self):
         return f"{self.escola.nome_oficial} - {self.cargo_descricao}"
