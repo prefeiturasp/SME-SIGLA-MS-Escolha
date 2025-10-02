@@ -57,11 +57,11 @@ class EscolaAdmin(admin.ModelAdmin):
 @admin.register(VagasEscolas)
 class VagasEscolasAdmin(admin.ModelAdmin):
     list_display = [
-        'escola', 'data_fechamento_modulo', 'cargo_codigo', 'cargo_descricao',
+        'escola', 'criado_em', 'data_fechamento_modulo', 'cargo_codigo', 'cargo_descricao',
         'vagas_precarias', 'vagas_definitivas', 'status', 'lote'
     ]
     search_fields = ['escola__nome_oficial', 'escola__codigo_eol', 'cargo_descricao', 'lote']
-    list_filter = ['status', 'data_fechamento_modulo', 'escola__dre', 'lote']
+    list_filter = ['criado_em', 'status', 'data_fechamento_modulo', 'escola__dre', 'lote']
     readonly_fields = ['uuid', 'criado_em', 'atualizado_em']
     ordering = ['-data_fechamento_modulo']
 
