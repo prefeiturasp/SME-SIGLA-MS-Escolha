@@ -1,5 +1,6 @@
 import logging
 from django.db import models
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,24 +20,47 @@ class VagasEscolasViewSet(ModelViewSet):
     """
     queryset = VagasEscolas.objects.select_related('escola', 'escola__dre', 'lote').all()
     serializer_class = VagasEscolasSerializer
-    pagination_class = CustomPagination
+    pagination_class = None
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo']
-    
-    def list(self, request, *args, **kwargs):
-        processo_uuid = request.query_params.get('processo_uuid')
+    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'cargo_codigo']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        processo_uuid = self.request.query_params.get('processo_uuid')
         if processo_uuid:
             lote = VagasEscolasLote.objects.filter(processo_uuid=processo_uuid).order_by('-criado_em').first()
-            if lote is None:
-                return Response({'results': [], 'count': 0}, status=status.HTTP_200_OK)
-            qs = self.queryset.filter(lote=lote)
-            page = self.paginate_queryset(qs)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(qs, many=True)
-            return Response(serializer.data)
-        return super().list(request, *args, **kwargs)
+            if not lote:
+                return VagasEscolas.objects.none()
+            qs = qs.filter(lote=lote)
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        qs = self.filter_queryset(self.get_queryset())
+
+        totais = qs.aggregate(
+            vagas_precarias=Sum('vagas_precarias'),
+            vagas_definitivas=Sum('vagas_definitivas'),
+        )
+        dres = list(
+            qs.values('escola__dre__codigo', 'escola__dre__nome', 'escola__dre__uuid')
+              .distinct()
+              .order_by('escola__dre__codigo')
+        )
+        dres_fmt = [
+            {
+                'codigo': d['escola__dre__codigo'],
+                'nome': d['escola__dre__nome'],
+                'uuid': d['escola__dre__uuid'],
+            }
+            for d in dres
+        ]
+
+        data = VagasEscolasSerializer(qs, many=True).data
+        return Response({
+            'vagas': data,
+            'total_vagas': int(totais['vagas_precarias'] or 0) + int(totais['vagas_definitivas'] or 0),
+            'dres': dres_fmt,
+        })
 
     def create(self, request, *args, **kwargs):
         """

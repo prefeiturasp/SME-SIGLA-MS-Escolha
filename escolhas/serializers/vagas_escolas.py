@@ -1,12 +1,19 @@
 from rest_framework import serializers
-from ..models import VagasEscolas, Escola
+from ..models import VagasEscolas, Escola, Dre
+
+
+class DreSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dre
+        fields = ['uuid', 'codigo', 'nome']
 
 
 class EscolaSimpleSerializer(serializers.ModelSerializer):
     """Serializer simplificado para exibir apenas dados básicos da escola."""
+    dre = DreSimpleSerializer(read_only=True)
     class Meta:
         model = Escola
-        fields = ['codigo_eol', 'nome_oficial']
+        fields = ['codigo_eol', 'nome_oficial', 'dre']
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
