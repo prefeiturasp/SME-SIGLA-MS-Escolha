@@ -1,12 +1,81 @@
-import pytest
 from uuid import uuid4
-from rest_framework.test import APIClient
+import pytest
 from django.urls import reverse
+from rest_framework.test import APIClient
+from rest_framework import status
 
-from escolhas.models import VagasEscolas
+from escolhas.models import Dre, Escola, VagasEscolas, VagasEscolasLote
 
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def api_client():
+    return APIClient()
+
+
+@pytest.fixture
+def dre():
+    return Dre.objects.create(codigo="01", nome="DRE 01")
+
+
+@pytest.fixture
+def escola(dre):
+    return Escola.objects.create(codigo_eol="000001", nome_oficial="Escola Teste", dre=dre)
+
+
+@pytest.fixture
+def lote():
+    return VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome="Proc")
+
+
+@pytest.fixture
+def vagas(escola, lote):
+    v1 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=100,
+        cargo_descricao="Cargo 1",
+        vagas_precarias=3,
+        vagas_definitivas=2,
+        status="1"
+    )
+    v2 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=101,
+        cargo_descricao="Cargo 2",
+        vagas_precarias=1,
+        vagas_definitivas=4,
+        status="1"
+    )
+    return v1, v2
+
+
+def test_action_utilizadas_patch_sucesso(api_client, lote, vagas):
+    url = reverse('vagas-escolas-utilizadas')
+    v1, v2 = vagas
+    payload = {
+        "processo_uuid": str(lote.processo_uuid),
+        "vagas": [
+            {"vaga_escola_uuid": str(v1.uuid), "vagas_precarias_utilizadas": 2},
+            {"vaga_escola_uuid": str(v2.uuid), "vagas_definitivas_utilizadas": 3},
+        ]
+    }
+    resp = api_client.patch(url, payload, format='json')
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data.get('total') == 2
+
+
+def test_action_utilizadas_patch_lote_inexistente(api_client):
+    url = reverse('vagas-escolas-utilizadas')
+    payload = {"processo_uuid": str(uuid4()), "vagas": []}
+    resp = api_client.patch(url, payload, format='json')
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def payload(processo_uuid, eol1="123456", eol2=None):
@@ -60,9 +129,7 @@ def test_post_cria_lote_e_vagas_e_list_retorna_so_ultimo_lote(escola_1, escola_2
     vagas = list_resp.data.get('vagas', [])
     assert len(vagas) == 1
     assert vagas[0]['lote_uuid'] == lote2_uuid
-    # total_vagas do último lote com uma vaga cargo 123 (2+3)
     assert list_resp.data['total_vagas'] == 5
-    # dres devem conter codigo/nome/uuid
     assert isinstance(list_resp.data['dres'], list)
     assert {'codigo', 'nome', 'uuid'} <= set(list_resp.data['dres'][0].keys())
 
@@ -81,14 +148,13 @@ def test_filter_cargo_codigo_sozinho(escola_1, escola_2):
     client = APIClient()
     url = reverse('vagas-escolas-list')
     p1 = uuid4()
-    client.post(url, payload(p1, eol1="123456"), format='json')  # cargo 123
+    client.post(url, payload(p1, eol1="123456"), format='json')
     p2 = uuid4()
-    client.post(url, payload(p2, eol1="789012"), format='json')  # cargo 123 no payload base
+    client.post(url, payload(p2, eol1="789012"), format='json')
 
     resp = client.get(url, {'cargo_codigo': 123})
     assert resp.status_code == 200
     assert len(resp.data.get('vagas', [])) >= 2
-    # total_vagas >= soma de todas as vagas cargo 123
     assert resp.data['total_vagas'] >= 10
 
 

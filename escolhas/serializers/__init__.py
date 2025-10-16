@@ -12,4 +12,7 @@ from .escola import (
 from .vagas_escolas import (
     VagasEscolasSerializer,
     VagasEscolasCreateSerializer,
+    VagasEscolasUtilizadasUpdateSerializer,
+    VagaEscolaUtilizadaItemSerializer,
+    VagasEscolasUtilizadasBulkSerializer,
 )

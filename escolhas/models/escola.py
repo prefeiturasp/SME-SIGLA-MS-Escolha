@@ -14,7 +14,7 @@ class Escola(BaseModel):
     logradouro = models.CharField(max_length=255, verbose_name="Logradouro")
     numero = models.CharField(max_length=20, verbose_name="Número")
     bairro = models.CharField(max_length=255, verbose_name="Bairro")
-    cep = models.IntegerField(verbose_name="CEP")
+    cep = models.CharField(max_length=20, verbose_name="CEP")
     distrito = models.CharField(max_length=255, verbose_name="Distrito")
     sub_prefeitura = models.CharField(max_length=255, verbose_name="Subprefeitura")
     nome_dre = models.CharField(max_length=255, verbose_name="Nome da DRE")
