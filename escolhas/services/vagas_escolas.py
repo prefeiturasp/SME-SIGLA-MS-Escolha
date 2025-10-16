@@ -1,7 +1,8 @@
+from gzip import BadGzipFile
 import logging
 from typing import List, Dict, Any, Tuple
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, BadRequest
 from rest_framework import status
 
 from ..models import VagasEscolas, Escola, VagasEscolasLote
@@ -79,3 +80,50 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
         status_code = status.HTTP_201_CREATED
 
     return response_data, status_code
+
+
+def atualizar_vagas_utilizadas_por_processo(
+    processo_uuid: str,
+    vagas: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Atualiza campos *_utilizadas de VagasEscolas para o lote do processo informado.
+
+    Args:
+        processo_uuid: UUID do processo
+        vagas: lista de dicts com keys: vaga_escola_uuid, vagas_precarias_utilizadas?, vagas_definitivas_utilizadas?
+    Returns:
+        dict com listas de atualizados e não encontrados
+    """
+    from ..models import VagasEscolas, VagasEscolasLote  # import local para evitar ciclos
+
+    lote = VagasEscolasLote.objects.filter(processo_uuid=processo_uuid).order_by('-criado_em').first()
+    if not lote:
+        raise BadRequest('Lote não encontrado para o processo informado')
+
+    # breakpoint()
+    uuid_to_item = {str(item['vaga_escola_uuid']): item for item in vagas}
+    vagas_escolas = VagasEscolas.objects.filter(lote=lote, uuid__in=list(uuid_to_item.keys()))
+
+    encontrados = set()
+    atualizados = []
+    for vaga in vagas_escolas:
+        encontrados.add(str(vaga.uuid))
+        item = uuid_to_item.get(str(vaga.uuid))
+        updates = {}
+        if 'vagas_precarias_utilizadas' in item:
+            vaga.vagas_precarias_utilizadas = item['vagas_precarias_utilizadas']
+            updates['vagas_precarias_utilizadas'] = item['vagas_precarias_utilizadas']
+        if 'vagas_definitivas_utilizadas' in item:
+            vaga.vagas_definitivas_utilizadas = item['vagas_definitivas_utilizadas']
+            updates['vagas_definitivas_utilizadas'] = item['vagas_definitivas_utilizadas']
+        if updates:
+            vaga.save(update_fields=list(updates.keys()))
+            atualizados.append(str(vaga.uuid))
+
+    nao_encontrados = [uid for uid in uuid_to_item.keys() if uid not in encontrados]
+
+    return {
+        'atualizados': atualizados,
+        'nao_encontrados': nao_encontrados,
+        'total': len(atualizados),
+    }

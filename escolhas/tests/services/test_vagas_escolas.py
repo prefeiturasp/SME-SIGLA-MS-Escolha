@@ -5,8 +5,10 @@ from uuid import uuid4
 from escolhas.models import VagasEscolas, VagasEscolasLote
 from escolhas.services.vagas_escolas import (
     criar_vagas_em_lote,
-    processar_criacao_vagas_lote
+    processar_criacao_vagas_lote,
+    atualizar_vagas_utilizadas_por_processo,
 )
+from django.core.exceptions import ValidationError, BadRequest
 
 
 @pytest.mark.django_db
@@ -291,6 +293,80 @@ class TestIntegracaoVagasEscolas:
         assert vaga2.escola == escola_2
         assert vaga1.cargo_descricao == "Professor de Matemática"
         assert vaga2.cargo_descricao == "Professor de Português"
+
+
+@pytest.mark.django_db
+class TestAtualizarVagasUtilizadasPorProcesso:
+    def test_atualizar_vagas_utilizadas_sucesso(self, escola_1):
+        lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome="Proc")
+        v1 = VagasEscolas.objects.create(
+            escola=escola_1,
+            lote=lote,
+            data_fechamento_modulo="2025-01-01",
+            cargo_codigo=100,
+            cargo_descricao="Cargo 1",
+            vagas_precarias=3,
+            vagas_definitivas=2,
+            status="1",
+        )
+        v2 = VagasEscolas.objects.create(
+            escola=escola_1,
+            lote=lote,
+            data_fechamento_modulo="2025-01-01",
+            cargo_codigo=101,
+            cargo_descricao="Cargo 2",
+            vagas_precarias=1,
+            vagas_definitivas=4,
+            status="1",
+        )
+
+        result = atualizar_vagas_utilizadas_por_processo(
+            str(lote.processo_uuid),
+            vagas=[
+                {"vaga_escola_uuid": str(v1.uuid), "vagas_precarias_utilizadas": 2},
+                {"vaga_escola_uuid": str(v2.uuid), "vagas_definitivas_utilizadas": 3},
+            ],
+        )
+
+        assert result["total"] == 2
+        assert set(result["atualizados"]) == {str(v1.uuid), str(v2.uuid)}
+        v1.refresh_from_db(); v2.refresh_from_db()
+        assert v1.vagas_precarias_utilizadas == 2
+        assert v2.vagas_definitivas_utilizadas == 3
+
+    def test_atualizar_vagas_utilizadas_lote_nao_encontrado(self):
+        with pytest.raises(BadRequest):
+            atualizar_vagas_utilizadas_por_processo(
+                str(uuid4()),
+                vagas=[],
+            )
+
+    def test_atualizar_vagas_utilizadas_nao_encontrados(self, escola_1):
+        lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome="Proc")
+        v1 = VagasEscolas.objects.create(
+            escola=escola_1,
+            lote=lote,
+            data_fechamento_modulo="2025-01-01",
+            cargo_codigo=100,
+            cargo_descricao="Cargo 1",
+            vagas_precarias=3,
+            vagas_definitivas=2,
+            status="1",
+        )
+        uuid_inexistente = str(uuid4())
+
+        result = atualizar_vagas_utilizadas_por_processo(
+            str(lote.processo_uuid),
+            vagas=[
+                {"vaga_escola_uuid": str(v1.uuid), "vagas_definitivas_utilizadas": 1},
+                {"vaga_escola_uuid": uuid_inexistente, "vagas_precarias_utilizadas": 1},
+            ],
+        )
+
+        assert result["total"] == 1
+        assert result["nao_encontrados"] == [uuid_inexistente]
+        v1.refresh_from_db()
+        assert v1.vagas_definitivas_utilizadas == 1
 
     def test_rollback_em_caso_de_erro(self, escola_1):
         """Testa que não há rollback quando algumas vagas são criadas com sucesso."""

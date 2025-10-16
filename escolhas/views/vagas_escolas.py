@@ -5,10 +5,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
 from ..models import VagasEscolas, VagasEscolasLote
-from ..serializers import VagasEscolasSerializer
+from ..serializers import (
+    VagasEscolasSerializer,
+    VagasEscolasUtilizadasUpdateSerializer,
+    VagasEscolasUtilizadasBulkSerializer,
+)
 from ..services import processar_criacao_vagas_lote
+from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
 from ..utils import CustomPagination
 
 logger = logging.getLogger(__name__)
@@ -85,3 +91,13 @@ class VagasEscolasViewSet(ModelViewSet):
         """
         response_data, status_code = processar_criacao_vagas_lote(request.data)
         return Response(response_data, status=status_code)
+
+    @action(detail=False, methods=['patch'], url_path='utilizadas')
+    def utilizadas(self, request, *args, **kwargs):
+        payload = VagasEscolasUtilizadasBulkSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        processo_uuid = payload.validated_data['processo_uuid']
+        vagas = payload.validated_data['vagas']
+
+        result = atualizar_vagas_utilizadas_por_processo(str(processo_uuid), vagas)
+        return Response(result)
