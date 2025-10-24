@@ -18,7 +18,15 @@ class EscolaViewSet(viewsets.ModelViewSet):
     serializer_class = EscolaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['dre__codigo']
     search_fields = ['nome_oficial', 'codigo_eol', 'nome_dre', 'bairro']
     ordering_fields = ['criado_em', 'nome_oficial']
     ordering = ['-criado_em']
     pagination_class = CustomPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        termo = self.request.query_params.get('nome')
+        if termo:
+            qs = qs.filter(nome_oficial__icontains=termo)
+        return qs

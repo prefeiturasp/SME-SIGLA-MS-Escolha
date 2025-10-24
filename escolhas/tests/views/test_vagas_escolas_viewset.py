@@ -22,7 +22,7 @@ def dre():
 
 @pytest.fixture
 def escola(dre):
-    return Escola.objects.create(codigo_eol="000001", nome_oficial="Escola Teste", dre=dre)
+    return Escola.objects.create(codigo_eol="000001", nome_oficial="Escola Teste", dre=dre, cep="04001-000")
 
 
 @pytest.fixture
