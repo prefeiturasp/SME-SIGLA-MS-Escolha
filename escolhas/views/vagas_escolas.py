@@ -11,7 +11,7 @@ from ..models import VagasEscolas, VagasEscolasLote
 from ..serializers import (
     VagasEscolasSerializer,
     VagasEscolasUtilizadasUpdateSerializer,
-    VagasEscolasUtilizadasBulkSerializer,
+    VagaEscolaUtilizadaItemSerializer,
 )
 from ..services import processar_criacao_vagas_lote
 from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
@@ -94,10 +94,9 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=['patch'], url_path='utilizadas')
     def utilizadas(self, request, *args, **kwargs):
-        payload = VagasEscolasUtilizadasBulkSerializer(data=request.data)
+        payload = VagaEscolaUtilizadaItemSerializer(data=request.data, many=True)
         payload.is_valid(raise_exception=True)
-        processo_uuid = payload.validated_data['processo_uuid']
-        vagas = payload.validated_data['vagas']
+        vagas = payload.validated_data
 
-        result = atualizar_vagas_utilizadas_por_processo(str(processo_uuid), vagas)
+        result = atualizar_vagas_utilizadas_por_processo(vagas)
         return Response(result)

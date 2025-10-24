@@ -83,26 +83,19 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
 
 
 def atualizar_vagas_utilizadas_por_processo(
-    processo_uuid: str,
     vagas: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Atualiza campos *_utilizadas de VagasEscolas para o lote do processo informado.
+    """Atualiza campos *_utilizadas de VagasEscolas diretamente por UUID das vagas.
 
     Args:
-        processo_uuid: UUID do processo
-        vagas: lista de dicts com keys: vaga_escola_uuid, vagas_precarias_utilizadas?, vagas_definitivas_utilizadas?
+        vagas: lista de dicts com keys: uuid, vagas_precarias_utilizadas?, vagas_definitivas_utilizadas?
     Returns:
         dict com listas de atualizados e não encontrados
     """
-    from ..models import VagasEscolas, VagasEscolasLote  # import local para evitar ciclos
+    from ..models import VagasEscolas  # import local para evitar ciclos
 
-    lote = VagasEscolasLote.objects.filter(processo_uuid=processo_uuid).order_by('-criado_em').first()
-    if not lote:
-        raise BadRequest('Lote não encontrado para o processo informado')
-
-    # breakpoint()
-    uuid_to_item = {str(item['vaga_escola_uuid']): item for item in vagas}
-    vagas_escolas = VagasEscolas.objects.filter(lote=lote, uuid__in=list(uuid_to_item.keys()))
+    uuid_to_item = {str(item['uuid']): item for item in vagas}
+    vagas_escolas = VagasEscolas.objects.filter(uuid__in=list(uuid_to_item.keys()))
 
     encontrados = set()
     atualizados = []
@@ -110,6 +103,11 @@ def atualizar_vagas_utilizadas_por_processo(
         encontrados.add(str(vaga.uuid))
         item = uuid_to_item.get(str(vaga.uuid))
         updates = {}
+        if 'foi_utilizada' in item:
+            vaga.foi_utilizada = item['foi_utilizada']
+            vaga.esta_checada = True if vaga.foi_utilizada else False
+            updates['foi_utilizada'] = item['foi_utilizada']
+            updates['esta_checada'] = True if vaga.foi_utilizada else False
         if 'vagas_precarias_utilizadas' in item:
             vaga.vagas_precarias_utilizadas = item['vagas_precarias_utilizadas']
             updates['vagas_precarias_utilizadas'] = item['vagas_precarias_utilizadas']
