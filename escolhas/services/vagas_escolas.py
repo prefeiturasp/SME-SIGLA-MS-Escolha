@@ -125,3 +125,42 @@ def atualizar_vagas_utilizadas_por_processo(
         'nao_encontrados': nao_encontrados,
         'total': len(atualizados),
     }
+
+
+def adicionar_vagas_ao_lote_por_processo(request_data: Dict[str, Any]) -> Tuple[Dict[str, Any], int]:
+    """Adiciona novas vagas a um lote existente identificado por processo_uuid.
+
+    Espera o mesmo payload do create:
+    {
+      "processo_uuid": "...",
+      "processo_nome": "opcional",
+      "vagas": [ {...}, ... ]
+    }
+    Retorna (response_dict, http_status_code)
+    """
+    serializer = VagasEscolasCreateSerializer(data=request_data)
+    if not serializer.is_valid():
+        return {'errors': serializer.errors}, status.HTTP_400_BAD_REQUEST
+
+    processo_uuid = serializer.validated_data['processo_uuid']
+    processo_nome = serializer.validated_data.get('processo_nome', '')
+    vagas_data = serializer.validated_data['vagas']
+
+    lote = VagasEscolasLote.objects.filter(processo_uuid=processo_uuid).order_by('-criado_em').first()
+    if not lote:
+        return {'detail': 'Lote não encontrado para o processo informado'}, status.HTTP_404_NOT_FOUND
+
+    criadas, erros = criar_vagas_em_lote(vagas_data, lote)
+
+    resposta = {
+        'mensagem': f'{len(criadas)} vagas adicionadas ao lote',
+        'vagas_criadas': len(criadas),
+        'total_processadas': len(vagas_data),
+        'lote_uuid': str(lote.uuid),
+        'processo_uuid': str(processo_uuid),
+    }
+    if erros:
+        resposta['erros'] = erros
+        resposta['vagas_com_erro'] = len(erros)
+        return resposta, status.HTTP_207_MULTI_STATUS
+    return resposta, status.HTTP_201_CREATED
