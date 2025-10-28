@@ -14,6 +14,8 @@ from ..serializers import (
     VagaEscolaUtilizadaItemSerializer,
 )
 from ..services import processar_criacao_vagas_lote
+from ..services.vagas_escolas import criar_vagas_em_lote, adicionar_vagas_ao_lote_por_processo
+from ..serializers.vagas_escolas import VagasEscolasCreateSerializer
 from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
 from ..utils import CustomPagination
 
@@ -100,3 +102,12 @@ class VagasEscolasViewSet(ModelViewSet):
 
         result = atualizar_vagas_utilizadas_por_processo(vagas)
         return Response(result)
+
+    @action(detail=False, methods=['post'], url_path='inclusao')
+    def atualizar_vagas_lote(self, request, *args, **kwargs):
+        """
+        Recebe um payload equivalente ao do create (processo_uuid, processo_nome opcional, vagas=[...])
+        e cria novas vagas em um lote já existente, identificado por processo_uuid.
+        """
+        response_data, status_code = adicionar_vagas_ao_lote_por_processo(request.data)
+        return Response(response_data, status=status_code)
