@@ -44,11 +44,25 @@ class VagasEscolasViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         qs = self.filter_queryset(self.get_queryset())
+        # Filtro aplicado internamente (sem parâmetro de URL)
+        qs = qs.filter(esta_checada=True)
 
-        totais = qs.aggregate(
-            vagas_precarias=Sum('vagas_precarias'),
-            vagas_definitivas=Sum('vagas_definitivas'),
-        )
+        # Se houver qualquer valor informado nas colunas de utilizadas, somar utilizadas;
+        # caso contrário, somar as colunas de vagas normais.
+        ha_utilizadas = qs.filter(
+            models.Q(vagas_precarias_utilizadas__isnull=False) |
+            models.Q(vagas_definitivas_utilizadas__isnull=False)
+        ).exists()
+        if ha_utilizadas:
+            totais = qs.aggregate(
+                vagas_precarias=Sum('vagas_precarias_utilizadas'),
+                vagas_definitivas=Sum('vagas_definitivas_utilizadas'),
+            )
+        else:
+            totais = qs.aggregate(
+                vagas_precarias=Sum('vagas_precarias'),
+                vagas_definitivas=Sum('vagas_definitivas'),
+            )
         dres = list(
             qs.values('escola__dre__codigo', 'escola__dre__nome', 'escola__dre__uuid')
               .distinct()
