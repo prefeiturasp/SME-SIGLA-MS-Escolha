@@ -1,8 +1,9 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.decorators import action
 
 from ..models import Escolha
 from ..serializers import (
@@ -18,7 +19,31 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     serializer_class = EscolhaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['nome']
+    filterset_fields = ['candidato_uuid']
+    search_fields = ['situacao', 'tipo_vaga']
     ordering_fields = ['criado_em']
     ordering = ['-criado_em']
     pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'busca']:
+            return EscolhaListSerializer
+        if self.action == 'select':
+            return EscolhaSelectSerializer
+        return super().get_serializer_class()
+
+    @action(methods=['post'], detail=False, url_path='busca')
+    def busca(self, request):
+        candidato_ids = request.data.get('candidato_uuid', [])
+        if not isinstance(candidato_ids, list):
+            return Response(
+                {'detail': 'candidato_uuid deve ser uma lista de UUIDs.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queryset = self.get_queryset().filter(candidato_uuid__in=candidato_ids)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page if page is not None else queryset, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)

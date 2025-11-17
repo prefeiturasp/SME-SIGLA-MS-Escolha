@@ -10,15 +10,30 @@ class EscolhaAdmin(admin.ModelAdmin):
     """
     Admin para o modelo Escolha.
     """
-    list_display = ['nome', 'uuid', 'criado_em', 'atualizado_em']
-    list_filter = ['criado_em', 'atualizado_em']
-    search_fields = ['nome']
+    list_display = [
+        'candidato_uuid',
+        'situacao',
+        'tipo_vaga',
+        'e_retardatario',
+        'vaga_escola_uuid',
+        'uuid',
+        'criado_em',
+        'atualizado_em',
+    ]
+    list_filter = ['situacao', 'tipo_vaga', 'e_retardatario', 'criado_em']
+    search_fields = ['candidato_uuid']
     readonly_fields = ['uuid', 'criado_em', 'atualizado_em']
-    ordering = ['nome']
+    ordering = ['-criado_em']
     
     fieldsets = (
-        ('Informações Básicas', {
-            'fields': ('nome',)
+        ('Informações da Escolha', {
+            'fields': (
+                'candidato_uuid',
+                'situacao',
+                'tipo_vaga',
+                'e_retardatario',
+                'vaga_escola_uuid',
+            )
         }),
         ('Metadados', {
             'fields': ('uuid', 'criado_em', 'atualizado_em'),

@@ -81,6 +81,8 @@ class VagasEscolasViewSet(ModelViewSet):
         return Response({
             'vagas': data,
             'total_vagas': int(totais['vagas_precarias'] or 0) + int(totais['vagas_definitivas'] or 0),
+            'total_vagas_precarias': int(totais['vagas_precarias'] or 0),
+            'total_vagas_definitivas': int(totais['vagas_definitivas'] or 0),
             'dres': dres_fmt,
         })
 
