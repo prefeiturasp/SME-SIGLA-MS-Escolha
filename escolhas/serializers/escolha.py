@@ -22,9 +22,37 @@ class EscolhaSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'candidato_uuid': {'allow_null': False, 'required': True},
             'situacao': {'required': True},
-            'tipo_vaga': {'allow_null': False, 'required': True},
-            'vaga_escola_uuid': {'allow_null': False, 'required': True},
+            'tipo_vaga': {'allow_null': True, 'required': False},
+            'vaga_escola_uuid': {'allow_null': True, 'required': False},
         }
+
+    def validate(self, attrs):
+        """
+        Validação customizada: tipo_vaga e vaga_escola_uuid são obrigatórios
+        apenas quando a situação for 'escolha'.
+        """
+        situacao = attrs.get('situacao')
+        # Para atualizações parciais, usar valores do instance se não estiverem em attrs
+        if self.instance:
+            tipo_vaga = attrs.get('tipo_vaga', self.instance.tipo_vaga)
+            vaga_escola_uuid = attrs.get('vaga_escola_uuid', self.instance.vaga_escola_uuid)
+            if not situacao:
+                situacao = self.instance.situacao
+        else:
+            tipo_vaga = attrs.get('tipo_vaga')
+            vaga_escola_uuid = attrs.get('vaga_escola_uuid')
+
+        if situacao == Escolha.SituacaoChoices.ESCOLHA:
+            if not tipo_vaga:
+                raise serializers.ValidationError({
+                    'tipo_vaga': 'Este campo é obrigatório quando a situação é "escolha".'
+                })
+            if not vaga_escola_uuid:
+                raise serializers.ValidationError({
+                    'vaga_escola_uuid': 'Este campo é obrigatório quando a situação é "escolha".'
+                })
+
+        return attrs
 
 
 class EscolhaSelectSerializer(serializers.ModelSerializer):
