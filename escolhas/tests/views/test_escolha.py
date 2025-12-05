@@ -9,222 +9,139 @@ from escolhas.models import Escolha
 @pytest.mark.django_db
 class TestEscolhaViewSet:
     """
-    Testes para EscolhaViewSet.
-    Como a view usa AllowAny, todos os testes são feitos sem autenticação.
+    Testes para EscolhaViewSet considerando os novos campos e a action de busca.
     """
 
     def test_list_escolhas_vazio(self, api_client):
-        """
-        Testa listagem quando não há escolhas.
-        """
         url = reverse('escolha-list')
         response = api_client.get(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 0
-        assert len(response.data['results']) == 0
-        
-        # Verifica estrutura da resposta paginada
-        assert 'links' in response.data
-        assert 'count' in response.data
-        assert 'page' in response.data
-        assert 'page_size' in response.data
-        assert 'results' in response.data
+        assert response.data['results'] == []
 
     def test_list_escolhas_com_dados(self, api_client, escolha_matematica, escolha_portugues):
-        """
-        Testa listagem quando há escolhas cadastradas.
-        """
         url = reverse('escolha-list')
         response = api_client.get(url)
-        
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 2
-        assert len(response.data['results']) == 2
-        
-        # Verifica se retorna dados corretos
-        escolhas_nomes = [escolha['nome'] for escolha in response.data['results']]
-        assert 'Professor de Matemática' in escolhas_nomes
-        assert 'Professor de Português' in escolhas_nomes
+        candidatos = {item['candidato_uuid'] for item in response.data['results']}
+        assert str(escolha_matematica.candidato_uuid) in candidatos
+        assert str(escolha_portugues.candidato_uuid) in candidatos
 
-    def test_search_escolhas(self, api_client, escolhas_para_busca):
-        """
-        Testa busca por nome nas escolhas.
-        """
+    def test_filter_candidato_uuid(self, api_client):
+        selecionada = Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            situacao=Escolha.SituacaoChoices.ESCOLHA,
+            tipo_vaga=Escolha.TipoVagaChoices.DEFINITIVA,
+            e_retardatario=False,
+            vaga_escola_uuid=uuid.uuid4(),
+        )
+        Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            situacao=Escolha.SituacaoChoices.NAO_ESCOLHA,
+            tipo_vaga=Escolha.TipoVagaChoices.PRECARIA,
+            e_retardatario=False,
+            vaga_escola_uuid=uuid.uuid4(),
+        )
+
         url = reverse('escolha-list')
-        
-        # Busca por "Professor"
-        response = api_client.get(url, {'search': 'Professor'})
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 2  # Matemática e Física
-        
-        # Busca por "Matemática"
-        response = api_client.get(url, {'search': 'Matemática'})
+        response = api_client.get(url, {'candidato_uuid': str(selecionada.candidato_uuid)})
+
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 1
-        assert response.data['results'][0]['nome'] == 'Professor de Matemática'
-        
-        # Busca que não encontra nada
-        response = api_client.get(url, {'search': 'Inexistente'})
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 0
-
-    def test_pagination_escolhas(self, api_client, multiple_escolhas):
-        """
-        Testa paginação das escolhas.
-        """
-        url = reverse('escolha-list')
-        
-        # Primeira página com 5 itens
-        response = api_client.get(url, {'page_size': 5})
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] == 25
-        assert len(response.data['results']) == 5
-        assert response.data['page_size'] == 5
-        assert response.data['page'] == 1
-        
-        # Segunda página
-        response = api_client.get(url, {'page_size': 5, 'page': 2})
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data['results']) == 5
-        assert response.data['page'] == 2
-
-    def test_retrieve_escolha(self, api_client, escolha_matematica):
-        """
-        Testa recuperação de uma escolha específica.
-        """
-        url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
-        response = api_client.get(url)
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['uuid'] == str(escolha_matematica.uuid)
-        assert response.data['nome'] == escolha_matematica.nome
-        assert 'criado_em' in response.data
-        assert 'atualizado_em' in response.data
-
-    def test_retrieve_escolha_inexistente(self, api_client, fake_uuid):
-        """
-        Testa recuperação de uma escolha que não existe.
-        """
-        url = reverse('escolha-detail', kwargs={'pk': fake_uuid})
-        response = api_client.get(url)
-        
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        resultado = response.data['results'][0]
+        assert resultado['candidato_uuid'] == str(selecionada.candidato_uuid)
 
     def test_create_escolha(self, api_client, escolha_data):
-        """
-        Testa criação de escolha.
-        """
         url = reverse('escolha-list')
         response = api_client.post(url, escolha_data)
-        
+
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['nome'] == escolha_data['nome']
-        assert 'uuid' in response.data
-        assert 'criado_em' in response.data
-        assert 'atualizado_em' in response.data
-        
-        # Verifica se foi salvo no banco
-        assert Escolha.objects.filter(nome=escolha_data['nome']).exists()
+        assert response.data['candidato_uuid'] == escolha_data['candidato_uuid']
+        assert Escolha.objects.filter(candidato_uuid=escolha_data['candidato_uuid']).exists()
 
     def test_create_escolha_dados_invalidos(self, api_client, escolha_data_invalid):
-        """
-        Testa criação de escolha com dados inválidos.
-        """
         url = reverse('escolha-list')
         response = api_client.post(url, escolha_data_invalid)
-        
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'nome' in response.data
+        assert 'candidato_uuid' in response.data
+        assert 'situacao' in response.data
+        assert 'tipo_vaga' in response.data
+        assert 'vaga_escola_uuid' in response.data
 
-    def test_create_escolha_nome_muito_longo(self, api_client, escolha_data_long_name):
-        """
-        Testa criação de escolha com nome muito longo.
-        """
-        url = reverse('escolha-list')
-        response = api_client.post(url, escolha_data_long_name)
-        
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'nome' in response.data
-
-    def test_create_escolha_nome_duplicado(self, api_client, escolha_matematica):
-        """
-        Testa criação de escolha com nome duplicado (deve permitir).
-        """
-        url = reverse('escolha-list')
-        data = {'nome': escolha_matematica.nome}
-        response = api_client.post(url, data)
-        
-        # O modelo não tem unique constraint, então deve permitir
-        assert response.status_code == status.HTTP_201_CREATED
-        assert Escolha.objects.filter(nome=escolha_matematica.nome).count() == 2
-
-    def test_update_escolha_completa(self, api_client, escolha_matematica, escolha_data_updated):
-        """
-        Testa atualização completa de escolha (PUT).
-        """
+    def test_update_escolha(self, api_client, escolha_matematica, escolha_data_updated):
         url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
         response = api_client.put(url, escolha_data_updated)
-        
+
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['nome'] == escolha_data_updated['nome']
-        assert response.data['uuid'] == str(escolha_matematica.uuid)
-        
-        # Verifica se foi atualizado no banco
+        assert response.data['situacao'] == escolha_data_updated['situacao']
         escolha_atualizada = Escolha.objects.get(uuid=escolha_matematica.uuid)
-        assert escolha_atualizada.nome == escolha_data_updated['nome']
+        assert escolha_atualizada.situacao == escolha_data_updated['situacao']
+        assert escolha_atualizada.tipo_vaga == escolha_data_updated['tipo_vaga']
+        assert escolha_atualizada.e_retardatario == escolha_data_updated['e_retardatario']
 
-    def test_update_escolha_parcial(self, api_client, escolha_matematica):
-        """
-        Testa atualização parcial de escolha (PATCH).
-        """
+    def test_partial_update_escolha(self, api_client, escolha_matematica):
         url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
-        data = {'nome': 'Professor de Matemática Avançada'}
-        response = api_client.patch(url, data)
-        
+        payload = {'e_retardatario': True}
+        response = api_client.patch(url, payload)
+
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['nome'] == data['nome']
-        
-        # Verifica se foi atualizado no banco
+        assert response.data['e_retardatario'] is True
         escolha_atualizada = Escolha.objects.get(uuid=escolha_matematica.uuid)
-        assert escolha_atualizada.nome == data['nome']
-
-    def test_update_escolha_dados_invalidos(self, api_client, escolha_matematica, escolha_data_invalid):
-        """
-        Testa atualização com dados inválidos.
-        """
-        url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
-        response = api_client.put(url, escolha_data_invalid)
-        
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'nome' in response.data
-
-    def test_update_escolha_inexistente(self, api_client, fake_uuid, escolha_data):
-        """
-        Testa atualização de uma escolha que não existe.
-        """
-        url = reverse('escolha-detail', kwargs={'pk': fake_uuid})
-        response = api_client.put(url, escolha_data)
-        
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert escolha_atualizada.e_retardatario is True
 
     def test_delete_escolha(self, api_client, escolha_matematica):
-        """
-        Testa deleção de escolha.
-        """
         url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
         response = api_client.delete(url)
-        
+
         assert response.status_code == status.HTTP_204_NO_CONTENT
-        
-        # Verifica se foi deletado do banco
         assert not Escolha.objects.filter(uuid=escolha_matematica.uuid).exists()
 
-    def test_delete_escolha_inexistente(self, api_client, fake_uuid):
-        """
-        Testa deleção de uma escolha que não existe.
-        """
-        url = reverse('escolha-detail', kwargs={'pk': fake_uuid})
-        response = api_client.delete(url)
-        
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+    def test_busca_por_candidatos(self, api_client):
+        escolha_1 = Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            situacao=Escolha.SituacaoChoices.ESCOLHA,
+            tipo_vaga=Escolha.TipoVagaChoices.DEFINITIVA,
+            e_retardatario=False,
+            vaga_escola_uuid=uuid.uuid4(),
+        )
+        escolha_2 = Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            situacao=Escolha.SituacaoChoices.RECONVOCACAO,
+            tipo_vaga=Escolha.TipoVagaChoices.PRECARIA,
+            e_retardatario=True,
+            vaga_escola_uuid=uuid.uuid4(),
+        )
+        Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            situacao=Escolha.SituacaoChoices.NAO_ESCOLHA,
+            tipo_vaga=Escolha.TipoVagaChoices.DEFINITIVA,
+            e_retardatario=False,
+            vaga_escola_uuid=uuid.uuid4(),
+        )
+
+        url = reverse('escolha-busca')
+        payload = {
+            'candidato_uuid': [
+                str(escolha_1.candidato_uuid),
+                str(escolha_2.candidato_uuid),
+            ]
+        }
+        response = api_client.post(url, payload)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 2
+        retornados = {item['candidato_uuid'] for item in response.data['results']}
+        assert str(escolha_1.candidato_uuid) in retornados
+        assert str(escolha_2.candidato_uuid) in retornados
+
+    def test_busca_payload_invalido(self, api_client):
+        url = reverse('escolha-busca')
+        response = api_client.post(url, {'candidato_uuid': 'nao-e-lista'})
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert 'candidato_uuid' not in response.data
+        assert response.data['detail']

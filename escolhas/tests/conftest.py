@@ -4,6 +4,18 @@ from escolhas.models import Escolha
 import uuid
 
 
+def _criar_escolha(**override):
+    dados = {
+        'candidato_uuid': uuid.uuid4(),
+        'situacao': Escolha.SituacaoChoices.ESCOLHA,
+        'tipo_vaga': Escolha.TipoVagaChoices.DEFINITIVA,
+        'e_retardatario': False,
+        'vaga_escola_uuid': uuid.uuid4(),
+    }
+    dados.update(override)
+    return Escolha.objects.create(**dados)
+
+
 @pytest.fixture
 def api_client():
     """
@@ -17,7 +29,7 @@ def escolha_matematica():
     """
     Fixture para criar uma escolha de matemática.
     """
-    return Escolha.objects.create(nome='Professor de Matemática')
+    return _criar_escolha()
 
 
 @pytest.fixture
@@ -25,7 +37,7 @@ def escolha_portugues():
     """
     Fixture para criar uma escolha de português.
     """
-    return Escolha.objects.create(nome='Professor de Português')
+    return _criar_escolha()
 
 
 @pytest.fixture
@@ -33,7 +45,7 @@ def escolha_historia():
     """
     Fixture para criar uma escolha de história.
     """
-    return Escolha.objects.create(nome='Professor de História')
+    return _criar_escolha()
 
 
 @pytest.fixture
@@ -41,7 +53,7 @@ def escolha_ciencias():
     """
     Fixture para criar uma escolha de ciências.
     """
-    return Escolha.objects.create(nome='Professor de Ciências')
+    return _criar_escolha()
 
 
 @pytest.fixture
@@ -63,7 +75,11 @@ def escolha_data():
     Fixture para dados de escolha válidos.
     """
     return {
-        'nome': 'Nova Escolha de Teste'
+        'candidato_uuid': str(uuid.uuid4()),
+        'situacao': Escolha.SituacaoChoices.ESCOLHA,
+        'tipo_vaga': Escolha.TipoVagaChoices.DEFINITIVA,
+        'e_retardatario': False,
+        'vaga_escola_uuid': str(uuid.uuid4()),
     }
 
 
@@ -73,17 +89,24 @@ def escolha_data_invalid():
     Fixture para dados de escolha inválidos.
     """
     return {
-        'nome': ''  # Nome vazio é inválido
+        'candidato_uuid': None,
+        'situacao': 'invalida',
+        'tipo_vaga': 'invalida',
+        'vaga_escola_uuid': None,
     }
 
 
 @pytest.fixture
 def escolha_data_long_name():
     """
-    Fixture para dados de escolha com nome muito longo.
+    Fixture para dados inválidos com valores fora das choices.
     """
     return {
-        'nome': 'A' * 201  # Mais que max_length=200
+        'candidato_uuid': str(uuid.uuid4()),
+        'situacao': 'muito-longa-para-choice',
+        'tipo_vaga': 'muito-longa-para-choice',
+        'e_retardatario': False,
+        'vaga_escola_uuid': str(uuid.uuid4()),
     }
 
 
@@ -93,7 +116,11 @@ def escolha_data_updated():
     Fixture para dados de escolha atualizados.
     """
     return {
-        'nome': 'Escolha Atualizada'
+        'candidato_uuid': str(uuid.uuid4()),
+        'situacao': Escolha.SituacaoChoices.RECONVOCACAO,
+        'tipo_vaga': Escolha.TipoVagaChoices.PRECARIA,
+        'e_retardatario': True,
+        'vaga_escola_uuid': str(uuid.uuid4()),
     }
 
 
@@ -111,8 +138,8 @@ def multiple_escolhas():
     Fixture para criar múltiplas escolhas para testes de paginação.
     """
     escolhas = []
-    for i in range(25):
-        escolha = Escolha.objects.create(nome=f'Escolha Teste {i:02d}')
+    for _ in range(25):
+        escolha = _criar_escolha()
         escolhas.append(escolha)
     return escolhas
 
@@ -120,12 +147,16 @@ def multiple_escolhas():
 @pytest.fixture
 def escolhas_ordenadas():
     """
-    Fixture para criar escolhas com nomes específicos para teste de ordenação.
+    Fixture para criar escolhas com situações específicas para teste de ordenação.
     """
     escolhas = []
-    nomes = ['Zebra', 'Alpha', 'Beta', 'Gamma']
-    for nome in nomes:
-        escolha = Escolha.objects.create(nome=nome)
+    situacoes = [
+        Escolha.SituacaoChoices.ESCOLHA,
+        Escolha.SituacaoChoices.NAO_ESCOLHA,
+        Escolha.SituacaoChoices.RECONVOCACAO,
+    ]
+    for situacao in situacoes:
+        escolha = _criar_escolha(situacao=situacao)
         escolhas.append(escolha)
     return escolhas
 
@@ -136,13 +167,12 @@ def escolhas_para_busca():
     Fixture para criar escolhas específicas para teste de busca.
     """
     escolhas = []
-    nomes = [
-        'Professor de Matemática',
-        'Professor de Física',
-        'Coordenador Pedagógico',
-        'Diretor de Escola'
+    situacoes = [
+        Escolha.SituacaoChoices.ESCOLHA,
+        Escolha.SituacaoChoices.NAO_ESCOLHA,
+        Escolha.SituacaoChoices.RECONVOCACAO,
     ]
-    for nome in nomes:
-        escolha = Escolha.objects.create(nome=nome)
+    for situacao in situacoes:
+        escolha = _criar_escolha(situacao=situacao)
         escolhas.append(escolha)
     return escolhas
