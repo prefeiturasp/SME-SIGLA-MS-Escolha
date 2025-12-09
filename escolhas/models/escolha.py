@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from auditlog.models import AuditlogHistoryField
 from auditlog.registry import auditlog
+from ..choices import SituacaoChoices, TipoVagaChoices
 from .base import BaseModel
 
 
@@ -9,15 +10,6 @@ class Escolha(BaseModel):
     """
     Model para escolhas.
     """
-
-    class SituacaoChoices(models.TextChoices):
-        ESCOLHA = 'escolha', _('Escolha')
-        NAO_ESCOLHA = 'nao-escolha', _('Não escolha')
-        RECONVOCACAO = 'reconvocacao', _('Reconvocação')
-
-    class TipoVagaChoices(models.TextChoices):
-        DEFINITIVA = 'definitiva', _('Definitiva')
-        PRECARIA = 'precaria', _('Precária')
 
     history = AuditlogHistoryField()
     candidato_uuid = models.UUIDField(
@@ -29,12 +21,12 @@ class Escolha(BaseModel):
         max_length=20,
         choices=SituacaoChoices.choices,
         default=SituacaoChoices.ESCOLHA,
-        verbose_name=_('Situação'),
+        verbose_name='Situação',
     )
     tipo_vaga = models.CharField(
         max_length=20,
         choices=TipoVagaChoices.choices,
-        verbose_name=_('Tipo de Vaga'),
+        verbose_name='Tipo de Vaga',
         null=True,
         blank=True,
     )

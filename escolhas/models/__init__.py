@@ -4,7 +4,8 @@ from .escola import Escola
 from .escolha import Escolha
 from .vagas_escolas import VagasEscolas
 from .vagas_lote import VagasEscolasLote
+from .historico_escolha import HistoricoEscolha
 
 __all__ = [
-    'BaseModel', 'Dre', 'Escola', 'Escolha', 'VagasEscolas', 'VagasEscolasLote'
+    'BaseModel', 'Dre', 'Escola', 'Escolha', 'VagasEscolas', 'VagasEscolasLote', 'HistoricoEscolha'
 ] 
