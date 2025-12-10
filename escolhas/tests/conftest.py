@@ -1,5 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
+from escolhas.choices import SituacaoChoices, TipoVagaChoices
 from escolhas.models import Escolha
 import uuid
 
@@ -7,8 +8,8 @@ import uuid
 def _criar_escolha(**override):
     dados = {
         'candidato_uuid': uuid.uuid4(),
-        'situacao': Escolha.SituacaoChoices.ESCOLHA,
-        'tipo_vaga': Escolha.TipoVagaChoices.DEFINITIVA,
+        'situacao': SituacaoChoices.ESCOLHA,
+        'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
         'vaga_escola_uuid': uuid.uuid4(),
     }
@@ -76,8 +77,8 @@ def escolha_data():
     """
     return {
         'candidato_uuid': str(uuid.uuid4()),
-        'situacao': Escolha.SituacaoChoices.ESCOLHA,
-        'tipo_vaga': Escolha.TipoVagaChoices.DEFINITIVA,
+        'situacao': SituacaoChoices.ESCOLHA,
+        'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
         'vaga_escola_uuid': str(uuid.uuid4()),
     }
@@ -117,8 +118,8 @@ def escolha_data_updated():
     """
     return {
         'candidato_uuid': str(uuid.uuid4()),
-        'situacao': Escolha.SituacaoChoices.RECONVOCACAO,
-        'tipo_vaga': Escolha.TipoVagaChoices.PRECARIA,
+        'situacao': SituacaoChoices.RECONVOCACAO,
+        'tipo_vaga': TipoVagaChoices.PRECARIA,
         'e_retardatario': True,
         'vaga_escola_uuid': str(uuid.uuid4()),
     }
@@ -151,9 +152,9 @@ def escolhas_ordenadas():
     """
     escolhas = []
     situacoes = [
-        Escolha.SituacaoChoices.ESCOLHA,
-        Escolha.SituacaoChoices.NAO_ESCOLHA,
-        Escolha.SituacaoChoices.RECONVOCACAO,
+        SituacaoChoices.ESCOLHA,
+        SituacaoChoices.NAO_ESCOLHA,
+        SituacaoChoices.RECONVOCACAO,
     ]
     for situacao in situacoes:
         escolha = _criar_escolha(situacao=situacao)
@@ -168,9 +169,9 @@ def escolhas_para_busca():
     """
     escolhas = []
     situacoes = [
-        Escolha.SituacaoChoices.ESCOLHA,
-        Escolha.SituacaoChoices.NAO_ESCOLHA,
-        Escolha.SituacaoChoices.RECONVOCACAO,
+        SituacaoChoices.ESCOLHA,
+        SituacaoChoices.NAO_ESCOLHA,
+        SituacaoChoices.RECONVOCACAO,
     ]
     for situacao in situacoes:
         escolha = _criar_escolha(situacao=situacao)

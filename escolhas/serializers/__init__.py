@@ -2,6 +2,7 @@ from .escolha import (
     EscolhaSerializer,
     EscolhaSelectSerializer,
     EscolhaListSerializer,
+    EscolhaReconvocacaoSerializer,
 )
 from .dre import DreSerializer
 from .escola import (

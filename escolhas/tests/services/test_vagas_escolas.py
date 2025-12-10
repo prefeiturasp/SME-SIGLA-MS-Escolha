@@ -321,10 +321,9 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         )
 
         result = atualizar_vagas_utilizadas_por_processo(
-            str(lote.processo_uuid),
             vagas=[
-                {"vaga_escola_uuid": str(v1.uuid), "vagas_precarias_utilizadas": 2},
-                {"vaga_escola_uuid": str(v2.uuid), "vagas_definitivas_utilizadas": 3},
+                {"uuid": str(v1.uuid), "vagas_precarias_utilizadas": 2},
+                {"uuid": str(v2.uuid), "vagas_definitivas_utilizadas": 3},
             ],
         )
 
@@ -335,11 +334,11 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         assert v2.vagas_definitivas_utilizadas == 3
 
     def test_atualizar_vagas_utilizadas_lote_nao_encontrado(self):
-        with pytest.raises(BadRequest):
-            atualizar_vagas_utilizadas_por_processo(
-                str(uuid4()),
-                vagas=[],
-            )
+        # A função não valida mais lote, apenas atualiza as vagas encontradas
+        result = atualizar_vagas_utilizadas_por_processo(vagas=[])
+        assert result["total"] == 0
+        assert result["atualizados"] == []
+        assert result["nao_encontrados"] == []
 
     def test_atualizar_vagas_utilizadas_nao_encontrados(self, escola_1):
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome="Proc")
@@ -356,10 +355,9 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         uuid_inexistente = str(uuid4())
 
         result = atualizar_vagas_utilizadas_por_processo(
-            str(lote.processo_uuid),
             vagas=[
-                {"vaga_escola_uuid": str(v1.uuid), "vagas_definitivas_utilizadas": 1},
-                {"vaga_escola_uuid": uuid_inexistente, "vagas_precarias_utilizadas": 1},
+                {"uuid": str(v1.uuid), "vagas_definitivas_utilizadas": 1},
+                {"uuid": uuid_inexistente, "vagas_precarias_utilizadas": 1},
             ],
         )
 
