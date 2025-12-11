@@ -46,10 +46,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             )
 
         queryset = self.get_queryset().filter(candidato_uuid__in=candidato_ids)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page if page is not None else queryset, many=True)
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(methods=['get'], detail=False, url_path='reconvocacao')
