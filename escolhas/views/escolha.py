@@ -5,11 +5,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 
+from ..choices import SituacaoChoices
 from ..models import Escolha
 from ..serializers import (
     EscolhaSerializer,
     EscolhaSelectSerializer,
     EscolhaListSerializer,
+    EscolhaReconvocacaoSerializer,
 )
 from ..utils import CustomPagination
 
@@ -30,6 +32,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             return EscolhaListSerializer
         if self.action == 'select':
             return EscolhaSelectSerializer
+        if self.action == 'reconvocacao':
+            return EscolhaReconvocacaoSerializer
         return super().get_serializer_class()
 
     @action(methods=['post'], detail=False, url_path='busca')
@@ -42,8 +46,15 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             )
 
         queryset = self.get_queryset().filter(candidato_uuid__in=candidato_ids)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page if page is not None else queryset, many=True)
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=False, url_path='reconvocacao')
+    def reconvocacao(self, request):
+        """
+        Endpoint para buscar escolhas com situação de reconvocação.
+        Retorna apenas uuid e candidato_uuid.
+        """
+        queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

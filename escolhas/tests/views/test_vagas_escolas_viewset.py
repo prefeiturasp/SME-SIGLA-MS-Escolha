@@ -58,13 +58,10 @@ def vagas(escola, lote):
 def test_action_utilizadas_patch_sucesso(api_client, lote, vagas):
     url = reverse('vagas-escolas-utilizadas')
     v1, v2 = vagas
-    payload = {
-        "processo_uuid": str(lote.processo_uuid),
-        "vagas": [
-            {"vaga_escola_uuid": str(v1.uuid), "vagas_precarias_utilizadas": 2},
-            {"vaga_escola_uuid": str(v2.uuid), "vagas_definitivas_utilizadas": 3},
-        ]
-    }
+    payload = [
+        {"uuid": str(v1.uuid), "foi_utilizada": True, "vagas_precarias_utilizadas": 2},
+        {"uuid": str(v2.uuid), "foi_utilizada": True, "vagas_definitivas_utilizadas": 3},
+    ]
     resp = api_client.patch(url, payload, format='json')
     assert resp.status_code == status.HTTP_200_OK
     assert resp.data.get('total') == 2
@@ -72,10 +69,11 @@ def test_action_utilizadas_patch_sucesso(api_client, lote, vagas):
 
 def test_action_utilizadas_patch_lote_inexistente(api_client):
     url = reverse('vagas-escolas-utilizadas')
-    payload = {"processo_uuid": str(uuid4()), "vagas": []}
+    payload = []
     resp = api_client.patch(url, payload, format='json')
 
-    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data.get('total') == 0
 
 
 def payload(processo_uuid, eol1="123456", eol2=None):

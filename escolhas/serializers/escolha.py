@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from ..choices import SituacaoChoices
 from ..models import Escolha
 
 
@@ -42,7 +43,7 @@ class EscolhaSerializer(serializers.ModelSerializer):
             tipo_vaga = attrs.get('tipo_vaga')
             vaga_escola_uuid = attrs.get('vaga_escola_uuid')
 
-        if situacao == Escolha.SituacaoChoices.ESCOLHA:
+        if situacao == SituacaoChoices.ESCOLHA:
             if not tipo_vaga:
                 raise serializers.ValidationError({
                     'tipo_vaga': 'Este campo é obrigatório quando a situação é "escolha".'
@@ -83,3 +84,12 @@ class EscolhaListSerializer(serializers.ModelSerializer):
             'criado_em',
             'atualizado_em',
         ]
+
+
+class EscolhaReconvocacaoSerializer(serializers.ModelSerializer):
+    """
+    Serializer para reconvocação, retorna apenas uuid e candidato_uuid.
+    """
+    class Meta:
+        model = Escolha
+        fields = ['uuid', 'candidato_uuid']
