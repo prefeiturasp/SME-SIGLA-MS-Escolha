@@ -54,13 +54,13 @@ class DreAdmin(admin.ModelAdmin):
 @admin.register(Escola)
 class EscolaAdmin(admin.ModelAdmin):
     list_display = [
-        'nome_oficial', 'codigo_eol', 'dre', 'status',
+        'nome_oficial', 'codigo_eol', 'dre', 'tipo_ue', 'status',
         'uuid', 'criado_em', 'atualizado_em'
     ]
     search_fields = [
         'nome_oficial', 'codigo_eol', 'nome_dre', 'bairro', 'distrito'
     ]
-    list_filter = ['dre', 'status', 'sub_prefeitura', 'distrito', 'criado_em']
+    list_filter = ['dre', 'tipo_ue', 'status', 'sub_prefeitura', 'distrito', 'criado_em']
     readonly_fields = ['uuid', 'criado_em', 'atualizado_em']
     ordering = ['nome_oficial']
 

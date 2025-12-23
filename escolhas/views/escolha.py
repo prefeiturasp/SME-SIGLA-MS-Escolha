@@ -21,7 +21,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     serializer_class = EscolhaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['candidato_uuid']
+    filterset_fields = {
+        'candidato_uuid': ['exact'],
+        'situacao': ['exact', 'in'],
+    }
     search_fields = ['situacao', 'tipo_vaga']
     ordering_fields = ['criado_em']
     ordering = ['-criado_em']

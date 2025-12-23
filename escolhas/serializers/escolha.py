@@ -12,6 +12,7 @@ class EscolhaSerializer(serializers.ModelSerializer):
         fields = [
             'uuid',
             'candidato_uuid',
+            'concurso_uuid',
             'situacao',
             'tipo_vaga',
             'e_retardatario',
@@ -22,6 +23,7 @@ class EscolhaSerializer(serializers.ModelSerializer):
         read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
         extra_kwargs = {
             'candidato_uuid': {'allow_null': False, 'required': True},
+            'concurso_uuid': {'allow_null': False, 'required': True},
             'situacao': {'required': True},
             'tipo_vaga': {'allow_null': True, 'required': False},
             'vaga_escola_uuid': {'allow_null': True, 'required': False},
