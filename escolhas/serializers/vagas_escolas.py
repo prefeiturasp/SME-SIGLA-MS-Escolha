@@ -24,9 +24,9 @@ class VagasEscolasSerializer(serializers.ModelSerializer):
         model = VagasEscolas
         fields = [
             'uuid', 'lote_uuid', 'data_fechamento_modulo', 'cargo_codigo', 'cargo_descricao',
-            'vagas_precarias', 'vagas_precarias_utilizadas',
-            'vagas_definitivas', 'vagas_definitivas_utilizadas', 'foi_utilizada', 'esta_checada',
-            'status', 'escola',
+            'vagas_precarias', 'vagas_precarias_utilizadas', 'vagas_precarias_restantes',
+            'vagas_definitivas', 'vagas_definitivas_utilizadas', 'vagas_definitivas_restantes',
+            'foi_utilizada', 'esta_checada', 'status', 'escola',
             'criado_em', 'atualizado_em'
         ]
         read_only_fields = ['uuid', 'criado_em', 'atualizado_em']
