@@ -26,8 +26,10 @@ class VagasEscolas(BaseModel):
     cargo_descricao = models.CharField(max_length=200, verbose_name="Descrição do Cargo")
     vagas_precarias = models.IntegerField(verbose_name="Vagas Precárias", default=0)
     vagas_precarias_utilizadas = models.IntegerField(verbose_name="Vagas Precárias Utilizadas", null=True, blank=True)
+    vagas_precarias_restantes = models.IntegerField(verbose_name="Vagas Precárias Restantes", default=0)
     vagas_definitivas = models.IntegerField(verbose_name="Vagas Definitivas", default=0)
     vagas_definitivas_utilizadas = models.IntegerField(verbose_name="Vagas Definitivas Utilizadas", null=True, blank=True)
+    vagas_definitivas_restantes = models.IntegerField(verbose_name="Vagas Definitivas Restantes", default=0)
     foi_utilizada = models.BooleanField(verbose_name="Foi Utilizada", default=False)
     esta_checada = models.BooleanField(verbose_name="Está Checada", default=True)
     status = models.CharField(

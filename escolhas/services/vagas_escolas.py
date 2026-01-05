@@ -32,7 +32,9 @@ def criar_vagas_em_lote(vagas_data: List[Dict[str, Any]], lote: VagasEscolasLote
             vaga = VagasEscolas.objects.create(
                 escola=escola,
                 lote=lote,
-                **vaga_data
+                **vaga_data,
+                vagas_definitivas_restantes=vaga_data.get('vagas_definitivas', 0),
+                vagas_precarias_restantes=vaga_data.get('vagas_precarias', 0),
             )
             created_vagas.append(vaga)
         except Exception as e:
