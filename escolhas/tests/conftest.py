@@ -8,6 +8,7 @@ import uuid
 def _criar_escolha(**override):
     dados = {
         'candidato_uuid': uuid.uuid4(),
+        'concurso_uuid': uuid.uuid4(),
         'situacao': SituacaoChoices.ESCOLHA,
         'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
@@ -77,6 +78,7 @@ def escolha_data():
     """
     return {
         'candidato_uuid': str(uuid.uuid4()),
+        'concurso_uuid': str(uuid.uuid4()),
         'situacao': SituacaoChoices.ESCOLHA,
         'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
@@ -118,6 +120,7 @@ def escolha_data_updated():
     """
     return {
         'candidato_uuid': str(uuid.uuid4()),
+        'concurso_uuid': str(uuid.uuid4()),
         'situacao': SituacaoChoices.RECONVOCACAO,
         'tipo_vaga': TipoVagaChoices.PRECARIA,
         'e_retardatario': True,
