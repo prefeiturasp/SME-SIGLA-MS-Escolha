@@ -29,19 +29,53 @@ def test_list_escolhas_com_dados(api_client, escolha_matematica, escolha_portugu
 
 @pytest.mark.django_db
 def test_filter_candidato_uuid(api_client):
+    # Criar DRE, Escola e VagaEscola para os testes
+    dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
+    escola = Escola.objects.create(
+        codigo_eol="000001",
+        nome_oficial="Escola Teste",
+        dre=dre,
+        cep="04001-000"
+    )
+    lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome="Proc")
+    vaga_escola_1 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=100,
+        cargo_descricao="Cargo Teste",
+        vagas_precarias=2,
+        vagas_precarias_restantes=2,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+    vaga_escola_2 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=101,
+        cargo_descricao="Cargo Teste 2",
+        vagas_precarias=2,
+        vagas_precarias_restantes=2,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+    
     selecionada = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
         tipo_vaga=TipoVagaChoices.DEFINITIVA,
         e_retardatario=False,
-        vaga_escola_uuid=uuid.uuid4(),
+        vaga_escola=vaga_escola_1,
     )
     Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.NAO_ESCOLHA,
         tipo_vaga=TipoVagaChoices.PRECARIA,
         e_retardatario=False,
-        vaga_escola_uuid=uuid.uuid4(),
+        vaga_escola=vaga_escola_2,
     )
 
     url = reverse('escolha-list')
@@ -104,26 +138,72 @@ def test_delete_escolha(api_client, escolha_matematica):
 
 @pytest.mark.django_db
 def test_busca_por_candidatos(api_client):
+    # Criar DRE, Escola e VagaEscola para os testes
+    dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
+    escola = Escola.objects.create(
+        codigo_eol="000001",
+        nome_oficial="Escola Teste",
+        dre=dre,
+        cep="04001-000"
+    )
+    lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome="Proc")
+    vaga_escola_1 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=100,
+        cargo_descricao="Cargo Teste",
+        vagas_precarias=2,
+        vagas_precarias_restantes=2,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+    vaga_escola_2 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=101,
+        cargo_descricao="Cargo Teste 2",
+        vagas_precarias=2,
+        vagas_precarias_restantes=2,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+    vaga_escola_3 = VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=102,
+        cargo_descricao="Cargo Teste 3",
+        vagas_precarias=2,
+        vagas_precarias_restantes=2,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+    
     escolha_1 = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
         tipo_vaga=TipoVagaChoices.DEFINITIVA,
         e_retardatario=False,
-        vaga_escola_uuid=uuid.uuid4(),
+        vaga_escola=vaga_escola_1,
     )
     escolha_2 = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.RECONVOCACAO,
         tipo_vaga=TipoVagaChoices.PRECARIA,
         e_retardatario=True,
-        vaga_escola_uuid=uuid.uuid4(),
+        vaga_escola=vaga_escola_2,
     )
     Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.NAO_ESCOLHA,
         tipo_vaga=TipoVagaChoices.DEFINITIVA,
         e_retardatario=False,
-        vaga_escola_uuid=uuid.uuid4(),
+        vaga_escola=vaga_escola_3,
     )
 
     url = reverse('escolha-busca')

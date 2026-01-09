@@ -1,18 +1,118 @@
 import pytest
 from rest_framework.test import APIClient
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
-from escolhas.models import Escolha
+from escolhas.models import Escolha, VagasEscolas, VagasEscolasLote, Escola, Dre
 import uuid
 
 
+@pytest.fixture
+def dre():
+    """Fixture para criar uma DRE."""
+    return Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
+
+
+@pytest.fixture
+def escola(dre):
+    """Fixture para criar uma escola."""
+    return Escola.objects.create(
+        codigo_eol="000001",
+        nome_oficial="Escola Teste",
+        dre=dre,
+        cep="04001-000"
+    )
+
+
+@pytest.fixture
+def lote():
+    """Fixture para criar um lote de vagas."""
+    return VagasEscolasLote.objects.create(
+        processo_uuid=uuid.uuid4(),
+        processo_nome="Processo Teste"
+    )
+
+
+@pytest.fixture
+def vaga_escola(escola, lote):
+    """Fixture para criar uma vaga de escola."""
+    return VagasEscolas.objects.create(
+        escola=escola,
+        lote=lote,
+        data_fechamento_modulo="2025-01-01",
+        cargo_codigo=100,
+        cargo_descricao="Cargo Teste",
+        vagas_precarias=3,
+        vagas_precarias_restantes=3,
+        vagas_definitivas=5,
+        vagas_definitivas_restantes=5,
+        status="1"
+    )
+
+
 def _criar_escolha(**override):
+    # Se vaga_escola_uuid foi passado, remover e criar uma vaga_escola padrão
+    if 'vaga_escola_uuid' in override:
+        vaga_uuid = override.pop('vaga_escola_uuid')
+        if vaga_uuid:
+            try:
+                override['vaga_escola'] = VagasEscolas.objects.get(uuid=vaga_uuid)
+            except VagasEscolas.DoesNotExist:
+                # Se não encontrar, criar uma vaga padrão
+                dre = Dre.objects.create(codigo="99", nome="DRE Teste", sigla="DRE-TESTE")
+                escola = Escola.objects.create(
+                    codigo_eol="999999",
+                    nome_oficial="Escola Teste",
+                    dre=dre,
+                    cep="00000-000"
+                )
+                lote = VagasEscolasLote.objects.create(
+                    processo_uuid=uuid.uuid4(),
+                    processo_nome="Processo Teste"
+                )
+                override['vaga_escola'] = VagasEscolas.objects.create(
+                    escola=escola,
+                    lote=lote,
+                    data_fechamento_modulo="2025-01-01",
+                    cargo_codigo=100,
+                    cargo_descricao="Cargo Teste",
+                    vagas_precarias=3,
+                    vagas_precarias_restantes=3,
+                    vagas_definitivas=5,
+                    vagas_definitivas_restantes=5,
+                    status="1"
+                )
+    
+    # Se vaga_escola não foi passado, criar uma padrão
+    if 'vaga_escola' not in override:
+        dre = Dre.objects.create(codigo="99", nome="DRE Teste", sigla="DRE-TESTE")
+        escola = Escola.objects.create(
+            codigo_eol="999999",
+            nome_oficial="Escola Teste",
+            dre=dre,
+            cep="00000-000"
+        )
+        lote = VagasEscolasLote.objects.create(
+            processo_uuid=uuid.uuid4(),
+            processo_nome="Processo Teste"
+        )
+        override['vaga_escola'] = VagasEscolas.objects.create(
+            escola=escola,
+            lote=lote,
+            data_fechamento_modulo="2025-01-01",
+            cargo_codigo=100,
+            cargo_descricao="Cargo Teste",
+            vagas_precarias=3,
+            vagas_precarias_restantes=3,
+            vagas_definitivas=5,
+            vagas_definitivas_restantes=5,
+            status="1"
+        )
+    
     dados = {
         'candidato_uuid': uuid.uuid4(),
         'concurso_uuid': uuid.uuid4(),
         'situacao': SituacaoChoices.ESCOLHA,
         'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
-        'vaga_escola_uuid': uuid.uuid4(),
     }
     dados.update(override)
     return Escolha.objects.create(**dados)
