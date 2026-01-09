@@ -38,7 +38,7 @@ def escolha_post_save(sender, instance, created, **kwargs):
     - PATCH (edição/reconvocacao): cria histórico quando a situação mudou
     
     Atualiza vagas restantes quando:
-    - POST (criação) com situacao='escolha' e vaga_escola_uuid e tipo_vaga presentes
+    - POST (criação) com situacao='escolha' e vaga_escola e tipo_vaga presentes
     """
     situacao_anterior = getattr(instance, '_situacao_anterior', None)
     situacao_atual = instance.situacao
@@ -66,35 +66,30 @@ def escolha_post_save(sender, instance, created, **kwargs):
         
         # Atualiza vagas restantes quando uma escolha é criada
         if (situacao_atual == SituacaoChoices.ESCOLHA and 
-            instance.vaga_escola_uuid and 
+            instance.vaga_escola and 
             instance.tipo_vaga):
             try:
-                vaga_escola = VagasEscolas.objects.get(uuid=instance.vaga_escola_uuid)
+                vaga_escola = instance.vaga_escola
                 
                 # Decrementa o campo correto baseado no tipo de vaga
                 if instance.tipo_vaga == TipoVagaChoices.DEFINITIVA:
-                    VagasEscolas.objects.filter(uuid=instance.vaga_escola_uuid).update(
+                    VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
                         vagas_definitivas_restantes=F('vagas_definitivas_restantes') - 1
                     )
                     logger.info(
                         f"Vaga definitiva decrementada para escolha {instance.uuid}. "
-                        f"VagaEscola: {instance.vaga_escola_uuid}. "
+                        f"VagaEscola: {vaga_escola.uuid}. "
                         f"Novo valor: {vaga_escola.vagas_definitivas_restantes - 1}"
                     )
                 elif instance.tipo_vaga == TipoVagaChoices.PRECARIA:
-                    VagasEscolas.objects.filter(uuid=instance.vaga_escola_uuid).update(
+                    VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
                         vagas_precarias_restantes=F('vagas_precarias_restantes') - 1
                     )
                     logger.info(
                         f"Vaga precária decrementada para escolha {instance.uuid}. "
-                        f"VagaEscola: {instance.vaga_escola_uuid}. "
+                        f"VagaEscola: {vaga_escola.uuid}. "
                         f"Novo valor: {vaga_escola.vagas_precarias_restantes - 1}"
                     )
-            except VagasEscolas.DoesNotExist:
-                logger.warning(
-                    f"VagaEscola com UUID {instance.vaga_escola_uuid} não encontrada "
-                    f"para escolha {instance.uuid}. Não foi possível atualizar vagas restantes."
-                )
             except Exception as exc:
                 logger.error(
                     f"Erro ao atualizar vagas restantes para escolha {instance.uuid}: {exc}",

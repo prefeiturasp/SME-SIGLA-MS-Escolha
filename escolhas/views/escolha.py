@@ -48,7 +48,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        queryset = self.get_queryset().filter(candidato_uuid__in=candidato_ids)
+        queryset = self.get_queryset().select_related(
+            'vaga_escola',
+            'vaga_escola__escola',
+            'vaga_escola__escola__dre'
+        ).filter(candidato_uuid__in=candidato_ids)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

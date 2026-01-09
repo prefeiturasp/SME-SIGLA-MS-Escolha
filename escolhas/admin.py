@@ -15,7 +15,7 @@ class EscolhaAdmin(admin.ModelAdmin):
         'situacao',
         'tipo_vaga',
         'e_retardatario',
-        'vaga_escola_uuid',
+        'vaga_escola',
         'uuid',
         'criado_em',
         'atualizado_em',
@@ -32,7 +32,7 @@ class EscolhaAdmin(admin.ModelAdmin):
                 'situacao',
                 'tipo_vaga',
                 'e_retardatario',
-                'vaga_escola_uuid',
+                'vaga_escola',
             )
         }),
         ('Metadados', {
