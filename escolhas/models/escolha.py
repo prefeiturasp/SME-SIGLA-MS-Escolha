@@ -39,8 +39,11 @@ class Escolha(BaseModel):
         default=False,
         verbose_name=_('É retardatário'),
     )
-    vaga_escola_uuid = models.UUIDField(
-        verbose_name=_('UUID da Vaga da Escola'),
+    vaga_escola = models.ForeignKey(
+        'VagasEscolas',
+        on_delete=models.SET_NULL,
+        related_name='escolhas',
+        verbose_name=_('Vaga da Escola'),
         null=True,
         blank=True,
     )
@@ -52,7 +55,7 @@ class Escolha(BaseModel):
         ordering = ['-criado_em']
 
     def __str__(self):
-        return f"{self.candidato_uuid} - {self.vaga_escola_uuid}"
+        return f"{self.candidato_uuid} - {self.vaga_escola.uuid if self.vaga_escola else 'N/A'}"
 
 
 auditlog.register(Escolha) 
