@@ -172,7 +172,7 @@ def escolhas_multiplas(escolha_matematica, escolha_portugues, escolha_historia, 
 
 
 @pytest.fixture
-def escolha_data():
+def escolha_data(vaga_escola):
     """
     Fixture para dados de escolha válidos.
     """
@@ -182,7 +182,7 @@ def escolha_data():
         'situacao': SituacaoChoices.ESCOLHA,
         'tipo_vaga': TipoVagaChoices.DEFINITIVA,
         'e_retardatario': False,
-        'vaga_escola_uuid': str(uuid.uuid4()),
+        'vaga_escola_uuid': str(vaga_escola.uuid),
     }
 
 
@@ -224,7 +224,6 @@ def escolha_data_updated():
         'situacao': SituacaoChoices.RECONVOCACAO,
         'tipo_vaga': TipoVagaChoices.PRECARIA,
         'e_retardatario': True,
-        'vaga_escola_uuid': str(uuid.uuid4()),
     }
 
 
