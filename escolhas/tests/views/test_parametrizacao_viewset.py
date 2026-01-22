@@ -37,7 +37,7 @@ MAPPING_FIXTURE = [
 @pytest.fixture
 def parametrizacoes_db():
     objs = [
-        Parametrizacao(tipo_ue=nome, tipo_ue_slug=slug, usar=False)
+        Parametrizacao(tipo_ue=nome, usar=False)
         for (nome, slug) in MAPPING_FIXTURE
     ]
     Parametrizacao.objects.bulk_create(objs)

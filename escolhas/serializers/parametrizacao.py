@@ -5,8 +5,8 @@ from ..models import Parametrizacao
 class ParametrizacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parametrizacao
-        fields = ['uuid', 'tipo_ue', 'tipo_ue_slug', 'usar', 'criado_em', 'atualizado_em']
-        read_only_fields = ['uuid', 'tipo_ue', 'tipo_ue_slug', 'criado_em', 'atualizado_em']
+        fields = ['uuid', 'tipo_ue', 'usar', 'criado_em', 'atualizado_em']
+        read_only_fields = ['uuid', 'tipo_ue', 'criado_em', 'atualizado_em']
 
 
 class ParametrizacaoBulkItemSerializer(serializers.Serializer):

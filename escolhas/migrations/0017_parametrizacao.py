@@ -44,12 +44,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "tipo_ue_slug",
-                    models.SlugField(
-                        max_length=255, unique=True, verbose_name="Tipo UE Slug"
-                    ),
-                ),
-                (
                     "usar",
                     models.BooleanField(
                         default=False, verbose_name="Utilizar este tipo de UE"
