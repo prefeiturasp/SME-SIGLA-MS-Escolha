@@ -127,3 +127,15 @@ class VagasEscolasViewSet(ModelViewSet):
         """
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(request.data)
         return Response(response_data, status=status_code)
+
+    @action(detail=False, methods=['get'], url_path='por-cargo-e-escolas')
+    def por_cargo_e_escolas(self, request, *args, **kwargs):
+      codigo_cargo = request.query_params.get('cargo_codigo')
+      eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in','').split(',') if request.query_params.get('codigo_eol__in') else [])
+      qs = VagasEscolas.objects.select_related('escola')
+      if codigo_cargo:
+          qs = qs.filter(cargo_codigo=codigo_cargo)
+      if eols:
+          qs = qs.filter(escola__codigo_eol__in=eols)
+      serializer = self.get_serializer(qs, many=True)
+      return Response(serializer.data)
