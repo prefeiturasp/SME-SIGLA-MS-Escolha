@@ -2,13 +2,14 @@ import pytest
 from rest_framework import status
 from uuid import uuid4
 
-from escolhas.models import VagasEscolas, VagasEscolasLote
+from escolhas.models import VagasEscolas, VagasEscolasLote, Parametrizacao, Escola
 from escolhas.services.vagas_escolas import (
     criar_vagas_em_lote,
     processar_criacao_vagas_lote,
     atualizar_vagas_utilizadas_por_processo,
 )
 from django.core.exceptions import ValidationError, BadRequest
+from escolhas.services.exceptions import TipoUEDesabilitadoException
 
 
 @pytest.mark.django_db
@@ -198,6 +199,53 @@ class TestProcessarCriacaoVagasLote:
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
+
+    def test_processar_criacao_bloqueia_por_parametrizacao_tipo_ue(self, escola_1):
+        """Quando o tipo_ue da escola está desabilitado (usar=False), deve lançar exceção."""
+        # Configura tipo_ue da escola e parametrização bloqueada
+        escola_1.tipo_ue = "EMEF"
+        escola_1.save(update_fields=["tipo_ue"])
+        Parametrizacao.objects.create(tipo_ue="EMEF", usar=False)
+        request_data = {
+            "processo_uuid": str(uuid4()),
+            "processo_nome": "Proc",
+            "vagas": [
+                {
+                    "data_fechamento_modulo": "2025-09-10",
+                    "cargo_codigo": 123,
+                    "cargo_descricao": "Professor",
+                    "codigo_eol": escola_1.codigo_eol,
+                    "vagas_precarias": 0,
+                    "vagas_definitivas": 1,
+                    "status": "ativo",
+                }
+            ],
+        }
+        with pytest.raises(TipoUEDesabilitadoException):
+            processar_criacao_vagas_lote(request_data)
+
+    def test_processar_criacao_ignora_escola_inexistente_na_validacao(self):
+        """Se escola não existir, a validação de tipo_ue bloqueado não barra; segue para erros normais."""
+        Parametrizacao.objects.create(tipo_ue="EMEF", usar=False)
+        request_data = {
+            "processo_uuid": str(uuid4()),
+            "processo_nome": "Proc",
+            "vagas": [
+                {
+                    "data_fechamento_modulo": "2025-09-10",
+                    "cargo_codigo": 123,
+                    "cargo_descricao": "Professor",
+                    "codigo_eol": "999999",  # inexistente
+                    "vagas_precarias": 0,
+                    "vagas_definitivas": 1,
+                    "status": "ativo",
+                }
+            ],
+        }
+        response_data, status_code = processar_criacao_vagas_lote(request_data)
+        assert status_code == status.HTTP_400_BAD_REQUEST
+        assert response_data.get("vagas_criadas") == 0
+        assert response_data.get("vagas_com_erro") == 1
 
     def test_processar_criacao_chave_vagas_faltando(self):
         """Testa processamento sem a chave 'vagas'."""

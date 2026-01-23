@@ -5,7 +5,8 @@ from django.db import transaction
 from django.core.exceptions import ValidationError, BadRequest
 from rest_framework import status
 
-from ..models import VagasEscolas, Escola, VagasEscolasLote
+from ..models import VagasEscolas, Escola, VagasEscolasLote, Parametrizacao
+from .exceptions import TipoUEDesabilitadoException
 from ..serializers import VagasEscolasCreateSerializer
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,26 @@ def processar_criacao_vagas_lote(request_data: Dict[str, Any]) -> Tuple[Dict[str
     processo_uuid = serializer.validated_data['processo_uuid']
     processo_nome = serializer.validated_data.get('processo_nome', '')
     vagas_data = serializer.validated_data['vagas']
+
+    # Validação: impedir criação de vagas para escolas cujo tipo_ue está desabilitado em Parametrizacao (usar=False)
+    tipos_bloqueados = set(
+        Parametrizacao.objects.filter(usar=False).values_list('tipo_ue', flat=True)
+    )
+    if tipos_bloqueados:
+        for item in vagas_data:
+            codigo_eol = str(item.get('codigo_eol', '')).zfill(6)
+            if not codigo_eol:
+                # Será tratado posteriormente; aqui só validamos tipos bloqueados
+                continue
+            try:
+                escola = Escola.objects.only('tipo_ue').get(codigo_eol=codigo_eol)
+            except Escola.DoesNotExist:
+                # Deixa o fluxo normal tratar escola inexistente
+                continue
+            if escola.tipo_ue in tipos_bloqueados:
+                raise TipoUEDesabilitadoException(
+                    f"Tipo de unidade '{escola.tipo_ue}' da escola EOL {codigo_eol} está desabilitado."
+                )
 
     with transaction.atomic():
         lote = VagasEscolasLote.objects.create(processo_uuid=processo_uuid, processo_nome=processo_nome)
