@@ -5,7 +5,7 @@ from ..models import VagasEscolas, Escola, Dre
 class DreSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dre
-        fields = ['uuid', 'codigo', 'nome']
+        fields = ['uuid', 'codigo', 'nome', 'sigla']
 
 
 class EscolaSimpleSerializer(serializers.ModelSerializer):
