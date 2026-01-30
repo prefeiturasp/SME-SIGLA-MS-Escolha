@@ -381,3 +381,67 @@ def test_create_escolha_nao_escolha_nao_decrementa(api_client):
     vaga_escola.refresh_from_db()
     assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial
     assert vaga_escola.vagas_precarias_restantes == vagas_precarias_inicial
+
+
+@pytest.mark.django_db
+def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
+    # Monta DRE/Escola/Lote e duas vagas com cargos distintos
+    dre = Dre.objects.create(codigo="10", nome="DRE 10", sigla="DRE-10")
+    escola = Escola.objects.create(
+        codigo_eol="000010",
+        nome_oficial="Escola 10",
+        dre=dre,
+        cep="04001-000"
+    )
+    lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome="Proc")
+    vaga_cargo_100 = VagasEscolas.objects.create(
+        escola=escola, lote=lote, data_fechamento_modulo="2025-01-01",
+        cargo_codigo=100, cargo_descricao="Cargo 100",
+        vagas_precarias=0, vagas_precarias_restantes=0,
+        vagas_definitivas=10, vagas_definitivas_restantes=10, status="1"
+    )
+    vaga_cargo_101 = VagasEscolas.objects.create(
+        escola=escola, lote=lote, data_fechamento_modulo="2025-01-01",
+        cargo_codigo=101, cargo_descricao="Cargo 101",
+        vagas_precarias=0, vagas_precarias_restantes=0,
+        vagas_definitivas=10, vagas_definitivas_restantes=10, status="1"
+    )
+
+    # Cria escolhas: 2 para cargo 100 com situacao ESCOLHA; 1 NAO_ESCOLHA (ignorada)
+    Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.ESCOLHA,
+        tipo_vaga=TipoVagaChoices.DEFINITIVA,
+        e_retardatario=False,
+        vaga_escola=vaga_cargo_100,
+    )
+    Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.ESCOLHA,
+        tipo_vaga=TipoVagaChoices.DEFINITIVA,
+        e_retardatario=False,
+        vaga_escola=vaga_cargo_100,
+    )
+    Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.NAO_ESCOLHA,
+        tipo_vaga=TipoVagaChoices.DEFINITIVA,
+        e_retardatario=False,
+        vaga_escola=vaga_cargo_100,
+    )
+    # 1 escolha válida para cargo 101
+    Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.ESCOLHA,
+        tipo_vaga=TipoVagaChoices.PRECARIA,
+        e_retardatario=False,
+        vaga_escola=vaga_cargo_101,
+    )
+
+    url = reverse('escolha-agrupar-por-cargo')
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
+    # Deve retornar um dict { "100": 2, "101": 1 } (apenas situacao=ESCOLHA)
+    assert isinstance(resp.data, dict)
+    assert resp.data.get('100') == 2
+    assert resp.data.get('101') == 1

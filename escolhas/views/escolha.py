@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
+from django.db.models import Count
 
 from ..choices import SituacaoChoices
 from ..models import Escolha
@@ -65,3 +66,20 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
+    def agrupar_por_cargo(self, request):
+        """
+        Agrupa todas as escolhas por vaga_escola__cargo_codigo e retorna a soma de escolhas por cargo.
+        """
+        qs = (
+            self.get_queryset().filter(situacao=SituacaoChoices.ESCOLHA)
+            .values('vaga_escola__cargo_codigo')
+            .annotate(total=Count('uuid'))
+            .order_by('vaga_escola__cargo_codigo')
+        )
+        data = {
+            str(item['vaga_escola__cargo_codigo']): int(item['total'] or 0)
+            for item in qs
+        }
+        return Response(data)
