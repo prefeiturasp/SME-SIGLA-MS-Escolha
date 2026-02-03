@@ -6,6 +6,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from ..models import VagasEscolas, VagasEscolasLote
 from ..serializers import (
@@ -18,6 +20,7 @@ from ..services.vagas_escolas import criar_vagas_em_lote, adicionar_vagas_ao_lot
 from ..serializers.vagas_escolas import VagasEscolasCreateSerializer
 from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
 from ..utils import CustomPagination
+from ..services.exceptions import TipoUEDesabilitadoException
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +110,17 @@ class VagasEscolasViewSet(ModelViewSet):
             ]
         }
         """
-        response_data, status_code = processar_criacao_vagas_lote(request.data)
-        return Response(response_data, status=status_code)
+        try:
+            response_data, status_code = processar_criacao_vagas_lote(request.data)
+            return Response(response_data, status=status_code)
+        except TipoUEDesabilitadoException as exc:
+            msg = str(exc)
+            logger.error(f"Tipo UE desabilitado: {msg}")
+            return Response({"detail": msg, "code": "TIPO_UE_DESABILITADO"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            msg = str(exc)
+            logger.error(f"Erro ao criar vagas em lote: {msg}")
+            return Response({"detail": msg, "code": "ERRO_AO_CRIAR_VAGAS_EM_LOTE"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['patch'], url_path='utilizadas')
     def utilizadas(self, request, *args, **kwargs):
@@ -127,3 +139,15 @@ class VagasEscolasViewSet(ModelViewSet):
         """
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(request.data)
         return Response(response_data, status=status_code)
+
+    @action(detail=False, methods=['get'], url_path='por-cargo-e-escolas')
+    def por_cargo_e_escolas(self, request, *args, **kwargs):
+      codigo_cargo = request.query_params.get('cargo_codigo')
+      eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in','').split(',') if request.query_params.get('codigo_eol__in') else [])
+      qs = VagasEscolas.objects.select_related('escola')
+      if codigo_cargo:
+          qs = qs.filter(cargo_codigo=codigo_cargo)
+      if eols:
+          qs = qs.filter(escola__codigo_eol__in=eols)
+      serializer = self.get_serializer(qs, many=True)
+      return Response(serializer.data)

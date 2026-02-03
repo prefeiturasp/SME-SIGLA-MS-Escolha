@@ -17,3 +17,7 @@ from .vagas_escolas import (
     VagaEscolaUtilizadaItemSerializer,
     VagasEscolasUtilizadasBulkSerializer,
 )
+from .parametrizacao import (
+    ParametrizacaoSerializer,
+    ParametrizacaoBulkItemSerializer,
+)

@@ -3,6 +3,8 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+from unittest.mock import patch
+from escolhas.services.exceptions import TipoUEDesabilitadoException
 
 from escolhas.models import Dre, Escola, VagasEscolas, VagasEscolasLote
 
@@ -175,3 +177,51 @@ def test_filter_por_processo_uuid_e_cargo_codigo(escola_1, escola_2):
     vagas_456 = resp_456.data.get('vagas', [])
     assert len(vagas_456) == 0
     assert resp_456.data['total_vagas'] == 0
+
+
+def test_create_retorna_400_quando_tipo_ue_desabilitado(api_client):
+    url = reverse('vagas-escolas-list')
+    p_uuid = uuid4()
+    body = {
+        "processo_uuid": str(p_uuid),
+        "processo_nome": "Proc",
+        "vagas": [{
+            "data_fechamento_modulo": "2025-09-10",
+            "cargo_codigo": 123,
+            "cargo_descricao": "Professor",
+            "codigo_eol": "123456",
+            "vagas_precarias": 0,
+            "vagas_definitivas": 1,
+            "status": "ativo",
+        }]
+    }
+    with patch('escolhas.views.vagas_escolas.processar_criacao_vagas_lote',
+               side_effect=TipoUEDesabilitadoException("Tipo UE bloqueado")):
+        resp = api_client.post(url, body, format='json')
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data.get('code') == 'TIPO_UE_DESABILITADO'
+    assert 'Tipo UE bloqueado' in resp.data.get('detail', '')
+
+
+def test_create_retorna_500_quando_excecao_generica(api_client):
+    url = reverse('vagas-escolas-list')
+    p_uuid = uuid4()
+    body = {
+        "processo_uuid": str(p_uuid),
+        "processo_nome": "Proc",
+        "vagas": [{
+            "data_fechamento_modulo": "2025-09-10",
+            "cargo_codigo": 123,
+            "cargo_descricao": "Professor",
+            "codigo_eol": "123456",
+            "vagas_precarias": 0,
+            "vagas_definitivas": 1,
+            "status": "ativo",
+        }]
+    }
+    with patch('escolhas.views.vagas_escolas.processar_criacao_vagas_lote',
+               side_effect=Exception("falha inesperada")):
+        resp = api_client.post(url, body, format='json')
+    assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert resp.data.get('code') == 'ERRO_AO_CRIAR_VAGAS_EM_LOTE'
+    assert 'falha inesperada' in resp.data.get('detail', '')
