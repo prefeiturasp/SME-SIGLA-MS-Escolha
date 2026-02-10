@@ -21,3 +21,7 @@ from .parametrizacao import (
     ParametrizacaoSerializer,
     ParametrizacaoBulkItemSerializer,
 )
+from .escolhas_prodam import (
+    EscolhasProdamImportacaoSerializer,
+    EscolhaProdamItemSerializer,
+)
