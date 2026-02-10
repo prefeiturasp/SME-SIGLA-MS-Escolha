@@ -20,7 +20,6 @@ from ..utils import CustomPagination
 import logging
 import requests
 from django.conf import settings
-from validate_docbr import CPF
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +115,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         cpfs = [escolha['cpf'] for escolha in serializer.validated_data['escolhas']]
-        print(cpfs)
         processo_uuid = serializer.validated_data['processo_uuid'] 
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-        print(candidatos)
         escolhas = serializer.validated_data['escolhas']
         concurso_uuid = serializer.validated_data['concurso_uuid']
         codigos_eol = list(set([escolha['codigo_eol'].zfill(6) for escolha in escolhas if escolha['codigo_eol']]))
