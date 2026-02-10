@@ -7,3 +7,5 @@ from .vagas_escolas import (
     criar_vagas_em_lote,
     processar_criacao_vagas_lote,
 ) 
+from .candidato_api import CandidatoAPIService
+from .concurso_api import ConcursoAPIService
