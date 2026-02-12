@@ -1,6 +1,7 @@
 import logging
 from django.db.models.signals import pre_save, post_save
 from django.db.models import F
+from django.db.models.functions import Greatest
 from django.dispatch import receiver
 from .models import Escolha, HistoricoEscolha, VagasEscolas
 from .choices import SituacaoChoices, TipoVagaChoices
@@ -74,7 +75,7 @@ def escolha_post_save(sender, instance, created, **kwargs):
                 # Decrementa o campo correto baseado no tipo de vaga
                 if instance.tipo_vaga == TipoVagaChoices.DEFINITIVA:
                     VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_definitivas_restantes=F('vagas_definitivas_restantes') - 1
+                        vagas_definitivas_restantes=Greatest(0, F('vagas_definitivas_restantes') - 1)
                     )
                     logger.info(
                         f"Vaga definitiva decrementada para escolha {instance.uuid}. "
@@ -83,7 +84,7 @@ def escolha_post_save(sender, instance, created, **kwargs):
                     )
                 elif instance.tipo_vaga == TipoVagaChoices.PRECARIA:
                     VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_precarias_restantes=F('vagas_precarias_restantes') - 1
+                        vagas_precarias_restantes=Greatest(0, F('vagas_precarias_restantes') - 1)
                     )
                     logger.info(
                         f"Vaga precária decrementada para escolha {instance.uuid}. "

@@ -113,7 +113,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         # 1. Validar dados de entrada
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
         cpfs = [escolha['cpf'] for escolha in serializer.validated_data['escolhas']]
         processo_uuid = serializer.validated_data['processo_uuid'] 
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(cpfs, processo_uuid)
@@ -191,7 +190,22 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     }
                     tipo_vaga = tipo_vaga_map.get(str(tipo_vaga_raw).upper())
                 
-                # Criar registro de Escolha
+                # Validar duplicação: verificar se já existe escolha para o mesmo candidato no mesmo concurso
+                escolha_existente = Escolha.objects.filter(
+                    candidato_uuid=candidato_uuid,
+                    concurso_uuid=concurso_uuid
+                ).first()
+                
+                if escolha_existente:
+                    logger.warning(
+                        f'Escolha duplicada detectada na importação (índice {idx}): '
+                        f'CPF={cpf_escolha}, candidato_uuid={candidato_uuid}, '
+                        f'concurso_uuid={concurso_uuid}. '
+                        f'Escolha existente UUID: {escolha_existente.uuid}'
+                    )
+                    continue
+                
+                # Criar registro de Escolha (mesmo que já exista, criar novo registro)
                 nova_escolha = Escolha.objects.create(
                     candidato_uuid=candidato_uuid,
                     concurso_uuid=concurso_uuid,
@@ -219,9 +233,9 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             'escolhas_criadas': len(escolhas_criadas),
             'escolhas': escolhas_criadas
         }
-        
+
         if erros:
             response_data['erros'] = erros
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         
-        status_code = status.HTTP_201_CREATED if escolhas_criadas else status.HTTP_400_BAD_REQUEST
-        return Response(response_data, status=status_code)
+        return Response(response_data, status=status.HTTP_201_CREATED)
