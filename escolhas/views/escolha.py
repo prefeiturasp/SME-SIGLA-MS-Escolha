@@ -118,7 +118,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(cpfs, processo_uuid)
         escolhas = serializer.validated_data['escolhas']
         concurso_uuid = serializer.validated_data['concurso_uuid']
-        codigos_eol = list(set([escolha['codigo_eol'].zfill(6) for escolha in escolhas if escolha['codigo_eol']]))
+        codigos_eol = list(set([escolha['codigo_eol'].zfill(6) for escolha in escolhas if escolha.get('codigo_eol')]))
+        codigos_cargo = list(set([int(escolha['codigo_cargo']) for escolha in escolhas if escolha.get('codigo_cargo')]))
         
         # Criar dict para mapear CPF -> UUID do candidato
         candidatos_dict = {}
@@ -129,20 +130,23 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     # Normalizar CPF para comparação (remover máscara)
                     candidatos_dict[cpf_candidato] = candidato.get('uuid')
         
-        # Buscar todas as vagas_escolas de uma vez usando a lista de códigos EOL
+        # Buscar todas as vagas_escolas de uma vez usando a lista de códigos EOL e códigos de cargo
         vagas_escolas_dict = {}
-        if codigos_eol:
+        if codigos_eol and codigos_cargo:
             try:
                 vagas_escolas = VagasEscolas.objects.filter(
-                    escola__codigo_eol__in=codigos_eol
+                    escola__codigo_eol__in=codigos_eol,
+                    cargo_codigo__in=codigos_cargo
                 ).select_related('escola')
                 
-                # Criar dict onde chave é codigo_eol e valor é o objeto VagasEscolas
+                # Criar dict onde chave é (codigo_eol, codigo_cargo) e valor é o objeto VagasEscolas
                 for vaga_escola in vagas_escolas:
                     codigo_eol = vaga_escola.escola.codigo_eol
-                    vagas_escolas_dict[codigo_eol] = vaga_escola
+                    codigo_cargo = str(vaga_escola.cargo_codigo)
+                    chave = (codigo_eol, codigo_cargo)
+                    vagas_escolas_dict[chave] = vaga_escola
                 
-                logger.info(f'Vagas encontradas: {len(vagas_escolas_dict)} de {len(codigos_eol)} códigos EOL')
+                logger.info(f'Vagas encontradas: {len(vagas_escolas_dict)} de {len(codigos_eol)} códigos EOL e {len(codigos_cargo)} códigos de cargo')
             except Exception as exc:
                 logger.error(f'Erro ao buscar vagas_escolas: {exc}')
         
@@ -164,12 +168,15 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     })
                     continue
                 
-                # Buscar vaga_escola pelo codigo_eol
+                # Buscar vaga_escola pelo codigo_eol e codigo_cargo
                 codigo_eol = escolha_data.get('codigo_eol')
+                codigo_cargo = escolha_data.get('codigo_cargo')
                 vaga_escola = None
-                if codigo_eol:
+                if codigo_eol and codigo_cargo:
                     codigo_eol_normalizado = str(codigo_eol).zfill(6)
-                    vaga_escola = vagas_escolas_dict.get(codigo_eol_normalizado)
+                    codigo_cargo_str = str(codigo_cargo)
+                    chave = (codigo_eol_normalizado, codigo_cargo_str)
+                    vaga_escola = vagas_escolas_dict.get(chave)
                 
                 # Mapear situacao
                 situacao_map = {
