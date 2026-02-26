@@ -1,7 +1,22 @@
 from rest_framework import serializers
 from ..choices import SituacaoChoices
-from ..models import Escolha, VagasEscolas
+from ..models import Escolha, HistoricoEscolha, VagasEscolas
 from .vagas_escolas import VagasEscolasSerializer
+
+
+class HistoricoEscolhaSerializer(serializers.ModelSerializer):
+    """
+    Serializer para o modelo HistoricoEscolha (histórico de mudanças de situação das escolhas).
+    """
+    class Meta:
+        model = HistoricoEscolha
+        fields = [
+            'uuid',
+            'situacao_anterior',
+            'situacao_nova',
+            'criado_em',
+        ]
+        read_only_fields = ['uuid', 'criado_em']
 
 
 class EscolhaSerializer(serializers.ModelSerializer):
@@ -109,11 +124,12 @@ class EscolhaSelectSerializer(serializers.ModelSerializer):
 class EscolhaListSerializer(serializers.ModelSerializer):
     """
     Serializer para listagem de escolhas.
-    Inclui dados completos de vaga_escola, escola e DRE.
+    Inclui dados completos de vaga_escola, escola e DRE, e histórico de escolhas.
     """
     vaga_escola_uuid = serializers.SerializerMethodField()
     vaga_escola = VagasEscolasSerializer(read_only=True)
-    
+    historico = HistoricoEscolhaSerializer(many=True, read_only=True)
+
     class Meta:
         model = Escolha
         fields = [
@@ -124,6 +140,7 @@ class EscolhaListSerializer(serializers.ModelSerializer):
             'e_retardatario',
             'vaga_escola_uuid',
             'vaga_escola',
+            'historico',
             'criado_em',
             'atualizado_em',
         ]
