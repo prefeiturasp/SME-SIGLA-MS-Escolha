@@ -31,12 +31,24 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = {
         'candidato_uuid': ['exact'],
+        'concurso_uuid': ['exact'],
         'situacao': ['exact', 'in'],
+        'vaga_escola__cargo_codigo': ['exact'],
     }
     search_fields = ['situacao', 'tipo_vaga']
     ordering_fields = ['criado_em']
     ordering = ['-criado_em']
     pagination_class = CustomPagination
+
+    def get_queryset(self):
+        qs = Escolha.objects.all()
+        if self.action in ['list', 'retrieve', 'busca']:
+            qs = qs.select_related(
+                'vaga_escola',
+                'vaga_escola__escola',
+                'vaga_escola__escola__dre',
+            ).prefetch_related('historico')
+        return qs
 
     def get_serializer_class(self):
         if self.action in ['list', 'busca']:
@@ -73,6 +85,35 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=['get'], detail=False, url_path='buscar-candidatos')
+    def buscar_candidatos(self, request):
+        """
+        Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro funcional.
+        Query params: nome, cpf, rg, registro_funcional (pelo menos um obrigatório).
+        """
+        nome = request.query_params.get('nome', '').strip()
+        cpf = request.query_params.get('cpf', '').strip()
+        rg = request.query_params.get('rg', '').strip()
+        registro_funcional = request.query_params.get('registro_funcional', '').strip()
+
+        if not any([nome, cpf, rg, registro_funcional]):
+            return Response(
+                {'detail': 'Informe pelo menos um parâmetro: nome, cpf, rg ou registro_funcional.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        candidatos = CandidatoAPIService().buscar_candidatos(
+            nome=nome or None,
+            cpf=cpf or None,
+            rg=rg or None,
+            registro_funcional=registro_funcional or None,
+        )
+        if candidatos is None:
+            return Response(
+                {'detail': 'Erro ao consultar serviço de candidatos.'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        return Response(candidatos)
 
     @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
     def agrupar_por_cargo(self, request):
