@@ -937,3 +937,83 @@ def test_importacao_prodam_escolha_sem_codigo_eol(api_client, settings):
         assert response.status_code == status.HTTP_201_CREATED
         escolha = Escolha.objects.filter(candidato_uuid=candidato_uuid).first()
         assert escolha.vaga_escola is None  # Não deve ter vaga_escola quando não há codigo_eol
+
+
+# --- Testes da action buscar_candidatos e list com historico (feature/143715-consulta-concursado) ---
+
+
+@pytest.mark.django_db
+def test_buscar_candidatos_sem_parametros_retorna_400(api_client):
+    """GET buscar-candidatos sem nome, cpf, rg ou registro_funcional deve retornar 400."""
+    url = reverse('escolha-buscar-candidatos')
+    response = api_client.get(url)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert 'detail' in response.data
+    assert 'nome' in response.data['detail'] or 'cpf' in response.data['detail']
+
+
+@pytest.mark.django_db
+def test_buscar_candidatos_com_parametro_retorna_200(api_client):
+    """GET buscar-candidatos com parâmetro deve delegar ao serviço e retornar 200 com lista."""
+    from unittest.mock import patch, Mock
+
+    url = reverse('escolha-buscar-candidatos')
+    mock_candidatos = [{'nome': 'João Silva', 'cpf': '12345678901', 'concursos': []}]
+
+    with patch('escolhas.views.escolha.CandidatoAPIService') as mock_service_class:
+        mock_service = Mock()
+        mock_service.buscar_candidatos.return_value = mock_candidatos
+        mock_service_class.return_value = mock_service
+
+        response = api_client.get(url, {'nome': 'João'})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == mock_candidatos
+        mock_service.buscar_candidatos.assert_called_once_with(
+            nome='João', cpf=None, rg=None, registro_funcional=None
+        )
+
+
+@pytest.mark.django_db
+def test_buscar_candidatos_servico_retorna_none_retorna_502(api_client):
+    """Quando o serviço retorna None (erro), deve retornar 502."""
+    from unittest.mock import patch, Mock
+
+    url = reverse('escolha-buscar-candidatos')
+
+    with patch('escolhas.views.escolha.CandidatoAPIService') as mock_service_class:
+        mock_service = Mock()
+        mock_service.buscar_candidatos.return_value = None
+        mock_service_class.return_value = mock_service
+
+        response = api_client.get(url, {'cpf': '12345678901'})
+
+        assert response.status_code == status.HTTP_502_BAD_GATEWAY
+        assert response.data['detail'] == 'Erro ao consultar serviço de candidatos.'
+
+
+@pytest.mark.django_db
+def test_list_escolhas_inclui_campo_historico(api_client, escolha_matematica):
+    """Listagem de escolhas deve incluir o campo historico (lista) em cada item."""
+    from escolhas.models import HistoricoEscolha
+
+    HistoricoEscolha.objects.create(
+        escolha=escolha_matematica,
+        situacao_anterior=None,
+        situacao_nova=SituacaoChoices.ESCOLHA,
+    )
+    url = reverse('escolha-list')
+    response = api_client.get(url)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['count'] >= 1
+    resultado = next(
+        (r for r in response.data['results'] if str(r['candidato_uuid']) == str(escolha_matematica.candidato_uuid)),
+        None,
+    )
+    assert resultado is not None
+    assert 'historico' in resultado
+    assert isinstance(resultado['historico'], list)
+    assert len(resultado['historico']) >= 1
+    assert resultado['historico'][0]['situacao_nova'] == SituacaoChoices.ESCOLHA
+    assert 'uuid' in resultado['historico'][0]
+    assert 'criado_em' in resultado['historico'][0]
