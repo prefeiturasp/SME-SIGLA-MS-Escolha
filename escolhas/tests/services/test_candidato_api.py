@@ -190,3 +190,90 @@ class TestCandidatoAPIService:
             assert headers['Accept'] == 'application/json'
             assert headers['Content-Type'] == 'application/json'
 
+    # --- Testes de buscar_candidatos (feature/143715-consulta-concursado) ---
+
+    def test_buscar_candidatos_sucesso(self, settings):
+        """Testa busca de candidatos por nome/cpf/rg/registro_funcional com sucesso."""
+        settings.CANDIDATOS_API_URL = 'http://test-api.com'
+        service = CandidatoAPIService()
+
+        mock_response_data = [
+            {'nome': 'João', 'cpf': '12345678901', 'concursos': []},
+        ]
+
+        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = mock_response_data
+            mock_response.raise_for_status.return_value = None
+            mock_get.return_value = mock_response
+
+            result = service.buscar_candidatos(nome='João')
+
+            assert result == mock_response_data
+            mock_get.assert_called_once()
+            call_args = mock_get.call_args
+            assert call_args[0][0] == 'http://test-api.com/api/v1/candidatos/buscar/'
+            assert call_args[1]['params'] == {'nome': 'João'}
+            assert 'Accept' in call_args[1]['headers']
+
+    def test_buscar_candidatos_sem_parametros_retorna_lista_vazia(self, settings):
+        """Sem nenhum parâmetro informado, deve retornar lista vazia (não chama API)."""
+        settings.CANDIDATOS_API_URL = 'http://test-api.com'
+        service = CandidatoAPIService()
+
+        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+            result = service.buscar_candidatos()
+
+            assert result == []
+            mock_get.assert_not_called()
+
+    def test_buscar_candidatos_envia_params_corretos(self, settings):
+        """Testa que nome, cpf, rg e registro_funcional são enviados como query params."""
+        settings.CANDIDATOS_API_URL = 'http://test-api.com'
+        service = CandidatoAPIService()
+
+        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = []
+            mock_response.raise_for_status.return_value = None
+            mock_get.return_value = mock_response
+
+            service.buscar_candidatos(
+                nome='Maria',
+                cpf='11122233344',
+                rg='12.345.678-9',
+                registro_funcional='RF001',
+            )
+
+            call_args = mock_get.call_args
+            assert call_args[1]['params'] == {
+                'nome': 'Maria',
+                'cpf': '11122233344',
+                'rg': '12.345.678-9',
+                'registro_funcional': 'RF001',
+            }
+
+    def test_buscar_candidatos_http_error_retorna_none(self, settings):
+        """Em erro HTTP, deve retornar None."""
+        settings.CANDIDATOS_API_URL = 'http://test-api.com'
+        service = CandidatoAPIService()
+
+        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+            mock_get.side_effect = requests.exceptions.HTTPError('502 Bad Gateway')
+
+            result = service.buscar_candidatos(nome='Teste')
+
+            assert result is None
+
+    def test_buscar_candidatos_connection_error_retorna_none(self, settings):
+        """Em erro de conexão, deve retornar None."""
+        settings.CANDIDATOS_API_URL = 'http://test-api.com'
+        service = CandidatoAPIService()
+
+        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+            mock_get.side_effect = requests.exceptions.ConnectionError()
+
+            result = service.buscar_candidatos(cpf='123')
+
+            assert result is None
+
