@@ -113,6 +113,21 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 {'detail': 'Erro ao consultar serviço de candidatos.'},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
+        # Enriquecer descricao_cargo com o nome do Cargo (model Cargo do MS-Concursos) quando houver codigo_cargo
+        codigos_cargo = set()
+        for item in candidatos:
+            for cc in item.get("concursos") or []:
+                cod = cc.get("codigo_cargo")
+                if cod is not None and str(cod).strip():
+                    codigos_cargo.add(str(cod).strip())
+        cargos_map = ConcursoAPIService.get_cargos_por_codigos(list(codigos_cargo)) if codigos_cargo else {}
+        for item in candidatos:
+            for cc in item.get("concursos") or []:
+                cod = cc.get("codigo_cargo")
+                if cod is not None and str(cod).strip():
+                    nome_cargo = cargos_map.get(str(cod).strip())
+                    if nome_cargo:
+                        cc["descricao_cargo"] = nome_cargo
         return Response(candidatos)
 
     @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
