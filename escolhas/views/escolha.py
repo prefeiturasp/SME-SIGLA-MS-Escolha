@@ -31,12 +31,24 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = {
         'candidato_uuid': ['exact'],
+        'concurso_uuid': ['exact'],
         'situacao': ['exact', 'in'],
+        'vaga_escola__cargo_codigo': ['exact'],
     }
     search_fields = ['situacao', 'tipo_vaga']
     ordering_fields = ['criado_em']
     ordering = ['-criado_em']
     pagination_class = CustomPagination
+
+    def get_queryset(self):
+        qs = Escolha.objects.all()
+        if self.action in ['list', 'retrieve', 'busca']:
+            qs = qs.select_related(
+                'vaga_escola',
+                'vaga_escola__escola',
+                'vaga_escola__escola__dre',
+            ).prefetch_related('historico')
+        return qs
 
     def get_serializer_class(self):
         if self.action in ['list', 'busca']:
@@ -73,6 +85,50 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=['get'], detail=False, url_path='buscar-candidatos')
+    def buscar_candidatos(self, request):
+        """
+        Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro funcional.
+        Query params: nome, cpf, rg, registro_funcional (pelo menos um obrigatório).
+        """
+        nome = request.query_params.get('nome', '').strip()
+        cpf = request.query_params.get('cpf', '').strip()
+        rg = request.query_params.get('rg', '').strip()
+        registro_funcional = request.query_params.get('registro_funcional', '').strip()
+
+        if not any([nome, cpf, rg, registro_funcional]):
+            return Response(
+                {'detail': 'Informe pelo menos um parâmetro: nome, cpf, rg ou registro_funcional.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        candidatos = CandidatoAPIService().buscar_candidatos(
+            nome=nome or None,
+            cpf=cpf or None,
+            rg=rg or None,
+            registro_funcional=registro_funcional or None,
+        )
+        if candidatos is None:
+            return Response(
+                {'detail': 'Erro ao consultar serviço de candidatos.'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        # Enriquecer descricao_cargo com o nome do Cargo (model Cargo do MS-Concursos) quando houver codigo_cargo
+        codigos_cargo = set()
+        for item in candidatos:
+            for cc in item.get("concursos") or []:
+                cod = cc.get("codigo_cargo")
+                if cod is not None and str(cod).strip():
+                    codigos_cargo.add(str(cod).strip())
+        cargos_map = ConcursoAPIService.get_cargos_por_codigos(list(codigos_cargo)) if codigos_cargo else {}
+        for item in candidatos:
+            for cc in item.get("concursos") or []:
+                cod = cc.get("codigo_cargo")
+                if cod is not None and str(cod).strip():
+                    nome_cargo = cargos_map.get(str(cod).strip())
+                    if nome_cargo:
+                        cc["descricao_cargo"] = nome_cargo
+        return Response(candidatos)
 
     @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
     def agrupar_por_cargo(self, request):
@@ -118,7 +174,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(cpfs, processo_uuid)
         escolhas = serializer.validated_data['escolhas']
         concurso_uuid = serializer.validated_data['concurso_uuid']
-        codigos_eol = list(set([escolha['codigo_eol'].zfill(6) for escolha in escolhas if escolha['codigo_eol']]))
+        codigos_eol = list(set([escolha['codigo_eol'].zfill(6) for escolha in escolhas if escolha.get('codigo_eol')]))
+        codigos_cargo = list(set([int(escolha['codigo_cargo']) for escolha in escolhas if escolha.get('codigo_cargo')]))
         
         # Criar dict para mapear CPF -> UUID do candidato
         candidatos_dict = {}
@@ -129,20 +186,23 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     # Normalizar CPF para comparação (remover máscara)
                     candidatos_dict[cpf_candidato] = candidato.get('uuid')
         
-        # Buscar todas as vagas_escolas de uma vez usando a lista de códigos EOL
+        # Buscar todas as vagas_escolas de uma vez usando a lista de códigos EOL e códigos de cargo
         vagas_escolas_dict = {}
-        if codigos_eol:
+        if codigos_eol and codigos_cargo:
             try:
                 vagas_escolas = VagasEscolas.objects.filter(
-                    escola__codigo_eol__in=codigos_eol
+                    escola__codigo_eol__in=codigos_eol,
+                    cargo_codigo__in=codigos_cargo
                 ).select_related('escola')
                 
-                # Criar dict onde chave é codigo_eol e valor é o objeto VagasEscolas
+                # Criar dict onde chave é (codigo_eol, codigo_cargo) e valor é o objeto VagasEscolas
                 for vaga_escola in vagas_escolas:
                     codigo_eol = vaga_escola.escola.codigo_eol
-                    vagas_escolas_dict[codigo_eol] = vaga_escola
+                    codigo_cargo = str(vaga_escola.cargo_codigo)
+                    chave = (codigo_eol, codigo_cargo)
+                    vagas_escolas_dict[chave] = vaga_escola
                 
-                logger.info(f'Vagas encontradas: {len(vagas_escolas_dict)} de {len(codigos_eol)} códigos EOL')
+                logger.info(f'Vagas encontradas: {len(vagas_escolas_dict)} de {len(codigos_eol)} códigos EOL e {len(codigos_cargo)} códigos de cargo')
             except Exception as exc:
                 logger.error(f'Erro ao buscar vagas_escolas: {exc}')
         
@@ -164,12 +224,15 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     })
                     continue
                 
-                # Buscar vaga_escola pelo codigo_eol
+                # Buscar vaga_escola pelo codigo_eol e codigo_cargo
                 codigo_eol = escolha_data.get('codigo_eol')
+                codigo_cargo = escolha_data.get('codigo_cargo')
                 vaga_escola = None
-                if codigo_eol:
+                if codigo_eol and codigo_cargo:
                     codigo_eol_normalizado = str(codigo_eol).zfill(6)
-                    vaga_escola = vagas_escolas_dict.get(codigo_eol_normalizado)
+                    codigo_cargo_str = str(codigo_cargo)
+                    chave = (codigo_eol_normalizado, codigo_cargo_str)
+                    vaga_escola = vagas_escolas_dict.get(chave)
                 
                 # Mapear situacao
                 situacao_map = {

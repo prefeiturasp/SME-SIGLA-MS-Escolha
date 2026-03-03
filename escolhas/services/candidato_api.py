@@ -64,3 +64,52 @@ class CandidatoAPIService:
             logger.error(f'Erro ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}', exc_info=True)
             return None
 
+    def buscar_candidatos(
+        self,
+        nome: Optional[str] = None,
+        cpf: Optional[str] = None,
+        rg: Optional[str] = None,
+        registro_funcional: Optional[str] = None,
+    ) -> Optional[List[dict]]:
+        """
+        Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro funcional.
+        Pelo menos um dos parâmetros deve ser informado.
+
+        Args:
+            nome: Nome (busca por contém).
+            cpf: CPF (busca por contém).
+            rg: RG (busca por contém).
+            registro_funcional: Registro funcional (busca por contém).
+
+        Returns:
+            Lista de candidatos retornados pela API ou None em caso de erro.
+        """
+        if not any(s and str(s).strip() for s in (nome, cpf, rg, registro_funcional)):
+            return []
+
+        try:
+            url = f"{self.base_url}/api/v1/candidatos/buscar/"
+            params = {}
+            if nome and str(nome).strip():
+                params['nome'] = str(nome).strip()
+            if cpf and str(cpf).strip():
+                params['cpf'] = str(cpf).strip()
+            if rg and str(rg).strip():
+                params['rg'] = str(rg).strip()
+            if registro_funcional and str(registro_funcional).strip():
+                params['registro_funcional'] = str(registro_funcional).strip()
+
+            response = requests.get(
+                url,
+                params=params,
+                headers=self._default_headers,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as exc:
+            logger.error('Erro HTTP ao buscar candidatos: %s', exc)
+            return None
+        except Exception as exc:
+            logger.error('Erro ao buscar candidatos: %s', exc, exc_info=True)
+            return None
