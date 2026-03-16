@@ -76,3 +76,21 @@ def buscar_dados_escola_por_eol(codigo_eol: str) -> Dict[str, Any]:
         raise ValueError('Formato de resposta inesperado ao buscar dados da escola')
 
     return payload
+
+
+def buscar_unidades_codigo_integracao_por_dre(codigo_dre: str) -> List[Dict[str, Any]]:
+    """
+    GET /api/DREs/{dreCodigo}/unidades/codigo-integracao
+    Retorna lista com codigoUe, nomeUe, codigoIntegracao.
+    """
+    base_url, headers = _get_base_url_and_headers()
+    url = base_url + f'/api/DREs/{codigo_dre}/unidades/codigo-integracao'
+
+    response = requests.get(url, headers=headers, timeout=30)
+    response.raise_for_status()
+
+    result = response.json()
+    if not isinstance(result, list):
+        raise ValueError('Formato de resposta inesperado ao buscar unidades/codigo-integracao')
+   
+    return result

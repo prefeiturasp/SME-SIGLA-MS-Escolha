@@ -13,7 +13,7 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
     dre = DreSimpleSerializer(read_only=True)
     class Meta:
         model = Escola
-        fields = ['codigo_eol', 'nome_oficial', 'dre', 'tipo_ue']
+        fields = ['codigo_eol', 'codigo_integracao', 'nome_oficial', 'dre', 'tipo_ue']
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
