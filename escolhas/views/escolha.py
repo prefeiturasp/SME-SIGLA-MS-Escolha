@@ -181,6 +181,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             ]
         }
         """
+        logger.info(f'Iniciando importação de escolhas da Prodam: {request.data}')
         # 1. Validar dados de entrada
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -314,6 +315,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
         if erros:
             response_data['erros'] = erros
+            logger.error(f'Erros ao criar escolhas: {erros}')
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(response_data, status=status.HTTP_201_CREATED)
