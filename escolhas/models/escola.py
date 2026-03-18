@@ -32,6 +32,12 @@ class Escola(BaseModel):
     organizacao_parceira = models.BooleanField(verbose_name="Organização Parceira", default=False)
     quantidade_de_funcionarios = models.IntegerField(verbose_name="Quantidade de Funcionários", default=0)
     status = models.CharField(max_length=30, verbose_name="Status")
+    codigo_integracao = models.CharField(
+        max_length=50,
+        verbose_name="Código Integração",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         db_table = 'escolas'

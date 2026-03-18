@@ -4,6 +4,21 @@ from ..models import Escolha, HistoricoEscolha, VagasEscolas
 from .vagas_escolas import VagasEscolasSerializer
 
 
+class DynamicFieldsSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        # Pega os campos do contexto do request
+        fields = kwargs.pop('fields', None)
+
+        super().__init__(*args, **kwargs)
+
+        if fields is not None:
+            # Dropa os campos que não foram solicitados
+            allowed = set(fields)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+
 class HistoricoEscolhaSerializer(serializers.ModelSerializer):
     """
     Serializer para o modelo HistoricoEscolha (histórico de mudanças de situação das escolhas).
@@ -19,7 +34,7 @@ class HistoricoEscolhaSerializer(serializers.ModelSerializer):
         read_only_fields = ['uuid', 'criado_em']
 
 
-class EscolhaSerializer(serializers.ModelSerializer):
+class EscolhaSerializer(DynamicFieldsSerializer):
     """
     Serializer para o modelo Escolha.
     """
@@ -121,7 +136,7 @@ class EscolhaSelectSerializer(serializers.ModelSerializer):
         fields = ['value', 'label']
 
 
-class EscolhaListSerializer(serializers.ModelSerializer):
+class EscolhaListSerializer(DynamicFieldsSerializer):
     """
     Serializer para listagem de escolhas.
     Inclui dados completos de vaga_escola, escola e DRE, e histórico de escolhas.

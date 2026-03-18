@@ -93,7 +93,7 @@ class Command(BaseCommand):
                 except Exception as exc:
                     self.stderr.write(self.style.ERROR(f'  Falha ao buscar escola {codigo_eol}: {exc}'))
                     continue
-
+                
                 nome_dre = (dados.get('nomeDRE') or '').strip() or dre.nome
                 sigla_tipo_escola = (dados.get('siglaTipoEscola') or '').strip()
                 tipo_unidade = (dados.get('tipoUnidade') or '').strip()

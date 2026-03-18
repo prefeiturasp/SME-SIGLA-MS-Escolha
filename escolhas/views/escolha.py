@@ -34,6 +34,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         'concurso_uuid': ['exact'],
         'situacao': ['exact', 'in'],
         'vaga_escola__cargo_codigo': ['exact'],
+        'vaga_escola__lote__processo_uuid': ['exact'],
     }
     search_fields = ['situacao', 'tipo_vaga']
     ordering_fields = ['criado_em']
@@ -58,6 +59,20 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         if self.action == 'reconvocacao':
             return EscolhaReconvocacaoSerializer
         return super().get_serializer_class()
+
+    def paginate_queryset(self, queryset):
+        # Verifica se o parâmetro 'no_page' está na URL
+        if 'no_page' in self.request.query_params:
+            return None
+        # Caso contrário, segue com a paginação padrão
+        return super().paginate_queryset(queryset)
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        fields = self.request.query_params.get('fields')
+        if fields:
+            kwargs['fields'] = fields.split(',')
+        return serializer_class(*args, **kwargs)
 
     @action(methods=['post'], detail=False, url_path='busca')
     def busca(self, request):
