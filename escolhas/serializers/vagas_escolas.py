@@ -34,7 +34,13 @@ class VagasEscolasSerializer(serializers.ModelSerializer):
 
 class VagasEscolasCreateSerializer(serializers.Serializer):
     """Serializer para criação de vagas em lote."""
-    processo_uuid = serializers.UUIDField()
+    processo_uuid = serializers.UUIDField(
+        error_messages={
+            'invalid': 'Deve ser um UUID válido.',
+            'required': 'Este campo é obrigatório.',
+            'null': 'Este campo não pode ser nulo.',
+        }
+    )
     processo_nome = serializers.CharField(allow_blank=True, required=False)
     vagas = serializers.ListField(
         child=serializers.DictField(),
