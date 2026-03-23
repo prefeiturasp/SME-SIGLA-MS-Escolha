@@ -2,6 +2,8 @@ from typing import Optional, List, Dict, Any
 import logging
 import requests
 from django.conf import settings
+from escolhas.middleware import get_correlation_id
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +39,19 @@ class ConcursoAPIService:
             return {}
         codigos_set = set(str(c) for c in codigos)
         result = {}
+        url = f"{base_url}/api/v1/cargos/"
+        logger.info(
+            'Buscando cargos',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": "GET",
+                "url": url,
+                "codigos_set": codigos_set,
+            }
+        )
         try:
             # Busca por código (filtro no MS-Concursos) para não depender de paginação
             for cod in codigos_set:
-                url = f"{base_url}/api/v1/cargos/"
                 response = requests.get(url, params={"codigo": cod}, timeout=30)
                 response.raise_for_status()
                 data = response.json()

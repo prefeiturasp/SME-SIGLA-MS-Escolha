@@ -21,6 +21,8 @@ from ..serializers.vagas_escolas import VagasEscolasCreateSerializer
 from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
 from ..utils import CustomPagination
 from ..services.exceptions import TipoUEDesabilitadoException
+from escolhas.middleware import get_correlation_id
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,16 @@ class VagasEscolasViewSet(ModelViewSet):
         return qs
 
     def list(self, request, *args, **kwargs):
+        logger.info(
+            'Listando vagas das escolas',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "user": request.user,
+            }
+        )
         qs = self.filter_queryset(self.get_queryset())
         # Filtro aplicado internamente (sem parâmetro de URL)
         qs = qs.filter(esta_checada=True)
@@ -110,6 +122,19 @@ class VagasEscolasViewSet(ModelViewSet):
             ]
         }
         """
+        logger.info(
+            'Criando vagas das escolas em lote',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "processo_uuid": request.data.get('processo_uuid'),
+                "processo_nome": request.data.get('processo_nome'),
+                "vagas": len(request.data.get('vagas', [])),
+                "user": request.user,
+            }
+        )
         try:
             response_data, status_code = processar_criacao_vagas_lote(request.data)
             return Response(response_data, status=status_code)
@@ -124,6 +149,17 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=['patch'], url_path='utilizadas')
     def utilizadas(self, request, *args, **kwargs):
+        logger.info(
+            'Atualizando vagas utilizadas',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "data": request.data,
+                "user": request.user,
+            }
+        )
         payload = VagaEscolaUtilizadaItemSerializer(data=request.data, many=True)
         payload.is_valid(raise_exception=True)
         vagas = payload.validated_data
@@ -142,12 +178,22 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='por-cargo-e-escolas')
     def por_cargo_e_escolas(self, request, *args, **kwargs):
-      codigo_cargo = request.query_params.get('cargo_codigo')
-      eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in','').split(',') if request.query_params.get('codigo_eol__in') else [])
-      qs = VagasEscolas.objects.select_related('escola')
-      if codigo_cargo:
-          qs = qs.filter(cargo_codigo=codigo_cargo)
-      if eols:
-          qs = qs.filter(escola__codigo_eol__in=eols)
-      serializer = self.get_serializer(qs, many=True)
-      return Response(serializer.data)
+        logger.info(
+            'Buscando vagas por cargo e escolas',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "user": request.user,
+                "params": request.query_params,
+            }
+        )
+        codigo_cargo = request.query_params.get('cargo_codigo')
+        eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in','').split(',') if request.query_params.get('codigo_eol__in') else [])
+        qs = VagasEscolas.objects.select_related('escola')
+        if codigo_cargo:
+            qs = qs.filter(cargo_codigo=codigo_cargo)
+        if eols:
+            qs = qs.filter(escola__codigo_eol__in=eols)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)

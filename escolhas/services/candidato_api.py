@@ -3,6 +3,8 @@ import logging
 import requests
 from django.conf import settings
 from typing import List
+from escolhas.middleware import get_correlation_id
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +40,23 @@ class CandidatoAPIService:
         Returns:
             List[Dict[str, Any]] de candidatos encontrados
         """
-        try:
-            url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
-            payload = {
-                'processo_uuid': str(processo_uuid),
-                'cpfs': cpfs,
+        url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
+        payload = {
+            'processo_uuid': str(processo_uuid),
+            'cpfs': cpfs,
+        }
+        logger.info(
+            'Buscando candidatos por CPFs',
+            extra={
+                "method": "POST",
+                "correlation_id": get_correlation_id(),
+                "url": url,
+                "processo_uuid": processo_uuid,
+                "cpfs": cpfs,
+                "headers": self._default_headers,
             }
-            
-            logger.info(f'Buscando candidatos por CPFs {cpfs} no processo {processo_uuid}')
+        )
+        try:
             response = requests.post(
                 url,
                 json=payload,
@@ -53,16 +64,25 @@ class CandidatoAPIService:
                 timeout=self.timeout_seconds
             )
             response.raise_for_status()
-            data = response.json()
-
-            return data
-        
         except requests.exceptions.RequestException as exc:
             logger.error(f'Erro HTTP ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}')
             return None
         except Exception as exc:
             logger.error(f'Erro ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}', exc_info=True)
             return None
+
+        data = response.json()
+        logger.info(
+            'Candidatos encontrados',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": "POST",
+                "url": url,
+                "processo_uuid": processo_uuid,
+                "cpfs": cpfs,
+            }
+        )
+        return data
 
     def buscar_candidatos(
         self,
@@ -86,19 +106,31 @@ class CandidatoAPIService:
         """
         if not any(s and str(s).strip() for s in (nome, cpf, rg, registro_funcional)):
             return []
+        url = f"{self.base_url}/api/v1/candidatos/buscar/"
+        logger.info(
+            'Buscando candidatos no MS-Candidatos',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "url": url,
+                "nome": nome,
+                "cpf": cpf,
+                "rg": rg,
+                "registro_funcional": registro_funcional,
+                "method": "GET",
+                "headers": self._default_headers,
+            }
+        )
+        params = {}
+        if nome and str(nome).strip():
+            params['nome'] = str(nome).strip()
+        if cpf and str(cpf).strip():
+            params['cpf'] = str(cpf).strip()
+        if rg and str(rg).strip():
+            params['rg'] = str(rg).strip()
+        if registro_funcional and str(registro_funcional).strip():
+            params['registro_funcional'] = str(registro_funcional).strip()
 
         try:
-            url = f"{self.base_url}/api/v1/candidatos/buscar/"
-            params = {}
-            if nome and str(nome).strip():
-                params['nome'] = str(nome).strip()
-            if cpf and str(cpf).strip():
-                params['cpf'] = str(cpf).strip()
-            if rg and str(rg).strip():
-                params['rg'] = str(rg).strip()
-            if registro_funcional and str(registro_funcional).strip():
-                params['registro_funcional'] = str(registro_funcional).strip()
-
             response = requests.get(
                 url,
                 params=params,
@@ -106,10 +138,26 @@ class CandidatoAPIService:
                 timeout=self.timeout_seconds,
             )
             response.raise_for_status()
-            return response.json()
         except requests.exceptions.RequestException as exc:
             logger.error('Erro HTTP ao buscar candidatos: %s', exc)
             return None
         except Exception as exc:
             logger.error('Erro ao buscar candidatos: %s', exc, exc_info=True)
             return None
+
+        logger.info(
+            'Candidatos encontrados',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "url": url,
+                "nome": nome,
+                "cpf": cpf,
+                "rg": rg,
+                "registro_funcional": registro_funcional,
+                "method": "GET",
+                "headers": self._default_headers,
+                "status_code": response.status_code,
+                "response": str(response.json())[:100],
+            }
+        )
+        return response.json()
