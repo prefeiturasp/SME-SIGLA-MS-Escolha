@@ -101,6 +101,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             'vaga_escola__escola',
             'vaga_escola__escola__dre'
         ).filter(candidato_uuid__in=candidato_ids)
+
+        concurso_uuid = request.data.get('concurso_uuid')
+        if concurso_uuid:
+            queryset = queryset.filter(concurso_uuid=concurso_uuid)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
