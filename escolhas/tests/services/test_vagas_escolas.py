@@ -260,6 +260,31 @@ class TestProcessarCriacaoVagasLote:
         assert status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response_data
 
+    def test_processar_criacao_processo_uuid_invalido_retorna_mensagem_em_portugues(self):
+        """Retorna erro de UUID inválido em PT-BR para processo_uuid."""
+        request_data = {
+            "processo_uuid": "uuid-invalido",
+            "processo_nome": "Proc",
+            "vagas": [
+                {
+                    "data_fechamento_modulo": "2025-09-10",
+                    "cargo_codigo": 123,
+                    "cargo_descricao": "Professor",
+                    "codigo_eol": "123456",
+                    "vagas_precarias": 0,
+                    "vagas_definitivas": 1,
+                    "status": "ativo",
+                }
+            ],
+        }
+
+        response_data, status_code = processar_criacao_vagas_lote(request_data)
+
+        assert status_code == status.HTTP_400_BAD_REQUEST
+        assert "errors" in response_data
+        assert "processo_uuid" in response_data["errors"]
+        assert response_data["errors"]["processo_uuid"][0] == "Deve ser um UUID válido."
+
 
     def test_processar_criacao_mesmo_processo_duas_vezes_cria_lotes_distintos(self, escola_1, escola_2, vagas_data_multiplas):
         """Testa processamento de um mesmo processo duas vezes, criando lotes distintos."""

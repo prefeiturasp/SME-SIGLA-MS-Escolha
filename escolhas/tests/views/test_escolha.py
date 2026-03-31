@@ -975,7 +975,7 @@ def test_buscar_candidatos_com_parametro_retorna_200(api_client):
 
 
 @pytest.mark.django_db
-def test_buscar_candidatos_servico_retorna_none_retorna_502(api_client):
+def test_buscar_candidatos_servico_retorna_none_retorna_400(api_client):
     """Quando o serviço retorna None (erro), deve retornar 502."""
     from unittest.mock import patch, Mock
 
@@ -988,7 +988,7 @@ def test_buscar_candidatos_servico_retorna_none_retorna_502(api_client):
 
         response = api_client.get(url, {'cpf': '12345678901'})
 
-        assert response.status_code == status.HTTP_502_BAD_GATEWAY
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data['detail'] == 'Erro ao consultar serviço de candidatos.'
 
 

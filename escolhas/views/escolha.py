@@ -20,6 +20,8 @@ from ..utils import CustomPagination
 import logging
 import requests
 from django.conf import settings
+from escolhas.middleware import get_correlation_id
+
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,17 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='busca')
     def busca(self, request):
+        logger.info(
+            'Buscando escolhas por candidato_uuid',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "user": request.user,
+                "data": request.data,
+            }
+        )
         candidato_ids = request.data.get('candidato_uuid', [])
         if not isinstance(candidato_ids, list):
             return Response(
@@ -88,6 +101,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             'vaga_escola__escola',
             'vaga_escola__escola__dre'
         ).filter(candidato_uuid__in=candidato_ids)
+
+        concurso_uuid = request.data.get('concurso_uuid')
+        if concurso_uuid:
+            queryset = queryset.filter(concurso_uuid=concurso_uuid)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -97,6 +115,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         Endpoint para buscar escolhas com situação de reconvocação.
         Retorna apenas uuid e candidato_uuid.
         """
+        logger.info(
+            'Buscando escolhas com situação de reconvocação',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "user": request.user
+            }
+        )
         queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -107,6 +135,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro funcional.
         Query params: nome, cpf, rg, registro_funcional (pelo menos um obrigatório).
         """
+        logger.info(
+            'Buscando candidatos',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "user": request.user,
+            }
+        )
         nome = request.query_params.get('nome', '').strip()
         cpf = request.query_params.get('cpf', '').strip()
         rg = request.query_params.get('rg', '').strip()
@@ -126,7 +164,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         if candidatos is None:
             return Response(
                 {'detail': 'Erro ao consultar serviço de candidatos.'},
-                status=status.HTTP_502_BAD_GATEWAY,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         # Enriquecer descricao_cargo com o nome do Cargo (model Cargo do MS-Concursos) quando houver codigo_cargo
         codigos_cargo = set()
@@ -143,6 +181,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     nome_cargo = cargos_map.get(str(cod).strip())
                     if nome_cargo:
                         cc["descricao_cargo"] = nome_cargo
+        logger.info(
+            'Candidatos encontrados',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "params": request.query_params,
+                "user": request.user,
+            }
+        )
         return Response(candidatos)
 
     @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
@@ -150,6 +198,15 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """
         Agrupa todas as escolhas por vaga_escola__cargo_codigo e retorna a soma de escolhas por cargo.
         """
+        logger.info(
+            'Agrupando escolhas por cargo',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "user": request.user,
+            }
+        )
         qs = (
             self.get_queryset().filter(situacao=SituacaoChoices.ESCOLHA)
             .values('vaga_escola__cargo_codigo')
@@ -160,6 +217,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             str(item['vaga_escola__cargo_codigo']): int(item['total'] or 0)
             for item in qs
         }
+        logger.info(
+            'Agrupando escolhas por cargo - Resultado',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "user": request.user,
+                "data": data,
+            }
+        )
         return Response(data)
 
     @action(methods=['post'], detail=False, url_path='importacao-prodam')
@@ -181,12 +248,22 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             ]
         }
         """
-        logger.info(f'Iniciando importação de escolhas da Prodam: {request.data}')
+        logger.info(
+            'Iniciando importação de escolhas da Prodam',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "data": request.data,
+                "user": request.user,
+            }
+        )
         # 1. Validar dados de entrada
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         cpfs = [escolha['cpf'] for escolha in serializer.validated_data['escolhas']]
-        processo_uuid = serializer.validated_data['processo_uuid'] 
+        processo_uuid = serializer.validated_data['processo_uuid']
+
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(cpfs, processo_uuid)
         escolhas = serializer.validated_data['escolhas']
         concurso_uuid = serializer.validated_data['concurso_uuid']
@@ -314,8 +391,22 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         }
 
         if erros:
+            logger.info(
+                'Erros ao criar escolhas',
+                extra={
+                    "correlation_id": get_correlation_id(),
+                    "erros": erros,
+                }
+            )
             response_data['erros'] = erros
-            logger.error(f'Erros ao criar escolhas: {erros}')
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        logger.info(
+            'Escolhas criadas',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "escolhas_criadas": len(escolhas_criadas),
+                "escolhas": escolhas_criadas[:10],
+            }
+        )
         return Response(response_data, status=status.HTTP_201_CREATED)
