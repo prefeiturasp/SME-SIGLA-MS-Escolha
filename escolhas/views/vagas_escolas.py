@@ -197,3 +197,28 @@ class VagasEscolasViewSet(ModelViewSet):
             qs = qs.filter(escola__codigo_eol__in=eols)
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['delete'], url_path='por-processo')
+    def excluir_por_processo(self, request):
+        """
+        Remove lotes de vagas (e vagas em cascata) do processo informado.
+        Query: processo_uuid=<uuid>
+        """
+        processo_uuid = request.query_params.get('processo_uuid')
+        if not processo_uuid:
+            return Response(
+                {'detail': 'processo_uuid é obrigatório.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        deleted, _ = VagasEscolasLote.objects.filter(
+            processo_uuid=processo_uuid,
+        ).delete()
+        logger.info(
+            'Lotes de vagas excluídos por processo',
+            extra={
+                "correlation_id": get_correlation_id(),
+                "processo_uuid": processo_uuid,
+                "lotes_excluidos": deleted,
+            },
+        )
+        return Response({'lotes_excluidos': deleted}, status=status.HTTP_200_OK)
