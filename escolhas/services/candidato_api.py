@@ -1,9 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 import logging
-import requests
 from django.conf import settings
-from typing import List
-from escolhas.middleware import get_correlation_id
+from sigla_sdk.context import get_correlation_id
+from sigla_sdk.http.api_client import http_client
 
 
 logger = logging.getLogger(__name__)
@@ -57,14 +56,14 @@ class CandidatoAPIService:
             }
         )
         try:
-            response = requests.post(
+            response = http_client.post(
                 url,
                 json=payload,
                 headers=self._default_headers,
                 timeout=self.timeout_seconds
             )
             response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
+        except Exception as exc:
             logger.error(f'Erro HTTP ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}')
             return None
         except Exception as exc:
@@ -131,16 +130,13 @@ class CandidatoAPIService:
             params['registro_funcional'] = str(registro_funcional).strip()
 
         try:
-            response = requests.get(
+            response = http_client.get(
                 url,
                 params=params,
                 headers=self._default_headers,
                 timeout=self.timeout_seconds,
             )
             response.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            logger.error('Erro HTTP ao buscar candidatos: %s', exc)
-            return None
         except Exception as exc:
             logger.error('Erro ao buscar candidatos: %s', exc, exc_info=True)
             return None

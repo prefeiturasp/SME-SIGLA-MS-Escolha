@@ -1,8 +1,8 @@
 from typing import Optional, List, Dict, Any
 import logging
-import requests
 from django.conf import settings
-from escolhas.middleware import get_correlation_id
+from sigla_sdk.context import get_correlation_id
+from sigla_sdk.http.api_client import http_client
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class ConcursoAPIService:
         try:
             # Busca por código (filtro no MS-Concursos) para não depender de paginação
             for cod in codigos_set:
-                response = requests.get(url, params={"codigo": cod}, timeout=30)
+                response = http_client.get(url, params={"codigo": cod}, timeout=30)
                 response.raise_for_status()
                 data = response.json()
                 lista = _cargos_list_from_response(data)
@@ -61,11 +61,8 @@ class ConcursoAPIService:
                         result[cod] = item.get("nome") or ""
                         break
             return result
-        except requests.exceptions.RequestException as exc:
-            logger.warning("Erro ao buscar cargos no MS-Concursos: %s", exc)
-            return {}
         except Exception as exc:
-            logger.warning("Erro ao processar resposta de cargos: %s", exc, exc_info=True)
+            logger.warning("Erro ao buscar cargos no MS-Concursos: %s", exc, exc_info=True)
             return {}
 
     @staticmethod
@@ -82,13 +79,10 @@ class ConcursoAPIService:
         try:
             base_url = settings.CONCURSOS_API_URL
             url = f"{base_url}/api/v1/concursos/{concurso_uuid}/"
-            response = requests.get(url, timeout=30)
+            response = http_client.get(url, timeout=30)
             response.raise_for_status()
             return response.json().get('uuid')
-        
-        except requests.exceptions.RequestException as exc:
-            logger.error(f'Erro HTTP ao buscar concurso_uuid para concurso {concurso_uuid}: {exc}')
-            return None
+
         except Exception as exc:
             logger.error(f'Erro ao buscar concurso_uuid para concurso {concurso_uuid}: {exc}', exc_info=True)
             return None
