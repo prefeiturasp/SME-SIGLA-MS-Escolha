@@ -1,4 +1,5 @@
 from django.db import models
+from auditlog.registry import auditlog
 from .base import BaseModel
 
 
@@ -13,4 +14,7 @@ class VagasEscolasLote(BaseModel):
         ordering = ['-criado_em']
 
     def __str__(self):
-        return f"{self.processo_nome} ({self.processo_uuid})" 
+        return f"{self.processo_nome} ({self.processo_uuid})"
+
+
+auditlog.register(VagasEscolasLote)
