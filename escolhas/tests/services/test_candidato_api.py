@@ -4,7 +4,6 @@ Testes unitários para CandidatoAPIService.
 import pytest
 from unittest.mock import patch, Mock
 import requests
-from django.conf import settings
 
 from escolhas.services.candidato_api import CandidatoAPIService
 
@@ -34,10 +33,10 @@ class TestCandidatoAPIService:
         """Testa busca de candidatos por CPFs com sucesso."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901', '98765432100']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
+
         mock_response_data = [
             {
                 'uuid': 'candidato-uuid-1',
@@ -50,15 +49,15 @@ class TestCandidatoAPIService:
                 'nome': 'Candidato 2'
             }
         ]
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_response = Mock()
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_post.return_value = mock_response
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result == mock_response_data
             mock_post.assert_called_once()
             call_args = mock_post.call_args
@@ -74,98 +73,98 @@ class TestCandidatoAPIService:
         """Testa busca com lista de CPFs vazia."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = []
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
+
         mock_response_data = []
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_response = Mock()
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_post.return_value = mock_response
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result == mock_response_data
 
     def test_buscar_candidatos_por_cpfs_http_error(self, settings):
         """Testa tratamento de erro HTTP."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_post.side_effect = requests.exceptions.HTTPError('404 Not Found')
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_connection_error(self, settings):
         """Testa tratamento de erro de conexão."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_post.side_effect = requests.exceptions.ConnectionError('Connection failed')
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_timeout(self, settings):
         """Testa tratamento de timeout."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_post.side_effect = requests.exceptions.Timeout('Request timeout')
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_excecao_generica(self, settings):
         """Testa tratamento de exceção genérica."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_post.side_effect = Exception('Erro genérico')
-            
+
             result = service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_timeout_personalizado(self, settings):
         """Testa que usa timeout personalizado."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService(timeout_seconds=60)
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_response = Mock()
             mock_response.json.return_value = []
             mock_response.raise_for_status.return_value = None
             mock_post.return_value = mock_response
-            
+
             service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             call_args = mock_post.call_args
             assert call_args[1]['timeout'] == 60
 
@@ -173,24 +172,24 @@ class TestCandidatoAPIService:
         """Testa que headers estão corretos."""
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
-        
+
         cpfs = ['12345678901']
         processo_uuid = '123e4567-e89b-12d3-a456-426614174000'
-        
-        with patch('escolhas.services.candidato_api.requests.post') as mock_post:
+
+        with patch('sigla_sdk.http.api_client.http_client.post') as mock_post:
             mock_response = Mock()
             mock_response.json.return_value = []
             mock_response.raise_for_status.return_value = None
             mock_post.return_value = mock_response
-            
+
             service.buscar_candidatos_por_cpfs(cpfs, processo_uuid)
-            
+
             call_args = mock_post.call_args
             headers = call_args[1]['headers']
             assert headers['Accept'] == 'application/json'
             assert headers['Content-Type'] == 'application/json'
 
-    # --- Testes de buscar_candidatos (feature/143715-consulta-concursado) ---
+    # --- Testes de buscar_candidatos ---
 
     def test_buscar_candidatos_sucesso(self, settings):
         """Testa busca de candidatos por nome/cpf/rg/registro_funcional com sucesso."""
@@ -201,7 +200,7 @@ class TestCandidatoAPIService:
             {'nome': 'João', 'cpf': '12345678901', 'concursos': []},
         ]
 
-        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+        with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
@@ -221,7 +220,7 @@ class TestCandidatoAPIService:
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
 
-        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+        with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             result = service.buscar_candidatos()
 
             assert result == []
@@ -232,7 +231,7 @@ class TestCandidatoAPIService:
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
 
-        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+        with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = []
             mock_response.raise_for_status.return_value = None
@@ -258,7 +257,7 @@ class TestCandidatoAPIService:
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
 
-        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+        with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             mock_get.side_effect = requests.exceptions.HTTPError('502 Bad Gateway')
 
             result = service.buscar_candidatos(nome='Teste')
@@ -270,10 +269,9 @@ class TestCandidatoAPIService:
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
 
-        with patch('escolhas.services.candidato_api.requests.get') as mock_get:
+        with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             mock_get.side_effect = requests.exceptions.ConnectionError()
 
             result = service.buscar_candidatos(cpf='123')
 
             assert result is None
-

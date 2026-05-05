@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'escolhas.middleware.CorrelationIdMiddleware',
+    'sigla_sdk.middlewares.CorrelationIdMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -42,7 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'auditlog.middleware.AuditlogMiddleware',
+    'sigla_sdk.middlewares.AuditlogJWTMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -142,6 +142,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # Para facilitar testes
@@ -150,18 +151,14 @@ REST_FRAMEWORK = {
 }
 
 # AuditLog settings
-AUDITLOG_INCLUDE_ALL_MODELS = False 
-
-import threading
-_thread_locals = threading.local()
+AUDITLOG_INCLUDE_ALL_MODELS = False
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'json': {
-            '()': 'escolhas.logging_utils.CustomJsonFormatter', # Usa sua classe
-            # Estes campos do logging padrão virarão chaves no JSON
+            '()': 'sigla_sdk.logging.json_formatter.CustomJsonFormatter',
             'format': '%(levelname)s %(asctime)s %(module)s %(filename)s %(lineno)d %(funcName)s %(message)s'
         },
     },
@@ -173,13 +170,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        # Logger do Django (Framework)
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
-        # Seu Logger de Aplicação (substitua pelo nome do seu app)
         'escolhas': {
             'handlers': ['console'],
             'level': 'DEBUG',
@@ -187,7 +182,7 @@ LOGGING = {
         },
         'django.server': {
             'handlers': ['console'],
-            'level': 'ERROR',  # Alterando para ERROR, ele para de mostrar os GET/POST/OPTIONS de rotina (INFO)
+            'level': 'ERROR',
             'propagate': False,
         },
     },
@@ -210,3 +205,15 @@ PROCESSOS_CONVOCACAO_API_URL = os.environ.get('PROCESSOS_CONVOCACAO_API_URL', 'h
 PROCESSOS_CONVOCACAO_API_TIMEOUT = int(os.environ.get('PROCESSOS_CONVOCACAO_API_TIMEOUT', 30))
 
 CONCURSOS_API_URL = os.environ.get('CONCURSOS_API_URL', 'http://localhost:8001')
+
+from datetime import timedelta
+
+JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY', os.environ.get('SECRET_KEY', 'fallback-só-dev'))
+
+SIMPLE_JWT = {
+    'SIGNING_KEY': JWT_SIGNING_KEY,
+    'ALGORITHM': 'HS256',
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1440),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

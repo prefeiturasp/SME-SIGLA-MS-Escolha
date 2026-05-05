@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from auditlog.registry import auditlog
 from ..choices import SituacaoChoices
 from .base import BaseModel
 
@@ -36,4 +37,7 @@ class HistoricoEscolha(BaseModel):
 
     def __str__(self):
         return f"{self.escolha.uuid} - {self.situacao_anterior} -> {self.situacao_nova}"
+
+
+auditlog.register(HistoricoEscolha)
 
