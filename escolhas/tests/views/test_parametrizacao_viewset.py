@@ -4,7 +4,6 @@ from rest_framework import status
 
 from escolhas.models import Parametrizacao
 
-
 MAPPING_FIXTURE = [
     ("CCA", "cca"),
     ("CCI/CIPS", "ccicips"),
@@ -46,7 +45,7 @@ def parametrizacoes_db():
 
 @pytest.mark.django_db
 def test_list_parametrizacoes(api_client, parametrizacoes_db):
-    url = reverse('parametrizacao-list')
+    url = reverse("parametrizacao-list")
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
     items = response.data
@@ -57,18 +56,18 @@ def test_list_parametrizacoes(api_client, parametrizacoes_db):
 @pytest.mark.django_db
 def test_bulk_update_usar_updates_multiple(api_client, parametrizacoes_db):
     # pega dois registros para atualizar
-    p1 = Parametrizacao.objects.get(tipo_ue='EMEF')
-    p2 = Parametrizacao.objects.get(tipo_ue='EMEI')
+    p1 = Parametrizacao.objects.get(tipo_ue="EMEF")
+    p2 = Parametrizacao.objects.get(tipo_ue="EMEI")
     assert p1.usar is False and p2.usar is False
 
-    url = reverse('parametrizacao-bulk')
+    url = reverse("parametrizacao-bulk")
     payload = [
-        {'uuid': str(p1.uuid), 'usar': True},
-        {'uuid': str(p2.uuid), 'usar': True},
+        {"uuid": str(p1.uuid), "usar": True},
+        {"uuid": str(p2.uuid), "usar": True},
     ]
-    resp = api_client.patch(url, payload, format='json')
+    resp = api_client.patch(url, payload, format="json")
     assert resp.status_code == status.HTTP_200_OK
-    assert 'updated' in resp.data and resp.data['updated'] == 2
+    assert "updated" in resp.data and resp.data["updated"] == 2
 
     p1.refresh_from_db()
     p2.refresh_from_db()

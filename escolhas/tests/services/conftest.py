@@ -1,12 +1,16 @@
-import pytest
 from uuid import uuid4
+
+import pytest
+
 from escolhas.models import Dre, Escola
 
 
 @pytest.fixture
 @pytest.mark.django_db
 def dre_teste():
-    return Dre.objects.create(codigo="123456", nome="DRE Teste", sigla="DRE-TESTE")
+    return Dre.objects.create(
+        codigo="123456", nome="DRE Teste", sigla="DRE-TESTE"
+    )
 
 
 @pytest.fixture
@@ -131,4 +135,4 @@ def vaga_data_com_concurso(vaga_data_valida):
         **vaga_data_valida,
         "processo_uuid": str(uuid4()),
         "processo_nome": "Concurso Professor 2024",
-    } 
+    }
