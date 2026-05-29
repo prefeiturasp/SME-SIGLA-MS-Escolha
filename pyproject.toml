@@ -1,0 +1,27 @@
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+extend-exclude = ["migrations", ".venv", "venv", "htmlcov", "__pycache__"]
+
+[tool.ruff.lint]
+# E/W = pycodestyle, F = pyflakes, I = isort,
+# UP = pyupgrade, B = bugbear, SIM = simplify
+select = ["E", "W", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    "E203",   # conflito com ruff format (whitespace antes de ':')
+    "B008",   # função no default arg — comum em DRF
+    "SIM401", # .get() != if-in para DRF ReturnList/ReturnDict
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "F405"]
+"config/settings*.py" = ["F401", "F403", "F405", "E501", "E402"]
+"*/settings*.py" = ["F401", "F403", "F405", "E501", "E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["escolhas"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

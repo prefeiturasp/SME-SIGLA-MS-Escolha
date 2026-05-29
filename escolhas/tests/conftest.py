@@ -1,8 +1,16 @@
+import uuid
+
 import pytest
 from rest_framework.test import APIClient
+
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
-from escolhas.models import Escolha, VagasEscolas, VagasEscolasLote, Escola, Dre
-import uuid
+from escolhas.models import (
+    Dre,
+    Escola,
+    Escolha,
+    VagasEscolas,
+    VagasEscolasLote,
+)
 
 
 @pytest.fixture
@@ -18,7 +26,7 @@ def escola(dre):
         codigo_eol="000001",
         nome_oficial="Escola Teste",
         dre=dre,
-        cep="04001-000"
+        cep="04001-000",
     )
 
 
@@ -26,8 +34,7 @@ def escola(dre):
 def lote():
     """Fixture para criar um lote de vagas."""
     return VagasEscolasLote.objects.create(
-        processo_uuid=uuid.uuid4(),
-        processo_nome="Processo Teste"
+        processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
     )
 
 
@@ -44,31 +51,34 @@ def vaga_escola(escola, lote):
         vagas_precarias_restantes=3,
         vagas_definitivas=5,
         vagas_definitivas_restantes=5,
-        status="1"
+        status="1",
     )
 
 
 def _criar_escolha(**override):
     # Se vaga_escola_uuid foi passado, remover e criar uma vaga_escola padrão
-    if 'vaga_escola_uuid' in override:
-        vaga_uuid = override.pop('vaga_escola_uuid')
+    if "vaga_escola_uuid" in override:
+        vaga_uuid = override.pop("vaga_escola_uuid")
         if vaga_uuid:
             try:
-                override['vaga_escola'] = VagasEscolas.objects.get(uuid=vaga_uuid)
+                override["vaga_escola"] = VagasEscolas.objects.get(
+                    uuid=vaga_uuid
+                )
             except VagasEscolas.DoesNotExist:
                 # Se não encontrar, criar uma vaga padrão
-                dre = Dre.objects.create(codigo="99", nome="DRE Teste", sigla="DRE-TESTE")
+                dre = Dre.objects.create(
+                    codigo="99", nome="DRE Teste", sigla="DRE-TESTE"
+                )
                 escola = Escola.objects.create(
                     codigo_eol="999999",
                     nome_oficial="Escola Teste",
                     dre=dre,
-                    cep="00000-000"
+                    cep="00000-000",
                 )
                 lote = VagasEscolasLote.objects.create(
-                    processo_uuid=uuid.uuid4(),
-                    processo_nome="Processo Teste"
+                    processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
                 )
-                override['vaga_escola'] = VagasEscolas.objects.create(
+                override["vaga_escola"] = VagasEscolas.objects.create(
                     escola=escola,
                     lote=lote,
                     data_fechamento_modulo="2025-01-01",
@@ -78,23 +88,24 @@ def _criar_escolha(**override):
                     vagas_precarias_restantes=3,
                     vagas_definitivas=5,
                     vagas_definitivas_restantes=5,
-                    status="1"
+                    status="1",
                 )
-    
+
     # Se vaga_escola não foi passado, criar uma padrão
-    if 'vaga_escola' not in override:
-        dre = Dre.objects.create(codigo="99", nome="DRE Teste", sigla="DRE-TESTE")
+    if "vaga_escola" not in override:
+        dre = Dre.objects.create(
+            codigo="99", nome="DRE Teste", sigla="DRE-TESTE"
+        )
         escola = Escola.objects.create(
             codigo_eol="999999",
             nome_oficial="Escola Teste",
             dre=dre,
-            cep="00000-000"
+            cep="00000-000",
         )
         lote = VagasEscolasLote.objects.create(
-            processo_uuid=uuid.uuid4(),
-            processo_nome="Processo Teste"
+            processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
         )
-        override['vaga_escola'] = VagasEscolas.objects.create(
+        override["vaga_escola"] = VagasEscolas.objects.create(
             escola=escola,
             lote=lote,
             data_fechamento_modulo="2025-01-01",
@@ -104,15 +115,15 @@ def _criar_escolha(**override):
             vagas_precarias_restantes=3,
             vagas_definitivas=5,
             vagas_definitivas_restantes=5,
-            status="1"
+            status="1",
         )
-    
+
     dados = {
-        'candidato_uuid': uuid.uuid4(),
-        'concurso_uuid': uuid.uuid4(),
-        'situacao': SituacaoChoices.ESCOLHA,
-        'tipo_vaga': TipoVagaChoices.DEFINITIVA,
-        'e_retardatario': False,
+        "candidato_uuid": uuid.uuid4(),
+        "concurso_uuid": uuid.uuid4(),
+        "situacao": SituacaoChoices.ESCOLHA,
+        "tipo_vaga": TipoVagaChoices.DEFINITIVA,
+        "e_retardatario": False,
     }
     dados.update(override)
     return Escolha.objects.create(**dados)
@@ -159,15 +170,17 @@ def escolha_ciencias():
 
 
 @pytest.fixture
-def escolhas_multiplas(escolha_matematica, escolha_portugues, escolha_historia, escolha_ciencias):
+def escolhas_multiplas(
+    escolha_matematica, escolha_portugues, escolha_historia, escolha_ciencias
+):
     """
     Fixture para criar múltiplas escolhas de teste.
     """
     return {
-        'matematica': escolha_matematica,
-        'portugues': escolha_portugues,
-        'historia': escolha_historia,
-        'ciencias': escolha_ciencias
+        "matematica": escolha_matematica,
+        "portugues": escolha_portugues,
+        "historia": escolha_historia,
+        "ciencias": escolha_ciencias,
     }
 
 
@@ -177,12 +190,12 @@ def escolha_data(vaga_escola):
     Fixture para dados de escolha válidos.
     """
     return {
-        'candidato_uuid': str(uuid.uuid4()),
-        'concurso_uuid': str(uuid.uuid4()),
-        'situacao': SituacaoChoices.ESCOLHA,
-        'tipo_vaga': TipoVagaChoices.DEFINITIVA,
-        'e_retardatario': False,
-        'vaga_escola_uuid': str(vaga_escola.uuid),
+        "candidato_uuid": str(uuid.uuid4()),
+        "concurso_uuid": str(uuid.uuid4()),
+        "situacao": SituacaoChoices.ESCOLHA,
+        "tipo_vaga": TipoVagaChoices.DEFINITIVA,
+        "e_retardatario": False,
+        "vaga_escola_uuid": str(vaga_escola.uuid),
     }
 
 
@@ -192,10 +205,10 @@ def escolha_data_invalid():
     Fixture para dados de escolha inválidos.
     """
     return {
-        'candidato_uuid': None,
-        'situacao': 'invalida',
-        'tipo_vaga': 'invalida',
-        'vaga_escola_uuid': None,
+        "candidato_uuid": None,
+        "situacao": "invalida",
+        "tipo_vaga": "invalida",
+        "vaga_escola_uuid": None,
     }
 
 
@@ -205,11 +218,11 @@ def escolha_data_long_name():
     Fixture para dados inválidos com valores fora das choices.
     """
     return {
-        'candidato_uuid': str(uuid.uuid4()),
-        'situacao': 'muito-longa-para-choice',
-        'tipo_vaga': 'muito-longa-para-choice',
-        'e_retardatario': False,
-        'vaga_escola_uuid': str(uuid.uuid4()),
+        "candidato_uuid": str(uuid.uuid4()),
+        "situacao": "muito-longa-para-choice",
+        "tipo_vaga": "muito-longa-para-choice",
+        "e_retardatario": False,
+        "vaga_escola_uuid": str(uuid.uuid4()),
     }
 
 
@@ -219,11 +232,11 @@ def escolha_data_updated():
     Fixture para dados de escolha atualizados.
     """
     return {
-        'candidato_uuid': str(uuid.uuid4()),
-        'concurso_uuid': str(uuid.uuid4()),
-        'situacao': SituacaoChoices.RECONVOCACAO,
-        'tipo_vaga': TipoVagaChoices.PRECARIA,
-        'e_retardatario': True,
+        "candidato_uuid": str(uuid.uuid4()),
+        "concurso_uuid": str(uuid.uuid4()),
+        "situacao": SituacaoChoices.RECONVOCACAO,
+        "tipo_vaga": TipoVagaChoices.PRECARIA,
+        "e_retardatario": True,
     }
 
 
@@ -250,7 +263,8 @@ def multiple_escolhas():
 @pytest.fixture
 def escolhas_ordenadas():
     """
-    Fixture para criar escolhas com situações específicas para teste de ordenação.
+    Fixture para criar escolhas com situações específicas para teste de
+    ordenação.
     """
     escolhas = []
     situacoes = [

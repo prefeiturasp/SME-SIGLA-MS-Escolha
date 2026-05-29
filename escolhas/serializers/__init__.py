@@ -1,27 +1,27 @@
-from .escolha import (
-    EscolhaSerializer,
-    EscolhaSelectSerializer,
-    EscolhaListSerializer,
-    EscolhaReconvocacaoSerializer,
-)
 from .dre import DreSerializer
 from .escola import (
-    EscolaSerializer,
-    EscolaSelectSerializer,
     EscolaListSerializer,
+    EscolaSelectSerializer,
+    EscolaSerializer,
 )
-from .vagas_escolas import (
-    VagasEscolasSerializer,
-    VagasEscolasCreateSerializer,
-    VagasEscolasUtilizadasUpdateSerializer,
-    VagaEscolaUtilizadaItemSerializer,
-    VagasEscolasUtilizadasBulkSerializer,
-)
-from .parametrizacao import (
-    ParametrizacaoSerializer,
-    ParametrizacaoBulkItemSerializer,
+from .escolha import (
+    EscolhaListSerializer,
+    EscolhaReconvocacaoSerializer,
+    EscolhaSelectSerializer,
+    EscolhaSerializer,
 )
 from .escolhas_prodam import (
-    EscolhasProdamImportacaoSerializer,
     EscolhaProdamItemSerializer,
+    EscolhasProdamImportacaoSerializer,
+)
+from .parametrizacao import (
+    ParametrizacaoBulkItemSerializer,
+    ParametrizacaoSerializer,
+)
+from .vagas_escolas import (
+    VagaEscolaUtilizadaItemSerializer,
+    VagasEscolasCreateSerializer,
+    VagasEscolasSerializer,
+    VagasEscolasUtilizadasBulkSerializer,
+    VagasEscolasUtilizadasUpdateSerializer,
 )

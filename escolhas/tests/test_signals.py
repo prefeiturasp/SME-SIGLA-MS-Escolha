@@ -1,8 +1,15 @@
-import pytest
 import uuid
 
-from escolhas.models import Escolha, VagasEscolas, VagasEscolasLote, Escola, Dre
+import pytest
+
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
+from escolhas.models import (
+    Dre,
+    Escola,
+    Escolha,
+    VagasEscolas,
+    VagasEscolasLote,
+)
 
 
 @pytest.fixture
@@ -18,7 +25,7 @@ def escola(dre):
         codigo_eol="000001",
         nome_oficial="Escola Teste",
         dre=dre,
-        cep="04001-000"
+        cep="04001-000",
     )
 
 
@@ -26,14 +33,13 @@ def escola(dre):
 def lote():
     """Fixture para criar um lote de vagas."""
     return VagasEscolasLote.objects.create(
-        processo_uuid=uuid.uuid4(),
-        processo_nome="Processo Teste"
+        processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
     )
 
 
 @pytest.fixture
 def vaga_escola_com_vagas(escola, lote):
-    """Fixture para criar uma vaga de escola com vagas definitivas e precárias."""
+    """Fixture: vaga de escola com vagas definitivas e precárias."""
     return VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -44,14 +50,21 @@ def vaga_escola_com_vagas(escola, lote):
         vagas_precarias_restantes=3,
         vagas_definitivas=5,
         vagas_definitivas_restantes=5,
-        status="1"
+        status="1",
     )
 
 
 @pytest.mark.django_db
-def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(vaga_escola_com_vagas):
-    """Testa se o signal decrementa vagas_definitivas_restantes ao criar uma escolha."""
-    vagas_definitivas_inicial = vaga_escola_com_vagas.vagas_definitivas_restantes
+def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(
+    vaga_escola_com_vagas,
+):
+    """
+    Testa se o signal decrementa vagas_definitivas_restantes ao criar uma
+    escolha.
+    """
+    vagas_definitivas_inicial = (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+    )
     vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes
 
     Escolha.objects.create(
@@ -64,12 +77,22 @@ def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(vaga_escola_com_vaga
     )
 
     vaga_escola_com_vagas.refresh_from_db()
-    assert vaga_escola_com_vagas.vagas_definitivas_restantes == vagas_definitivas_inicial - 1
-    assert vaga_escola_com_vagas.vagas_precarias_restantes == vagas_precarias_inicial
+    assert (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+        == vagas_definitivas_inicial - 1
+    )
+    assert (
+        vaga_escola_com_vagas.vagas_precarias_restantes
+        == vagas_precarias_inicial
+    )
+
 
 @pytest.mark.django_db
 def test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):
-    """Testa se o signal decrementa vagas_precarias_restantes ao criar uma escolha."""
+    """
+    Testa se o signal decrementa vagas_precarias_restantes ao criar uma
+    escolha.
+    """
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -80,7 +103,7 @@ def test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):
         vagas_precarias_restantes=4,
         vagas_definitivas=3,
         vagas_definitivas_restantes=3,
-        status="1"
+        status="1",
     )
 
     vagas_precarias_inicial = vaga_escola.vagas_precarias_restantes
@@ -99,9 +122,10 @@ def test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):
     assert vaga_escola.vagas_precarias_restantes == vagas_precarias_inicial - 1
     assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial
 
+
 @pytest.mark.django_db
 def test_signal_nao_decrementa_se_situacao_nao_for_escolha(escola, lote):
-    """Testa que o signal não decrementa vagas se a situação não for 'escolha'."""
+    """O signal não decrementa vagas se a situação não for 'escolha'."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -112,7 +136,7 @@ def test_signal_nao_decrementa_se_situacao_nao_for_escolha(escola, lote):
         vagas_precarias_restantes=2,
         vagas_definitivas=5,
         vagas_definitivas_restantes=5,
-        status="1"
+        status="1",
     )
 
     vagas_definitivas_inicial = vaga_escola.vagas_definitivas_restantes
@@ -131,10 +155,15 @@ def test_signal_nao_decrementa_se_situacao_nao_for_escolha(escola, lote):
     assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial
     assert vaga_escola.vagas_precarias_restantes == vagas_precarias_inicial
 
+
 @pytest.mark.django_db
-def test_signal_nao_decrementa_se_vaga_escola_nao_fornecido(vaga_escola_com_vagas):
+def test_signal_nao_decrementa_se_vaga_escola_nao_fornecido(
+    vaga_escola_com_vagas,
+):
     """Testa que o signal não decrementa se vaga_escola não for fornecido."""
-    vagas_definitivas_inicial = vaga_escola_com_vagas.vagas_definitivas_restantes
+    vagas_definitivas_inicial = (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+    )
     vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes
 
     Escolha.objects.create(
@@ -147,13 +176,24 @@ def test_signal_nao_decrementa_se_vaga_escola_nao_fornecido(vaga_escola_com_vaga
     )
 
     vaga_escola_com_vagas.refresh_from_db()
-    assert vaga_escola_com_vagas.vagas_definitivas_restantes == vagas_definitivas_inicial
-    assert vaga_escola_com_vagas.vagas_precarias_restantes == vagas_precarias_inicial
+    assert (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+        == vagas_definitivas_inicial
+    )
+    assert (
+        vaga_escola_com_vagas.vagas_precarias_restantes
+        == vagas_precarias_inicial
+    )
+
 
 @pytest.mark.django_db
-def test_signal_nao_decrementa_se_tipo_vaga_nao_fornecido(vaga_escola_com_vagas):
+def test_signal_nao_decrementa_se_tipo_vaga_nao_fornecido(
+    vaga_escola_com_vagas,
+):
     """Testa que o signal não decrementa se tipo_vaga não for fornecido."""
-    vagas_definitivas_inicial = vaga_escola_com_vagas.vagas_definitivas_restantes
+    vagas_definitivas_inicial = (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+    )
     vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes
 
     Escolha.objects.create(
@@ -166,8 +206,15 @@ def test_signal_nao_decrementa_se_tipo_vaga_nao_fornecido(vaga_escola_com_vagas)
     )
 
     vaga_escola_com_vagas.refresh_from_db()
-    assert vaga_escola_com_vagas.vagas_definitivas_restantes == vagas_definitivas_inicial
-    assert vaga_escola_com_vagas.vagas_precarias_restantes == vagas_precarias_inicial
+    assert (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+        == vagas_definitivas_inicial
+    )
+    assert (
+        vaga_escola_com_vagas.vagas_precarias_restantes
+        == vagas_precarias_inicial
+    )
+
 
 @pytest.mark.django_db
 def test_signal_nao_falha_se_vaga_escola_nao_existir():
@@ -184,9 +231,10 @@ def test_signal_nao_falha_se_vaga_escola_nao_existir():
 
     assert Escolha.objects.filter(uuid=escolha.uuid).exists()
 
+
 @pytest.mark.django_db
 def test_signal_decrementa_multiplas_escolhas_sequencialmente(escola, lote):
-    """Testa que o signal decrementa corretamente múltiplas escolhas sequenciais."""
+    """Signal decrementa corretamente múltiplas escolhas sequenciais."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -197,7 +245,7 @@ def test_signal_decrementa_multiplas_escolhas_sequencialmente(escola, lote):
         vagas_precarias_restantes=0,
         vagas_definitivas=3,
         vagas_definitivas_restantes=3,
-        status="1"
+        status="1",
     )
 
     vagas_definitivas_inicial = vaga_escola.vagas_definitivas_restantes
@@ -213,8 +261,12 @@ def test_signal_decrementa_multiplas_escolhas_sequencialmente(escola, lote):
         )
 
     vaga_escola.refresh_from_db()
-    assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial - 3
+    assert (
+        vaga_escola.vagas_definitivas_restantes
+        == vagas_definitivas_inicial - 3
+    )
     assert vaga_escola.vagas_definitivas_restantes == 0
+
 
 @pytest.mark.django_db
 def test_signal_nao_decrementa_em_atualizacao_apenas_em_criacao(escola, lote):
@@ -229,7 +281,7 @@ def test_signal_nao_decrementa_em_atualizacao_apenas_em_criacao(escola, lote):
         vagas_precarias_restantes=0,
         vagas_definitivas=5,
         vagas_definitivas_restantes=5,
-        status="1"
+        status="1",
     )
 
     vagas_definitivas_inicial = vaga_escola.vagas_definitivas_restantes
@@ -251,4 +303,3 @@ def test_signal_nao_decrementa_em_atualizacao_apenas_em_criacao(escola, lote):
 
     vaga_escola.refresh_from_db()
     assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial
-

@@ -1,10 +1,12 @@
 import logging
-from django.db.models.signals import pre_save, post_save
+
 from django.db.models import F
 from django.db.models.functions import Greatest
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import Escolha, HistoricoEscolha, VagasEscolas
+
 from .choices import SituacaoChoices, TipoVagaChoices
+from .models import Escolha, HistoricoEscolha, VagasEscolas
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +19,7 @@ def escolha_pre_save(sender, instance, **kwargs):
     """
     if instance.pk:
         try:
-            # Busca a instância anterior no banco para capturar a situação anterior
+            # Busca a instância anterior no banco para capturar a situação anterior  # noqa: E501
             old_instance = Escolha.objects.get(pk=instance.pk)
             # Armazena o valor anterior no objeto para uso no post_save
             instance._situacao_anterior = old_instance.situacao
@@ -32,18 +34,19 @@ def escolha_pre_save(sender, instance, **kwargs):
 @receiver(post_save, sender=Escolha)
 def escolha_post_save(sender, instance, created, **kwargs):
     """
-    Signal que cria um registro de histórico de escolhas e atualiza vagas das escolas.
-    
+    Signal que cria um registro de histórico de escolhas e atualiza vagas das
+    escolas.
+
     Cria histórico nos seguintes casos:
     - POST (criação): sempre cria histórico com situacao_anterior=None
     - PATCH (edição/reconvocacao): cria histórico quando a situação mudou
-    
+
     Atualiza vagas restantes quando:
     - POST (criação) com situacao='escolha' e vaga_escola e tipo_vaga presentes
     """
-    situacao_anterior = getattr(instance, '_situacao_anterior', None)
+    situacao_anterior = getattr(instance, "_situacao_anterior", None)
     situacao_atual = instance.situacao
-    
+
     # Cria histórico se:
     # 1. É um novo registro (POST) - sempre cria histórico
     # 2. É uma atualização (PATCH) e a situação mudou
@@ -61,40 +64,46 @@ def escolha_post_save(sender, instance, created, **kwargs):
             )
         except Exception as exc:
             logger.error(
-                f"Erro ao criar histórico para nova escolha {instance.uuid}: {exc}",
-                exc_info=True
+                f"Erro ao criar histórico para nova escolha {instance.uuid}: {exc}",  # noqa: E501
+                exc_info=True,
             )
-        
+
         # Atualiza vagas restantes quando uma escolha é criada
-        if (situacao_atual == SituacaoChoices.ESCOLHA and 
-            instance.vaga_escola and 
-            instance.tipo_vaga):
+        if (
+            situacao_atual == SituacaoChoices.ESCOLHA
+            and instance.vaga_escola
+            and instance.tipo_vaga
+        ):
             try:
                 vaga_escola = instance.vaga_escola
-                
+
                 # Decrementa o campo correto baseado no tipo de vaga
                 if instance.tipo_vaga == TipoVagaChoices.DEFINITIVA:
                     VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_definitivas_restantes=Greatest(0, F('vagas_definitivas_restantes') - 1)
+                        vagas_definitivas_restantes=Greatest(
+                            0, F("vagas_definitivas_restantes") - 1
+                        )
                     )
                     logger.info(
-                        f"Vaga definitiva decrementada para escolha {instance.uuid}. "
+                        f"Vaga definitiva decrementada para escolha {instance.uuid}. "  # noqa: E501
                         f"VagaEscola: {vaga_escola.uuid}. "
-                        f"Novo valor: {vaga_escola.vagas_definitivas_restantes - 1}"
+                        f"Novo valor: {vaga_escola.vagas_definitivas_restantes - 1}"  # noqa: E501
                     )
                 elif instance.tipo_vaga == TipoVagaChoices.PRECARIA:
                     VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_precarias_restantes=Greatest(0, F('vagas_precarias_restantes') - 1)
+                        vagas_precarias_restantes=Greatest(
+                            0, F("vagas_precarias_restantes") - 1
+                        )
                     )
                     logger.info(
-                        f"Vaga precária decrementada para escolha {instance.uuid}. "
+                        f"Vaga precária decrementada para escolha {instance.uuid}. "  # noqa: E501
                         f"VagaEscola: {vaga_escola.uuid}. "
-                        f"Novo valor: {vaga_escola.vagas_precarias_restantes - 1}"
+                        f"Novo valor: {vaga_escola.vagas_precarias_restantes - 1}"  # noqa: E501
                     )
             except Exception as exc:
                 logger.error(
-                    f"Erro ao atualizar vagas restantes para escolha {instance.uuid}: {exc}",
-                    exc_info=True
+                    f"Erro ao atualizar vagas restantes para escolha {instance.uuid}: {exc}",  # noqa: E501
+                    exc_info=True,
                 )
     elif situacao_anterior is not None and situacao_anterior != situacao_atual:
         # PATCH: cria histórico apenas quando a situação mudou (reconvocação)
@@ -111,6 +120,5 @@ def escolha_post_save(sender, instance, created, **kwargs):
         except Exception as exc:
             logger.error(
                 f"Erro ao criar histórico para escolha {instance.uuid}: {exc}",
-                exc_info=True
+                exc_info=True,
             )
-
