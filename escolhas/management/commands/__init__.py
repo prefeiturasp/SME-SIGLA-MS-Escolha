@@ -1,1 +1,1 @@
-# Django custom commands package 
+# Django custom commands package

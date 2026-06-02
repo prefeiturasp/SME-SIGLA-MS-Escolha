@@ -1,4 +1,5 @@
 import pytest
+
 from escolhas.models import Dre, Escola
 
 pytestmark = pytest.mark.django_db

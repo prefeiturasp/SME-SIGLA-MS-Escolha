@@ -1,28 +1,26 @@
 import logging
+
 from django.db import models
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
-from django.core.exceptions import ValidationError
-from rest_framework.exceptions import ValidationError as DRFValidationError
+
+from escolhas.middleware import get_correlation_id
 
 from ..models import VagasEscolas, VagasEscolasLote
 from ..serializers import (
-    VagasEscolasSerializer,
-    VagasEscolasUtilizadasUpdateSerializer,
     VagaEscolaUtilizadaItemSerializer,
+    VagasEscolasSerializer,
 )
 from ..services import processar_criacao_vagas_lote
-from ..services.vagas_escolas import criar_vagas_em_lote, adicionar_vagas_ao_lote_por_processo
-from ..serializers.vagas_escolas import VagasEscolasCreateSerializer
-from ..services.vagas_escolas import atualizar_vagas_utilizadas_por_processo
-from ..utils import CustomPagination
 from ..services.exceptions import TipoUEDesabilitadoException
-from escolhas.middleware import get_correlation_id
-
+from ..services.vagas_escolas import (
+    adicionar_vagas_ao_lote_por_processo,
+    atualizar_vagas_utilizadas_por_processo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,17 +29,28 @@ class VagasEscolasViewSet(ModelViewSet):
     """
     ViewSet para gerenciar vagas das escolas.
     """
-    queryset = VagasEscolas.objects.select_related('escola', 'escola__dre', 'lote').all()
+
+    queryset = VagasEscolas.objects.select_related(
+        "escola", "escola__dre", "lote"
+    ).all()
     serializer_class = VagasEscolasSerializer
     pagination_class = None
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'cargo_codigo']
+    filterset_fields = [
+        "escola__codigo_eol",
+        "escola__dre__codigo",
+        "cargo_codigo",
+    ]
 
     def get_queryset(self):
         qs = super().get_queryset()
-        processo_uuid = self.request.query_params.get('processo_uuid')
+        processo_uuid = self.request.query_params.get("processo_uuid")
         if processo_uuid:
-            lote = VagasEscolasLote.objects.filter(processo_uuid=processo_uuid).order_by('-criado_em').first()
+            lote = (
+                VagasEscolasLote.objects.filter(processo_uuid=processo_uuid)
+                .order_by("-criado_em")
+                .first()
+            )
             if not lote:
                 return VagasEscolas.objects.none()
             qs = qs.filter(lote=lote)
@@ -49,57 +58,64 @@ class VagasEscolasViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info(
-            'Listando vagas das escolas',
+            "Listando vagas das escolas",
             extra={
                 "correlation_id": get_correlation_id(),
                 "method": request.method,
                 "path": request.path,
                 "params": request.query_params,
                 "user": request.user,
-            }
+            },
         )
         qs = self.filter_queryset(self.get_queryset())
         # Filtro aplicado internamente (sem parâmetro de URL)
         qs = qs.filter(esta_checada=True)
 
-        # Se houver qualquer valor informado nas colunas de utilizadas, somar utilizadas;
+        # Se houver qualquer valor informado nas colunas de utilizadas, somar utilizadas;  # noqa: E501
         # caso contrário, somar as colunas de vagas normais.
         ha_utilizadas = qs.filter(
-            models.Q(vagas_precarias_utilizadas__isnull=False) |
-            models.Q(vagas_definitivas_utilizadas__isnull=False)
+            models.Q(vagas_precarias_utilizadas__isnull=False)
+            | models.Q(vagas_definitivas_utilizadas__isnull=False)
         ).exists()
         if ha_utilizadas:
             totais = qs.aggregate(
-                vagas_precarias=Sum('vagas_precarias_utilizadas'),
-                vagas_definitivas=Sum('vagas_definitivas_utilizadas'),
+                vagas_precarias=Sum("vagas_precarias_utilizadas"),
+                vagas_definitivas=Sum("vagas_definitivas_utilizadas"),
             )
         else:
             totais = qs.aggregate(
-                vagas_precarias=Sum('vagas_precarias'),
-                vagas_definitivas=Sum('vagas_definitivas'),
+                vagas_precarias=Sum("vagas_precarias"),
+                vagas_definitivas=Sum("vagas_definitivas"),
             )
         dres = list(
-            qs.values('escola__dre__codigo', 'escola__dre__nome', 'escola__dre__uuid')
-              .distinct()
-              .order_by('escola__dre__codigo')
+            qs.values(
+                "escola__dre__codigo", "escola__dre__nome", "escola__dre__uuid"
+            )
+            .distinct()
+            .order_by("escola__dre__codigo")
         )
         dres_fmt = [
             {
-                'codigo': d['escola__dre__codigo'],
-                'nome': d['escola__dre__nome'],
-                'uuid': d['escola__dre__uuid'],
+                "codigo": d["escola__dre__codigo"],
+                "nome": d["escola__dre__nome"],
+                "uuid": d["escola__dre__uuid"],
             }
             for d in dres
         ]
 
         data = VagasEscolasSerializer(qs, many=True).data
-        return Response({
-            'vagas': data,
-            'total_vagas': int(totais['vagas_precarias'] or 0) + int(totais['vagas_definitivas'] or 0),
-            'total_vagas_precarias': int(totais['vagas_precarias'] or 0),
-            'total_vagas_definitivas': int(totais['vagas_definitivas'] or 0),
-            'dres': dres_fmt,
-        })
+        return Response(
+            {
+                "vagas": data,
+                "total_vagas": int(totais["vagas_precarias"] or 0)
+                + int(totais["vagas_definitivas"] or 0),
+                "total_vagas_precarias": int(totais["vagas_precarias"] or 0),
+                "total_vagas_definitivas": int(
+                    totais["vagas_definitivas"] or 0
+                ),
+                "dres": dres_fmt,
+            }
+        )
 
     def create(self, request, *args, **kwargs):
         """
@@ -123,34 +139,42 @@ class VagasEscolasViewSet(ModelViewSet):
         }
         """
         logger.info(
-            'Criando vagas das escolas em lote',
+            "Criando vagas das escolas em lote",
             extra={
                 "correlation_id": get_correlation_id(),
                 "method": request.method,
                 "path": request.path,
                 "params": request.query_params,
-                "processo_uuid": request.data.get('processo_uuid'),
-                "processo_nome": request.data.get('processo_nome'),
-                "vagas": len(request.data.get('vagas', [])),
+                "processo_uuid": request.data.get("processo_uuid"),
+                "processo_nome": request.data.get("processo_nome"),
+                "vagas": len(request.data.get("vagas", [])),
                 "user": request.user,
-            }
+            },
         )
         try:
-            response_data, status_code = processar_criacao_vagas_lote(request.data)
+            response_data, status_code = processar_criacao_vagas_lote(
+                request.data
+            )
             return Response(response_data, status=status_code)
         except TipoUEDesabilitadoException as exc:
             msg = str(exc)
             logger.error(f"Tipo UE desabilitado: {msg}")
-            return Response({"detail": msg, "code": "TIPO_UE_DESABILITADO"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": msg, "code": "TIPO_UE_DESABILITADO"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as exc:
             msg = str(exc)
             logger.error(f"Erro ao criar vagas em lote: {msg}")
-            return Response({"detail": msg, "code": "ERRO_AO_CRIAR_VAGAS_EM_LOTE"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"detail": msg, "code": "ERRO_AO_CRIAR_VAGAS_EM_LOTE"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    @action(detail=False, methods=['patch'], url_path='utilizadas')
+    @action(detail=False, methods=["patch"], url_path="utilizadas")
     def utilizadas(self, request, *args, **kwargs):
         logger.info(
-            'Atualizando vagas utilizadas',
+            "Atualizando vagas utilizadas",
             extra={
                 "correlation_id": get_correlation_id(),
                 "method": request.method,
@@ -158,39 +182,49 @@ class VagasEscolasViewSet(ModelViewSet):
                 "params": request.query_params,
                 "data": request.data,
                 "user": request.user,
-            }
+            },
         )
-        payload = VagaEscolaUtilizadaItemSerializer(data=request.data, many=True)
+        payload = VagaEscolaUtilizadaItemSerializer(
+            data=request.data, many=True
+        )
         payload.is_valid(raise_exception=True)
         vagas = payload.validated_data
 
         result = atualizar_vagas_utilizadas_por_processo(vagas)
         return Response(result)
 
-    @action(detail=False, methods=['post'], url_path='inclusao')
+    @action(detail=False, methods=["post"], url_path="inclusao")
     def atualizar_vagas_lote(self, request, *args, **kwargs):
         """
-        Recebe um payload equivalente ao do create (processo_uuid, processo_nome opcional, vagas=[...])
-        e cria novas vagas em um lote já existente, identificado por processo_uuid.
+        Recebe um payload equivalente ao do create (processo_uuid,
+        processo_nome opcional, vagas=[...])
+        e cria novas vagas em um lote já existente, identificado por
+        processo_uuid.
         """
-        response_data, status_code = adicionar_vagas_ao_lote_por_processo(request.data)
+        response_data, status_code = adicionar_vagas_ao_lote_por_processo(
+            request.data
+        )
         return Response(response_data, status=status_code)
 
-    @action(detail=False, methods=['get'], url_path='por-cargo-e-escolas')
+    @action(detail=False, methods=["get"], url_path="por-cargo-e-escolas")
     def por_cargo_e_escolas(self, request, *args, **kwargs):
         logger.info(
-            'Buscando vagas por cargo e escolas',
+            "Buscando vagas por cargo e escolas",
             extra={
                 "correlation_id": get_correlation_id(),
                 "method": request.method,
                 "path": request.path,
                 "user": request.user,
                 "params": request.query_params,
-            }
+            },
         )
-        codigo_cargo = request.query_params.get('cargo_codigo')
-        eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in','').split(',') if request.query_params.get('codigo_eol__in') else [])
-        qs = VagasEscolas.objects.select_related('escola')
+        codigo_cargo = request.query_params.get("cargo_codigo")
+        eols = request.query_params.getlist("codigo_eol") or (
+            request.query_params.get("codigo_eol__in", "").split(",")
+            if request.query_params.get("codigo_eol__in")
+            else []
+        )
+        qs = VagasEscolas.objects.select_related("escola")
         if codigo_cargo:
             qs = qs.filter(cargo_codigo=codigo_cargo)
         if eols:
@@ -198,27 +232,29 @@ class VagasEscolasViewSet(ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['delete'], url_path='por-processo')
+    @action(detail=False, methods=["delete"], url_path="por-processo")
     def excluir_por_processo(self, request):
         """
         Remove lotes de vagas (e vagas em cascata) do processo informado.
         Query: processo_uuid=<uuid>
         """
-        processo_uuid = request.query_params.get('processo_uuid')
+        processo_uuid = request.query_params.get("processo_uuid")
         if not processo_uuid:
             return Response(
-                {'detail': 'processo_uuid é obrigatório.'},
+                {"detail": "processo_uuid é obrigatório."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         deleted, _ = VagasEscolasLote.objects.filter(
             processo_uuid=processo_uuid,
         ).delete()
         logger.info(
-            'Lotes de vagas excluídos por processo',
+            "Lotes de vagas excluídos por processo",
             extra={
                 "correlation_id": get_correlation_id(),
                 "processo_uuid": processo_uuid,
                 "lotes_excluidos": deleted,
             },
         )
-        return Response({'lotes_excluidos': deleted}, status=status.HTTP_200_OK)
+        return Response(
+            {"lotes_excluidos": deleted}, status=status.HTTP_200_OK
+        )

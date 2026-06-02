@@ -1,33 +1,38 @@
 """
 Django management command to create sample Escolas.
 """
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from escolhas.models import Escola, Dre
+
 import random
+
+from django.core.management.base import BaseCommand
+
+from escolhas.models import Dre, Escola
 
 
 class Command(BaseCommand):
-    help = 'Cria escolas de exemplo para desenvolvimento'
+    help = "Cria escolas de exemplo para desenvolvimento"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--count',
+            "--count",
             type=int,
             default=5,
-            help='Número de escolas a serem criadas (padrão: 5)'
+            help="Número de escolas a serem criadas (padrão: 5)",
         )
 
     def handle(self, *args, **options):
-        count = options['count']
+        count = options["count"]
 
-        self.stdout.write(self.style.SUCCESS(f'Criando {count} escolas...'))
+        self.stdout.write(self.style.SUCCESS(f"Criando {count} escolas..."))
 
         # Garantir que exista ao menos uma DRE
-        dre, _ = Dre.objects.get_or_create(codigo='108100', defaults={
-            'nome': 'DIRETORIA REGIONAL DE EDUCACAO BUTANTA',
-            'sigla': 'DRE - BT'
-        })
+        dre, _ = Dre.objects.get_or_create(
+            codigo="108100",
+            defaults={
+                "nome": "DIRETORIA REGIONAL DE EDUCACAO BUTANTA",
+                "sigla": "DRE - BT",
+            },
+        )
 
         bairros = ["JARDIM TABOÃO", "VILA SONIA", "BUTANTA", "IPIRANGA"]
         tipos_ue = [
@@ -67,6 +72,10 @@ class Command(BaseCommand):
                 status="ATIVA",
             )
             criadas.append(item)
-            self.stdout.write(f"  ✓ Criada escola: {item.nome_oficial} ({item.codigo_eol})")
+            self.stdout.write(
+                f"  ✓ Criada escola: {item.nome_oficial} ({item.codigo_eol})"
+            )
 
-        self.stdout.write(self.style.SUCCESS(f'✅ {len(criadas)} escolas criadas!')) 
+        self.stdout.write(
+            self.style.SUCCESS(f"✅ {len(criadas)} escolas criadas!")
+        )
