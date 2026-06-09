@@ -1,54 +1,29 @@
-"""
-Django management command to create sample DREs.
-"""
-
+"""Django management command to create sample DREs."""
+from __future__ import annotations
+from typing import Any
 from django.core.management.base import BaseCommand
-
 from escolhas.models import Dre
 
-
 class Command(BaseCommand):
-    help = "Cria DREs de exemplo para desenvolvimento"
+    """Define Command."""
+    help = 'Cria DREs de exemplo para desenvolvimento'
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--count",
-            type=int,
-            default=5,
-            help="Número de DREs a serem criadas (padrão: 5)",
-        )
+    def add_arguments(self, parser: Any) -> None:
+        """Registra argumentos da linha de comando."""
+        parser.add_argument('--count', type=int, default=5, help='Número de DREs a serem criadas (padrão: 5)')
 
-    def handle(self, *args, **options):
-        count = options["count"]
-
-        self.stdout.write(self.style.SUCCESS(f"Criando {count} DREs..."))
-
-        nomes = [
-            ("108100", "DIRETORIA REGIONAL DE EDUCACAO BUTANTA", "DRE - BT"),
-            ("108200", "DIRETORIA REGIONAL DE EDUCACAO IPIRANGA", "DRE - IP"),
-            ("108300", "DIRETORIA REGIONAL DE EDUCACAO PENHA", "DRE - PE"),
-            ("108400", "DIRETORIA REGIONAL DE EDUCACAO PIRITUBA", "DRE - PI"),
-            ("108500", "DIRETORIA REGIONAL DE EDUCACAO SANTANA", "DRE - SA"),
-        ]
-
+    def handle(self, *args: Any, **options: Any) -> None:
+        """Executa a lógica principal do comando."""
+        count = options['count']
+        self.stdout.write(self.style.SUCCESS(f'Criando {count} DREs...'))
+        nomes = [('108100', 'DIRETORIA REGIONAL DE EDUCACAO BUTANTA', 'DRE - BT'), ('108200', 'DIRETORIA REGIONAL DE EDUCACAO IPIRANGA', 'DRE - IP'), ('108300', 'DIRETORIA REGIONAL DE EDUCACAO PENHA', 'DRE - PE'), ('108400', 'DIRETORIA REGIONAL DE EDUCACAO PIRITUBA', 'DRE - PI'), ('108500', 'DIRETORIA REGIONAL DE EDUCACAO SANTANA', 'DRE - SA')]
         criadas = []
         for i in range(count):
             codigo, nome, sigla = nomes[i % len(nomes)]
-            dre, created = Dre.objects.get_or_create(
-                codigo=codigo,
-                defaults={
-                    "nome": nome,
-                    "sigla": sigla,
-                },
-            )
+            dre, created = Dre.objects.get_or_create(codigo=codigo, defaults={'nome': nome, 'sigla': sigla})
             if created:
                 criadas.append(dre)
-                self.stdout.write(f"  ✓ Criada DRE: {dre.sigla} - {dre.nome}")
+                self.stdout.write(f'  ✓ Criada DRE: {dre.sigla} - {dre.nome}')
             else:
-                self.stdout.write(
-                    f"  - DRE já existe: {dre.sigla} - {dre.nome}"
-                )
-
-        self.stdout.write(
-            self.style.SUCCESS(f"✅ {len(criadas)} DREs criadas!")
-        )
+                self.stdout.write(f'  - DRE já existe: {dre.sigla} - {dre.nome}')
+        self.stdout.write(self.style.SUCCESS(f'✅ {len(criadas)} DREs criadas!'))

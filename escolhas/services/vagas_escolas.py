@@ -1,3 +1,4 @@
+"""Módulo services/vagas_escolas."""
 import logging
 from typing import Any
 
@@ -14,9 +15,7 @@ logger = logging.getLogger(__name__)
 def criar_vagas_em_lote(
     vagas_data: list[dict[str, Any]], lote: VagasEscolasLote
 ) -> tuple[list[VagasEscolas], list[dict[str, Any]]]:
-    """
-    Cria múltiplas vagas em lote.
-    """
+    """Cria múltiplas vagas em lote."""
     errors = []
     created_vagas = []
 
@@ -59,9 +58,7 @@ def criar_vagas_em_lote(
 def processar_criacao_vagas_lote(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """
-    Processa a criação de vagas em lote a partir dos dados da requisição.
-    """
+    """Processa a criação de vagas em lote a partir dos dados da requisição."""
     serializer = VagasEscolasCreateSerializer(data=request_data)
 
     if not serializer.is_valid():
@@ -115,9 +112,9 @@ def processar_criacao_vagas_lote(
     if not created_vagas and errors:
         status_code = status.HTTP_400_BAD_REQUEST
     elif errors:
-        status_code = status.HTTP_207_MULTI_STATUS
+        status_code = status.HTTP_207_MULTI_STATUS  # type: ignore[assignment]
     else:
-        status_code = status.HTTP_201_CREATED
+        status_code = status.HTTP_201_CREATED  # type: ignore[assignment]
 
     return response_data, status_code
 
@@ -146,23 +143,23 @@ def atualizar_vagas_utilizadas_por_processo(
         encontrados.add(str(vaga.uuid))
         item = uuid_to_item.get(str(vaga.uuid))
         updates = {}
-        if "foi_utilizada" in item:
-            vaga.foi_utilizada = item["foi_utilizada"]
+        if "foi_utilizada" in item:  # type: ignore[operator]
+            vaga.foi_utilizada = item["foi_utilizada"]  # type: ignore[index]
             vaga.esta_checada = bool(vaga.foi_utilizada)
-            updates["foi_utilizada"] = item["foi_utilizada"]
+            updates["foi_utilizada"] = item["foi_utilizada"]  # type: ignore[index]
             updates["esta_checada"] = bool(vaga.foi_utilizada)
-        if "vagas_precarias_utilizadas" in item:
-            vaga.vagas_precarias_utilizadas = item[
+        if "vagas_precarias_utilizadas" in item:  # type: ignore[operator]
+            vaga.vagas_precarias_utilizadas = item[  # type: ignore[index]
                 "vagas_precarias_utilizadas"
             ]
-            updates["vagas_precarias_utilizadas"] = item[
+            updates["vagas_precarias_utilizadas"] = item[  # type: ignore[index]
                 "vagas_precarias_utilizadas"
             ]
-        if "vagas_definitivas_utilizadas" in item:
-            vaga.vagas_definitivas_utilizadas = item[
+        if "vagas_definitivas_utilizadas" in item:  # type: ignore[operator]
+            vaga.vagas_definitivas_utilizadas = item[  # type: ignore[index]
                 "vagas_definitivas_utilizadas"
             ]
-            updates["vagas_definitivas_utilizadas"] = item[
+            updates["vagas_definitivas_utilizadas"] = item[  # type: ignore[index]
                 "vagas_definitivas_utilizadas"
             ]
         if updates:

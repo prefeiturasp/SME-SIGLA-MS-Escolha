@@ -1,3 +1,4 @@
+"""Módulo serializers/escola."""
 from rest_framework import serializers
 
 from ..models import Escola
@@ -10,6 +11,7 @@ class EscolaSerializer(serializers.ModelSerializer):
     dre = DreSerializer(read_only=True)
 
     class Meta:
+        """Define Meta."""
         model = Escola
         fields = [
             "uuid",
@@ -47,15 +49,19 @@ class EscolaSerializer(serializers.ModelSerializer):
 
 
 class EscolaSelectSerializer(serializers.ModelSerializer):
+    """Define EscolaSelectSerializer."""
     value = serializers.UUIDField(source="uuid")
-    label = serializers.CharField(source="nome_oficial")
+    label = serializers.CharField(source="nome_oficial")  # type: ignore[assignment]
 
     class Meta:
+        """Define Meta."""
         model = Escola
         fields = ["value", "label"]
 
 
 class EscolaListSerializer(serializers.ModelSerializer):
+    """Define EscolaListSerializer."""
     class Meta:
+        """Define Meta."""
         model = Escola
         fields = ["uuid", "codigo_eol", "nome_oficial", "status"]

@@ -1,3 +1,4 @@
+"""Módulo views/dre."""
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -9,6 +10,7 @@ from ..utils import CustomPagination
 
 
 class DreViewSet(viewsets.ModelViewSet):
+    """Define DreViewSet."""
     queryset = Dre.objects.all()
     serializer_class = DreSerializer
     permission_classes = [AllowAny]

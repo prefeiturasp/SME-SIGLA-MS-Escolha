@@ -1,7 +1,9 @@
 # Makefile para o projeto SME-SIGLA-MS-Escolha
 # Comandos úteis para desenvolvimento Django
 
-.PHONY: help makemigrations migrate runserver coverage test clean install format lint check
+.PHONY: help pep257 pep484 pep-check makemigrations migrate runserver coverage test clean install format lint check
+
+PEP_APP_DIRS = escolhas
 
 # Comando padrão - mostra ajuda
 help:
@@ -68,3 +70,16 @@ lint:
 
 # Lint + testes
 check: lint test
+
+# PEP 257 — docstrings (Ruff, regras D / pydocstyle Google)
+pep257:
+	@echo "Verificando PEP 257 (docstrings)..."
+	python -m ruff check $(PEP_APP_DIRS) --select D
+
+# PEP 484 — type hints (mypy)
+pep484:
+	@echo "Verificando PEP 484 (type hints)..."
+	python -m mypy $(PEP_APP_DIRS)
+
+# PEP 257 + PEP 484
+pep-check: pep257 pep484

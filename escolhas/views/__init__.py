@@ -1,3 +1,4 @@
+"""Módulo views/__init__."""
 from .dre import DreViewSet
 from .escola import EscolaViewSet
 from .escolha import EscolhaViewSet

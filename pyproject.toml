@@ -14,7 +14,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403", "F405"]
+"**/gerar_relatorio_pep*.py" = ["D"]
+"__init__.py" = ["F401", "F403", "F405", "D104"]
 "config/settings*.py" = ["F401", "F403", "F405", "E501", "E402"]
 "*/settings*.py" = ["F401", "F403", "F405", "E501", "E402"]
 
@@ -25,3 +26,61 @@ known-first-party = ["escolhas"]
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+# ---------------------------------------------------------------------------
+# PEP 257 — docstrings (Ruff pydocstyle / regras D)
+# Uso: make pep257  →  ruff check <apps> --select D
+# ---------------------------------------------------------------------------
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-decorators = ["pytest.fixture", "extend_schema", "action"]
+
+# ---------------------------------------------------------------------------
+# PEP 484 — type hints (mypy)
+# Uso: make pep484  →  mypy <apps>
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+exclude = [
+    "migrations/",
+    ".venv/",
+    "venv/",
+    "htmlcov/",
+    "gerar_relatorio_pep",
+]
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+strict_optional = true
+show_error_codes = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = ["config.*", "manage"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["*.migrations.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["sigla_sdk.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "django_filters.*",
+    "weasyprint.*",
+    "openpyxl.*",
+    "docx.*",
+    "factory.*",
+    "factory_boy.*",
+    "auditlog.*",
+]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"

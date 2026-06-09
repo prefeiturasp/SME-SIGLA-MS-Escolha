@@ -1,3 +1,4 @@
+"""Módulo services/concurso_api."""
 import logging
 from typing import Any
 
@@ -13,7 +14,7 @@ def _cargos_list_from_response(data: Any) -> list[dict]:
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and "results" in data:
-        return data["results"]
+        return data["results"]  # type: ignore[no-any-return]
     return []
 
 
@@ -22,8 +23,8 @@ class ConcursoAPIService:
 
     @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
-        """
-        Busca no MS-Concursos os cargos pelos códigos e retorna um mapa codigo
+        """Busca no MS-Concursos os cargos pelos códigos e retorna um mapa codigo.
+
         -> nome.
 
         Args:
@@ -76,8 +77,8 @@ class ConcursoAPIService:
 
     @staticmethod
     def buscar_concurso_uuid(concurso_uuid: str) -> str | None:
-        """
-        Busca concurso_uuid a partir do concurso_uuid via
+        """Busca concurso_uuid a partir do concurso_uuid via.
+
         MS-ProcessosConvocacao.
 
         Args:
@@ -91,7 +92,7 @@ class ConcursoAPIService:
             url = f"{base_url}/api/v1/concursos/{concurso_uuid}/"
             response = http_client.get(url, timeout=30)
             response.raise_for_status()
-            return response.json().get("uuid")
+            return response.json().get("uuid")  # type: ignore[no-any-return]
 
         except Exception as exc:
             logger.error(
