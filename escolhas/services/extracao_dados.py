@@ -1,12 +1,18 @@
 """Agregações para a extração de dados de escolhas."""
 
+from typing import Any, Optional, Union
+from uuid import UUID
+
 from django.db.models import Count, F, Sum
 
 from escolhas.choices import SituacaoChoices
 from escolhas.models import Escolha, VagasEscolas
 
 
-def montar_extracao_dados(concurso_uuid=None, filtros=None) -> dict:
+def montar_extracao_dados(
+    concurso_uuid: Optional[Union[UUID, str]] = None,
+    filtros: Optional[list[dict[str, Any]]] = None,
+) -> dict[str, Any]:
     """
     Monta o dicionário de indicadores de escolhas.
 
@@ -23,28 +29,33 @@ def montar_extracao_dados(concurso_uuid=None, filtros=None) -> dict:
     têm ``vaga_escola`` vinculada — filtrar pela vaga as excluiria.
     """
     if filtros:
-        resultado = {}
+        resultado: dict[str, Any] = {}
         for filtro in filtros:
             ano = filtro["ano"]
             processo_uuids = filtro.get("processo_uuids") or []
-            dados = _contar_situacoes(concurso_uuid, ano)
+            dados = contar_escolhas(concurso_uuid, ano)
             dados["dres"] = _montar_dres(concurso_uuid, ano, processo_uuids)
             resultado[str(ano)] = dados
         return resultado
 
-    dados = _contar_situacoes(concurso_uuid, ano=None)
-    dados["dres"] = _montar_dres(concurso_uuid, ano=None, processo_uuids=None)
+    dados = contar_escolhas(concurso_uuid, ano=None)
+    dados["dres"] = _montar_dres(concurso_uuid)
     return {"total": dados}
 
 
-def _contar_situacoes(concurso_uuid, ano) -> dict:
+def contar_escolhas(
+    concurso_uuid: Optional[Union[UUID, str]] = None,
+    ano: Optional[int] = None,
+) -> dict[str, int]:
     qs = Escolha.objects.all()
     if concurso_uuid:
         qs = qs.filter(concurso_uuid=concurso_uuid)
     if ano:
         qs = qs.filter(criado_em__year=ano)
     contagens = qs.values("situacao").annotate(total=Count("uuid"))
-    por_situacao = {item["situacao"]: item["total"] for item in contagens}
+    por_situacao: dict[str, int] = {
+        item["situacao"]: item["total"] for item in contagens
+    }
     return {
         "escolha": por_situacao.get(SituacaoChoices.ESCOLHA, 0),
         "reconvocacao": por_situacao.get(SituacaoChoices.RECONVOCACAO, 0),
@@ -52,7 +63,11 @@ def _contar_situacoes(concurso_uuid, ano) -> dict:
     }
 
 
-def _montar_dres(concurso_uuid, ano, processo_uuids) -> list:
+def _montar_dres(
+    concurso_uuid: Optional[Union[UUID, str]] = None,
+    ano: Optional[int] = None,
+    processo_uuids: Optional[list[Union[UUID, str]]] = None,
+) -> list[dict[str, Any]]:
     """
     Une, por DRE, as escolhas realizadas (situacao=escolha, com vaga) e as
     vagas ofertadas (definitivas + precarias).
@@ -88,7 +103,7 @@ def _montar_dres(concurso_uuid, ano, processo_uuids) -> list:
     ).annotate(vagas=Sum(F("vagas_definitivas") + F("vagas_precarias")))
 
     # união por DRE (chave = uuid da DRE)
-    dres: dict = {}
+    dres: dict[Any, dict[str, Any]] = {}
     for item in escolhas_qs:
         dres[item["dre_uuid"]] = {
             "nome": item["nome"],
