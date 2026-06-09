@@ -161,15 +161,56 @@ def test_extracao_dados_dres_uniao_escolhas_e_vagas(api_client):
     assert set(dres.keys()) == {"DRE-A", "DRE-B", "DRE-C"}
 
 
-def test_extracao_dados_exige_concurso_uuid(api_client):
+def test_extracao_dados_sem_filtros_retorna_total(api_client):
     url = reverse("extracao-dados-list")
-    resp = api_client.post(url, {"filtros": [{"ano": 2026}]}, format="json")
-    assert resp.status_code == 400
+    concurso_uuid = uuid.uuid4()
+    processo = uuid.uuid4()
+
+    dre_a = criar_dre("DRE-A")  # tem escolha E vaga
+    dre_b = criar_dre("DRE-B")  # so vaga (sem escolha)
+
+    vaga_a = criar_vaga(processo, dre_a, definitivas=70, precarias=50)  # 120
+    criar_vaga(uuid.uuid4(), dre_b, definitivas=60, precarias=40)  # 100
+
+    # escolhas do concurso em anos diferentes -> agregadas no total
+    criar_escolha(concurso_uuid, SituacaoChoices.ESCOLHA, 2026, vaga_a)
+    criar_escolha(concurso_uuid, SituacaoChoices.ESCOLHA, 2025, vaga_a)
+    criar_escolha(concurso_uuid, SituacaoChoices.RECONVOCACAO, 2026)
+    criar_escolha(concurso_uuid, SituacaoChoices.NAO_ESCOLHA, 2026)
+
+    payload = {"concurso_uuid": str(concurso_uuid)}
+
+    resp = api_client.post(url, payload, format="json")
+
+    assert resp.status_code == 200, resp.content
+    data = resp.json()
+
+    # sem quebra por ano: apenas a chave "total"
+    assert set(data.keys()) == {"total"}
+    total = data["total"]
+    assert total["escolha"] == 2
+    assert total["reconvocacao"] == 1
+    assert total["nao-escolha"] == 1
+
+    dres = {d["nome"]: d for d in total["dres"]}
+    # DRE-A: 2 escolhas (anos diferentes agregados) + todas as vagas
+    assert dres["DRE-A"] == {"nome": "DRE-A", "escolhas": 2, "vagas": 120}
+    # DRE-B: so vaga (todas as VagasEscolas entram no agregado)
+    assert dres["DRE-B"] == {"nome": "DRE-B", "escolhas": 0, "vagas": 100}
+    assert set(dres.keys()) == {"DRE-A", "DRE-B"}
 
 
-def test_extracao_dados_exige_filtros(api_client):
+def test_extracao_dados_body_vazio_agrega_tudo(api_client):
     url = reverse("extracao-dados-list")
-    resp = api_client.post(
-        url, {"concurso_uuid": str(uuid.uuid4())}, format="json"
-    )
-    assert resp.status_code == 400
+
+    # escolhas de concursos diferentes -> todas contam no agregado
+    criar_escolha(uuid.uuid4(), SituacaoChoices.ESCOLHA, 2026)
+    criar_escolha(uuid.uuid4(), SituacaoChoices.NAO_ESCOLHA, 2025)
+
+    resp = api_client.post(url, {}, format="json")
+
+    assert resp.status_code == 200, resp.content
+    data = resp.json()
+    assert set(data.keys()) == {"total"}
+    assert data["total"]["escolha"] == 1
+    assert data["total"]["nao-escolha"] == 1
