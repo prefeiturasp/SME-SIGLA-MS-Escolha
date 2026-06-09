@@ -1,156 +1,154 @@
 """Módulo tests/services/conftest."""
+
 from __future__ import annotations
+
 from typing import Any
 from uuid import uuid4
+
 import pytest
+
 from escolhas.models import Dre, Escola
+
 
 @pytest.fixture
 @pytest.mark.django_db
 def dre_teste() -> Any:
-    """Executa dre teste.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return Dre.objects.create(codigo='123456', nome='DRE Teste', sigla='DRE-TESTE')
+    """Executa dre teste."""
+    return Dre.objects.create(
+        codigo="123456", nome="DRE Teste", sigla="DRE-TESTE"
+    )
+
 
 @pytest.fixture
 @pytest.mark.django_db
 def escola_1(dre_teste: Any) -> Any:
-    """Executa escola 1.
-    
-    Args:
-        dre_teste: Parâmetro dre teste da operação.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return Escola.objects.create(dre=dre_teste, codigo_eol='123456', nome_oficial='Escola Teste', nome_nao_oficial='Escola Teste', tipo_unidade_admin='EMEF', tipo_ue='EMEF', logradouro='Rua Teste', numero='123', bairro='Bairro Teste', cep=12345678, distrito='Distrito Teste', sub_prefeitura='Subprefeitura Teste', nome_dre='DRE Teste', status='ativo')
+    """Executa escola 1."""
+    return Escola.objects.create(
+        dre=dre_teste,
+        codigo_eol="123456",
+        nome_oficial="Escola Teste",
+        nome_nao_oficial="Escola Teste",
+        tipo_unidade_admin="EMEF",
+        tipo_ue="EMEF",
+        logradouro="Rua Teste",
+        numero="123",
+        bairro="Bairro Teste",
+        cep=12345678,
+        distrito="Distrito Teste",
+        sub_prefeitura="Subprefeitura Teste",
+        nome_dre="DRE Teste",
+        status="ativo",
+    )
+
 
 @pytest.fixture
 @pytest.mark.django_db
 def escola_2(dre_teste: Any) -> Any:
-    """Executa escola 2.
-    
-    Args:
-        dre_teste: Parâmetro dre teste da operação.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return Escola.objects.create(dre=dre_teste, codigo_eol='789012', nome_oficial='Escola Teste 2', nome_nao_oficial='Escola Teste 2', tipo_unidade_admin='EMEF', tipo_ue='EMEF', logradouro='Rua Teste 2', numero='456', bairro='Bairro Teste 2', cep=12345678, distrito='Distrito Teste', sub_prefeitura='Subprefeitura Teste', nome_dre='DRE Teste', status='ativo')
+    """Executa escola 2."""
+    return Escola.objects.create(
+        dre=dre_teste,
+        codigo_eol="789012",
+        nome_oficial="Escola Teste 2",
+        nome_nao_oficial="Escola Teste 2",
+        tipo_unidade_admin="EMEF",
+        tipo_ue="EMEF",
+        logradouro="Rua Teste 2",
+        numero="456",
+        bairro="Bairro Teste 2",
+        cep=12345678,
+        distrito="Distrito Teste",
+        sub_prefeitura="Subprefeitura Teste",
+        nome_dre="DRE Teste",
+        status="ativo",
+    )
+
 
 @pytest.fixture
 def vaga_data_valida() -> Any:
-    """Executa vaga data valida.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}
+    """Executa vaga data valida."""
+    return {
+        "data_fechamento_modulo": "2025-09-10",
+        "cargo_codigo": 123,
+        "cargo_descricao": "Professor de Matemática",
+        "codigo_eol": "123456",
+        "vagas_precarias": 2,
+        "vagas_definitivas": 3,
+        "status": "ativo",
+    }
+
 
 @pytest.fixture
 def vagas_data_multiplas() -> Any:
-    """Executa vagas data multiplas.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}, {'data_fechamento_modulo': '2025-09-15', 'cargo_codigo': 456, 'cargo_descricao': 'Professor de Português', 'codigo_eol': '789012', 'vagas_precarias': 1, 'vagas_definitivas': 2, 'status': 'ativo'}]
+    """Executa vagas data multiplas."""
+    return [
+        {
+            "data_fechamento_modulo": "2025-09-10",
+            "cargo_codigo": 123,
+            "cargo_descricao": "Professor de Matemática",
+            "codigo_eol": "123456",
+            "vagas_precarias": 2,
+            "vagas_definitivas": 3,
+            "status": "ativo",
+        },
+        {
+            "data_fechamento_modulo": "2025-09-15",
+            "cargo_codigo": 456,
+            "cargo_descricao": "Professor de Português",
+            "codigo_eol": "789012",
+            "vagas_precarias": 1,
+            "vagas_definitivas": 2,
+            "status": "ativo",
+        },
+    ]
+
 
 @pytest.fixture
 def request_data_valido(vagas_data_multiplas: Any) -> Any:
-    """Executa request data valido.
-    
-    Args:
-        vagas_data_multiplas: Parâmetro vagas data multiplas da operação.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {'processo_uuid': str(uuid4()), 'processo_nome': 'Processo Teste', 'vagas': vagas_data_multiplas}
+    """Executa request data valido."""
+    return {
+        "processo_uuid": str(uuid4()),
+        "processo_nome": "Processo Teste",
+        "vagas": vagas_data_multiplas,
+    }
+
 
 @pytest.fixture
 def request_data_invalido() -> Any:
-    """Executa request data invalido.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123}]}
+    """Executa request data invalido."""
+    return {
+        "vagas": [
+            {"data_fechamento_modulo": "2025-09-10", "cargo_codigo": 123}
+        ]
+    }
+
 
 @pytest.fixture
 def request_data_vazio() -> Any:
-    """Executa request data vazio.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {'vagas': []}
+    """Executa request data vazio."""
+    return {"vagas": []}
+
 
 @pytest.fixture
 def concurso_uuid_teste() -> Any:
-    """Executa concurso uuid teste.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
+    """Executa concurso uuid teste."""
     return uuid4()
+
 
 @pytest.fixture
 def request_data_com_concurso(vagas_data_multiplas: Any) -> Any:
-    """Executa request data com concurso.
-    
-    Args:
-        vagas_data_multiplas: Parâmetro vagas data multiplas da operação.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {'processo_uuid': str(uuid4()), 'processo_nome': 'Concurso Professor 2024', 'vagas': vagas_data_multiplas}
+    """Executa request data com concurso."""
+    return {
+        "processo_uuid": str(uuid4()),
+        "processo_nome": "Concurso Professor 2024",
+        "vagas": vagas_data_multiplas,
+    }
+
 
 @pytest.fixture
 def vaga_data_com_concurso(vaga_data_valida: Any) -> Any:
-    """Executa vaga data com concurso.
-    
-    Args:
-        vaga_data_valida: Parâmetro vaga data valida da operação.
-    
-    Returns:
-        Resultado da operação.
-    
-    Raises:
-        Nenhuma exceção específica documentada.
-    """
-    return {**vaga_data_valida, 'processo_uuid': str(uuid4()), 'processo_nome': 'Concurso Professor 2024'}
+    """Executa vaga data com concurso."""
+    return {
+        **vaga_data_valida,
+        "processo_uuid": str(uuid4()),
+        "processo_nome": "Concurso Professor 2024",
+    }

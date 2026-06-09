@@ -1,4 +1,5 @@
 """Módulo services/sme_integration."""
+
 from typing import Any
 
 import requests
@@ -7,10 +8,10 @@ from django.conf import settings
 
 def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
     """Executa  get base url and headers.
-    
+
     Returns:
         Resultado da operação.
-    
+
     Raises:
         ValueError: Se ocorrer erro nesta operação.
     """
@@ -31,10 +32,10 @@ def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
 
 def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
     """Executa buscar dres de smeintegracao.
-    
+
     Returns:
         Lista com os registros resultantes.
-    
+
     Raises:
         ValueError: Se ocorrer erro nesta operação.
     """
@@ -71,13 +72,13 @@ def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
 
 def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
     """Executa buscar ues codigos por dre.
-    
+
     Args:
-        codigo_dre: Parâmetro codigo dre da operação.
-    
+        codigo_dre: Parâmetro codigo dre.
+
     Returns:
         Lista com os registros resultantes.
-    
+
     Raises:
         ValueError: Se ocorrer erro nesta operação.
     """
@@ -98,13 +99,13 @@ def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
 
 def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
     """Executa buscar dados escola por eol.
-    
+
     Args:
-        codigo_eol: Parâmetro codigo eol da operação.
-    
+        codigo_eol: Parâmetro codigo eol.
+
     Returns:
         Dicionário com os dados processados.
-    
+
     Raises:
         ValueError: Se ocorrer erro nesta operação.
     """
@@ -127,13 +128,13 @@ def buscar_unidades_codigo_integracao_por_dre(
     codigo_dre: str,
 ) -> list[dict[str, Any]]:
     """GET /api/DREs/{dreCodigo}/unidades/codigo-integracao.
-    
+
     Args:
-        codigo_dre: Parâmetro codigo dre da operação.
-    
+        codigo_dre: Parâmetro codigo dre.
+
     Returns:
         Lista com os registros resultantes.
-    
+
     Raises:
         ValueError: Se ocorrer erro nesta operação.
     """

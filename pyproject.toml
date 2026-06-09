@@ -14,6 +14,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["E501", "SIM117", "B017", "E402", "F811", "E741"]
 "**/gerar_relatorio_pep*.py" = ["D"]
 "__init__.py" = ["F401", "F403", "F405", "D104"]
 "config/settings*.py" = ["F401", "F403", "F405", "E501", "E402"]

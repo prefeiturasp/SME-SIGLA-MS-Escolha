@@ -1,4 +1,5 @@
 """Módulo services/__init__."""
+
 from .candidato_api import CandidatoAPIService
 from .concurso_api import ConcursoAPIService
 from .sme_integration import (

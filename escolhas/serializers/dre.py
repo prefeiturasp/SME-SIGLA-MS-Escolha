@@ -1,4 +1,5 @@
 """Módulo serializers/dre."""
+
 from rest_framework import serializers
 
 from ..models import Dre
@@ -9,5 +10,6 @@ class DreSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Define Meta."""
+
         model = Dre
         fields = ["uuid", "codigo", "nome", "sigla"]

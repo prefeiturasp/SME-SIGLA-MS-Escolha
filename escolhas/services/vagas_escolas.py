@@ -1,4 +1,5 @@
 """Módulo services/vagas_escolas."""
+
 import logging
 from typing import Any
 
@@ -16,14 +17,14 @@ def criar_vagas_em_lote(
     vagas_data: list[dict[str, Any]], lote: VagasEscolasLote
 ) -> tuple[list[VagasEscolas], list[dict[str, Any]]]:
     """Cria múltiplas vagas em lote.
-    
+
     Args:
-        vagas_data: Parâmetro vagas data da operação.
-        lote: Parâmetro lote da operação.
-    
+        vagas_data: Parâmetro vagas data.
+        lote: Parâmetro lote.
+
     Returns:
         Resultado da operação.
-    
+
     Raises:
         Nenhuma exceção específica documentada.
     """
@@ -70,13 +71,13 @@ def processar_criacao_vagas_lote(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
     """Processa a criação de vagas em lote a partir dos dados da requisição.
-    
+
     Args:
-        request_data: Parâmetro request data da operação.
-    
+        request_data: Parâmetro request data.
+
     Returns:
         Resultado da operação.
-    
+
     Raises:
         TipoUEDesabilitadoException: Se ocorrer erro nesta operação.
     """
@@ -144,13 +145,13 @@ def atualizar_vagas_utilizadas_por_processo(
     vagas: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Atualiza *_utilizadas de VagasEscolas direto por UUID das vagas.
-    
+
     Args:
         vagas: lista de dicts com keys: uuid, vagas_precarias_utilizadas?,.
-    
+
     Returns:
         Dicionário com os dados processados.
-    
+
     Raises:
         Nenhuma exceção específica documentada.
     """
@@ -203,13 +204,13 @@ def adicionar_vagas_ao_lote_por_processo(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
     """Adiciona novas vagas a um lote existente identificado por processo_uuid.
-    
+
     Args:
-        request_data: Parâmetro request data da operação.
-    
+        request_data: Parâmetro request data.
+
     Returns:
         Resultado da operação.
-    
+
     Raises:
         Nenhuma exceção específica documentada.
     """

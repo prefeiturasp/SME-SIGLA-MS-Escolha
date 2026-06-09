@@ -1,4 +1,5 @@
 """Módulo services/concurso_api."""
+
 import logging
 from typing import Any
 
@@ -11,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 def _cargos_list_from_response(data: Any) -> list[dict]:
     """Extrai lista de cargos da resposta da API (lista direta ou paginada).
-    
+
     Args:
         data: Dados de entrada.
-    
+
     Returns:
         Lista com os registros resultantes.
-    
+
     Raises:
         Nenhuma exceção específica documentada.
     """
@@ -33,14 +34,14 @@ class ConcursoAPIService:
 
     @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
-        """Busca no MS-Concursos os cargos pelos códigos e retorna um mapa codigo.
-        
+        """Busca no MS-Concursos os cargos pelos códigos e retorna um mapa.
+
         Args:
             codigos: Lista de códigos de cargo (strings, ex.: do.
-        
+
         Returns:
             Dicionário com os dados processados.
-        
+
         Raises:
             Nenhuma exceção específica documentada.
         """
@@ -87,13 +88,13 @@ class ConcursoAPIService:
     @staticmethod
     def buscar_concurso_uuid(concurso_uuid: str) -> str | None:
         """Busca concurso_uuid a partir do concurso_uuid via.
-        
+
         Args:
             concurso_uuid: UUID do concurso.
-        
+
         Returns:
             Texto resultante da operação.
-        
+
         Raises:
             Nenhuma exceção específica documentada.
         """
