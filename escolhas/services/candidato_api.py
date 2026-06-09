@@ -12,11 +12,14 @@ class CandidatoAPIService:
 
     def __init__(self, base_url: str | None=None, timeout_seconds: int=30) -> None:
         """Inicializa o serviço de candidatos.
-
+        
         Args:
-            base_url: URL base da API de candidatos. Se não fornecido, usa
-            CANDIDATOS_API_URL do settings.
-            timeout_seconds: Timeout em segundos para as requisições
+            self: Instância do objeto.
+            base_url: URL base da API de candidatos. Se não fornecido, usa.
+            timeout_seconds: Timeout em segundos para as requisições.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         if base_url is None:
             base_url = settings.CANDIDATOS_API_URL
@@ -26,12 +29,17 @@ class CandidatoAPIService:
 
     def buscar_candidatos_por_cpfs(self, cpfs: list[str], processo_uuid: str) -> str | None:
         """Busca candidatos por CPFs.
-
+        
         Args:
-            cpfs: List[str] de CPFs dos candidatos
-            processo_uuid: UUID do processo de convocação
+            self: Instância do objeto.
+            cpfs: List[str] de CPFs dos candidatos.
+            processo_uuid: UUID do processo de convocação.
+        
         Returns:
-            List[Dict[str, Any]] de candidatos encontrados
+            Texto resultante da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         url = f'{self.base_url}/api/v1/habilitados/buscar-por-cpfs/'
         payload = {'processo_uuid': str(processo_uuid), 'cpfs': cpfs}
@@ -51,18 +59,19 @@ class CandidatoAPIService:
 
     def buscar_candidatos(self, nome: str | None=None, cpf: str | None=None, rg: str | None=None, registro_funcional: str | None=None) -> list[dict] | None:
         """Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro.
-
-        funcional.
-        Pelo menos um dos parâmetros deve ser informado.
-
+        
         Args:
+            self: Instância do objeto.
             nome: Nome (busca por contém).
             cpf: CPF (busca por contém).
             rg: RG (busca por contém).
             registro_funcional: Registro funcional (busca por contém).
-
+        
         Returns:
-            Lista de candidatos retornados pela API ou None em caso de erro.
+            Lista com os registros resultantes.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         if not any((s and str(s).strip() for s in (nome, cpf, rg, registro_funcional))):
             return []

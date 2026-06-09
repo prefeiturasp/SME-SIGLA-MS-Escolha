@@ -6,7 +6,14 @@ from django.conf import settings
 
 
 def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
-    """Executa  get base url and headers."""
+    """Executa  get base url and headers.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        ValueError: Se ocorrer erro nesta operação.
+    """
     base_url = getattr(settings, "SMEINTEGRACAO_API_URL", None)
     token = getattr(settings, "SMEINTEGRACAO_API_TOKEN", None)
 
@@ -23,7 +30,14 @@ def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
 
 
 def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
-    """Executa buscar dres de smeintegracao."""
+    """Executa buscar dres de smeintegracao.
+    
+    Returns:
+        Lista com os registros resultantes.
+    
+    Raises:
+        ValueError: Se ocorrer erro nesta operação.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + "/api/DREs"
 
@@ -56,7 +70,17 @@ def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
 
 
 def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
-    """Executa buscar ues codigos por dre."""
+    """Executa buscar ues codigos por dre.
+    
+    Args:
+        codigo_dre: Parâmetro codigo dre da operação.
+    
+    Returns:
+        Lista com os registros resultantes.
+    
+    Raises:
+        ValueError: Se ocorrer erro nesta operação.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/ues"
 
@@ -73,7 +97,17 @@ def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
 
 
 def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
-    """Executa buscar dados escola por eol."""
+    """Executa buscar dados escola por eol.
+    
+    Args:
+        codigo_eol: Parâmetro codigo eol da operação.
+    
+    Returns:
+        Dicionário com os dados processados.
+    
+    Raises:
+        ValueError: Se ocorrer erro nesta operação.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/escolas/dados/{codigo_eol}"
 
@@ -93,8 +127,15 @@ def buscar_unidades_codigo_integracao_por_dre(
     codigo_dre: str,
 ) -> list[dict[str, Any]]:
     """GET /api/DREs/{dreCodigo}/unidades/codigo-integracao.
-
-    Retorna lista com codigoUe, nomeUe, codigoIntegracao.
+    
+    Args:
+        codigo_dre: Parâmetro codigo dre da operação.
+    
+    Returns:
+        Lista com os registros resultantes.
+    
+    Raises:
+        ValueError: Se ocorrer erro nesta operação.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/unidades/codigo-integracao"

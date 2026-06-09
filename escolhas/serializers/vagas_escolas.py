@@ -39,7 +39,18 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
     vagas = serializers.ListField(child=serializers.DictField(), write_only=True)
 
     def validate_vagas(self, value: Any) -> Any:
-        """Valida a lista de vagas e converte status descritivos."""
+        """Valida a lista de vagas e converte status descritivos.
+        
+        Args:
+            self: Instância do objeto.
+            value: Valor recebido para validação.
+        
+        Returns:
+            Valor validado do campo vagas.
+        
+        Raises:
+            ValidationError: Se ocorrer erro nesta operação.
+        """
         if not value:
             raise serializers.ValidationError('A lista de vagas não pode estar vazia.')
         for i, vaga in enumerate(value):

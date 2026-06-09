@@ -9,14 +9,32 @@ MAPPING_FIXTURE = [('CCA', 'cca'), ('CCI/CIPS', 'ccicips'), ('CECI', 'ceci'), ('
 
 @pytest.fixture
 def parametrizacoes_db() -> Any:
-    """Executa parametrizacoes db."""
+    """Executa parametrizacoes db.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     objs = [Parametrizacao(tipo_ue=nome, usar=False) for nome, slug in MAPPING_FIXTURE]
     Parametrizacao.objects.bulk_create(objs)
     return list(Parametrizacao.objects.all())
 
 @pytest.mark.django_db
 def test_list_parametrizacoes(api_client: Any, parametrizacoes_db: Any) -> None:
-    """Verifica list parametrizacoes."""
+    """Verifica list parametrizacoes.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        parametrizacoes_db: Parâmetro parametrizacoes db da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('parametrizacao-list')
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
@@ -26,7 +44,18 @@ def test_list_parametrizacoes(api_client: Any, parametrizacoes_db: Any) -> None:
 
 @pytest.mark.django_db
 def test_bulk_update_usar_updates_multiple(api_client: Any, parametrizacoes_db: Any) -> None:
-    """Verifica bulk update usar updates multiple."""
+    """Verifica bulk update usar updates multiple.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        parametrizacoes_db: Parâmetro parametrizacoes db da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     p1 = Parametrizacao.objects.get(tipo_ue='EMEF')
     p2 = Parametrizacao.objects.get(tipo_ue='EMEI')
     assert p1.usar is False and p2.usar is False

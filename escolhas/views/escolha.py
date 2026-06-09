@@ -30,14 +30,34 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Executa get queryset."""
+        """Executa get queryset.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Valor calculado para o campo ou propriedade.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         qs = Escolha.objects.all()
         if self.action in ['list', 'retrieve', 'busca']:
             qs = qs.select_related('vaga_escola', 'vaga_escola__escola', 'vaga_escola__escola__dre').prefetch_related('historico')
         return qs
 
     def get_serializer_class(self) -> Any:
-        """Executa get serializer class."""
+        """Executa get serializer class.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Valor calculado para o campo ou propriedade.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         if self.action in ['list', 'busca']:
             return EscolhaListSerializer
         if self.action == 'select':
@@ -47,13 +67,36 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def paginate_queryset(self, queryset: Any) -> Any:
-        """Executa paginate queryset."""
+        """Executa paginate queryset.
+        
+        Args:
+            self: Instância do objeto.
+            queryset: Parâmetro queryset da operação.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         if 'no_page' in self.request.query_params:
             return None
         return super().paginate_queryset(queryset)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
-        """Executa get serializer."""
+        """Executa get serializer.
+        
+        Args:
+            self: Instância do objeto.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Valor calculado para o campo ou propriedade.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get('fields')
         if fields:
@@ -62,7 +105,18 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='busca')
     def busca(self, request: Any) -> Any:
-        """Executa busca."""
+        """Executa busca.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         logger.info('Buscando escolhas por candidato_uuid', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'user': request.user, 'data': request.data})
         candidato_ids = request.data.get('candidato_uuid', [])
         if not isinstance(candidato_ids, list):
@@ -77,8 +131,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='reconvocacao')
     def reconvocacao(self, request: Any) -> Any:
         """Endpoint para buscar escolhas com situação de reconvocação.
-
-        Retorna apenas uuid e candidato_uuid.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         logger.info('Buscando escolhas com situação de reconvocação', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'user': request.user})
         queryset = self.get_queryset().filter(situacao=SituacaoChoices.RECONVOCACAO)
@@ -88,10 +150,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='buscar-candidatos')
     def buscar_candidatos(self, request: Any) -> Any:
         """Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro.
-
-        funcional.
-        Query params: nome, cpf, rg, registro_funcional (pelo menos um
-        obrigatório).
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         logger.info('Buscando candidatos', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'user': request.user})
         nome = request.query_params.get('nome', '').strip()
@@ -123,8 +191,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, url_path='agrupar-por-cargo')
     def agrupar_por_cargo(self, request: Any) -> Any:
         """Agrupa todas as escolhas por vaga_escola__cargo_codigo e retorna a soma.
-
-        de escolhas por cargo.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         logger.info('Agrupando escolhas por cargo', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'user': request.user})
         qs = self.get_queryset().filter(situacao=SituacaoChoices.ESCOLHA).values('vaga_escola__cargo_codigo').annotate(total=Count('uuid')).order_by('vaga_escola__cargo_codigo')
@@ -135,20 +211,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=False, url_path='importacao-prodam')
     def importacao_prodam(self, request: Any) -> Any:
         """Endpoint para receber dados de escolhas.
-
-        Payload esperado:
-        {
-            "processo_uuid": "uuid-do-processo",
-            "escolhas": [
-                {
-                    "cpf": "12345678901",
-                    "codigo_cargo": "123",
-                    "codigo_eol": "456789",
-                    "tipo_vaga": "PRECARIA",
-                    "situacao": "escolha"
-                }
-            ]
-        }
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         logger.info('Iniciando importação de escolhas da Prodam', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'data': request.data, 'user': request.user})
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)

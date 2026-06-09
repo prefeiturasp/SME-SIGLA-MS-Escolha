@@ -13,8 +13,17 @@ logger = logging.getLogger(__name__)
 @receiver(pre_save, sender=Escolha)
 def escolha_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     """Signal que captura o estado anterior do campo situacao antes de salvar.
-
-    Armazena a situação anterior no objeto para uso no post_save.
+    
+    Args:
+        sender: Parâmetro sender da operação.
+        instance: Instância do modelo em atualização.
+        **kwargs: Argumentos nomeados variáveis.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     if instance.pk:
         try:
@@ -28,15 +37,18 @@ def escolha_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
 @receiver(post_save, sender=Escolha)
 def escolha_post_save(sender: Any, instance: Any, created: Any, **kwargs: Any) -> None:
     """Signal que cria um registro de histórico de escolhas e atualiza vagas das.
-
-    escolas.
-
-    Cria histórico nos seguintes casos:
-    - POST (criação): sempre cria histórico com situacao_anterior=None
-    - PATCH (edição/reconvocacao): cria histórico quando a situação mudou
-
-    Atualiza vagas restantes quando:
-    - POST (criação) com situacao='escolha' e vaga_escola e tipo_vaga presentes
+    
+    Args:
+        sender: Parâmetro sender da operação.
+        instance: Instância do modelo em atualização.
+        created: Parâmetro created da operação.
+        **kwargs: Argumentos nomeados variáveis.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     situacao_anterior = getattr(instance, '_situacao_anterior', None)
     situacao_atual = instance.situacao

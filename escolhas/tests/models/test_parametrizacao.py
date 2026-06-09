@@ -6,19 +6,46 @@ from escolhas.models import Dre, Escola, Parametrizacao
 
 @pytest.mark.django_db
 def test_parametrizacao_str_true_and_false() -> None:
-    """Verifica parametrizacao str true and false."""
+    """Verifica parametrizacao str true and false.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     p_true = Parametrizacao.objects.create(tipo_ue='EMEF', usar=True)
     p_false = Parametrizacao.objects.create(tipo_ue='EMEI', usar=False)
     assert str(p_true) == 'EMEF (usar)'
     assert str(p_false) == 'EMEI (não usar)'
 
 def _criar_escola(dre: Dre, codigo_eol: str, nome: str, tipo_ue: str) -> Escola:
-    """Executa  criar escola."""
+    """Executa  criar escola.
+    
+    Args:
+        dre: Parâmetro dre da operação.
+        codigo_eol: Parâmetro codigo eol da operação.
+        nome: Parâmetro nome da operação.
+        tipo_ue: Parâmetro tipo ue da operação.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     return Escola.objects.create(dre=dre, codigo_eol=codigo_eol, nome_oficial=nome, nome_nao_oficial=nome, tipo_unidade_admin='UNIDADE', tipo_ue=tipo_ue, logradouro='Rua A', numero='100', bairro='Centro', cep='01000-000', distrito='Distrito', sub_prefeitura='Sub', nome_dre=dre.nome, status='ATIVA')
 
 @pytest.mark.django_db
 def test_sync_from_escolas_cria_parametrizacoes_que_faltam() -> None:
-    """Verifica sync from escolas cria parametrizacoes que faltam."""
+    """Verifica sync from escolas cria parametrizacoes que faltam.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
     _criar_escola(dre, '100001', 'Escola 1', 'EMEF')
     _criar_escola(dre, '100002', 'Escola 2', 'EMEI')
@@ -32,7 +59,14 @@ def test_sync_from_escolas_cria_parametrizacoes_que_faltam() -> None:
 
 @pytest.mark.django_db
 def test_sync_from_escolas_ignora_vazios_e_respeita_existentes() -> None:
-    """Verifica sync from escolas ignora vazios e respeita existentes."""
+    """Verifica sync from escolas ignora vazios e respeita existentes.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='02', nome='DRE 02', sigla='DRE-02')
     Parametrizacao.objects.create(tipo_ue='EMEF', usar=False)
     _criar_escola(dre, '200001', 'Escola A', 'EMEF')

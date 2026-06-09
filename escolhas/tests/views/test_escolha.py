@@ -10,7 +10,17 @@ from escolhas.models import Dre, Escola, Escolha, VagasEscolas, VagasEscolasLote
 
 @pytest.mark.django_db
 def test_list_escolhas_vazio(api_client: Any) -> None:
-    """Verifica list escolhas vazio."""
+    """Verifica list escolhas vazio.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-list')
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
@@ -19,7 +29,19 @@ def test_list_escolhas_vazio(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_list_escolhas_com_dados(api_client: Any, escolha_matematica: Any, escolha_portugues: Any) -> None:
-    """Verifica list escolhas com dados."""
+    """Verifica list escolhas com dados.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_matematica: Parâmetro escolha matematica da operação.
+        escolha_portugues: Parâmetro escolha portugues da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-list')
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
@@ -30,7 +52,17 @@ def test_list_escolhas_com_dados(api_client: Any, escolha_matematica: Any, escol
 
 @pytest.mark.django_db
 def test_filter_candidato_uuid(api_client: Any) -> None:
-    """Verifica filter candidato uuid."""
+    """Verifica filter candidato uuid.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
     escola = Escola.objects.create(codigo_eol='000001', nome_oficial='Escola Teste', dre=dre, cep='04001-000')
     lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome='Proc')
@@ -47,7 +79,18 @@ def test_filter_candidato_uuid(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_create_escolha(api_client: Any, escolha_data: Any) -> None:
-    """Verifica create escolha."""
+    """Verifica create escolha.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_data: Parâmetro escolha data da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-list')
     response = api_client.post(url, escolha_data)
     assert response.status_code == status.HTTP_201_CREATED
@@ -56,7 +99,18 @@ def test_create_escolha(api_client: Any, escolha_data: Any) -> None:
 
 @pytest.mark.django_db
 def test_create_escolha_dados_invalidos(api_client: Any, escolha_data_invalid: Any) -> None:
-    """Verifica create escolha dados invalidos."""
+    """Verifica create escolha dados invalidos.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_data_invalid: Parâmetro escolha data invalid da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-list')
     payload = {k: v if v is not None else '' for k, v in escolha_data_invalid.items()}
     response = api_client.post(url, payload, format='json')
@@ -65,7 +119,19 @@ def test_create_escolha_dados_invalidos(api_client: Any, escolha_data_invalid: A
 
 @pytest.mark.django_db
 def test_update_escolha(api_client: Any, escolha_matematica: Any, escolha_data_updated: Any) -> None:
-    """Verifica update escolha."""
+    """Verifica update escolha.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_matematica: Parâmetro escolha matematica da operação.
+        escolha_data_updated: Parâmetro escolha data updated da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
     response = api_client.put(url, escolha_data_updated)
     assert response.status_code == status.HTTP_200_OK
@@ -77,7 +143,18 @@ def test_update_escolha(api_client: Any, escolha_matematica: Any, escolha_data_u
 
 @pytest.mark.django_db
 def test_partial_update_escolha(api_client: Any, escolha_matematica: Any) -> None:
-    """Verifica partial update escolha."""
+    """Verifica partial update escolha.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_matematica: Parâmetro escolha matematica da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
     payload = {'e_retardatario': True}
     response = api_client.patch(url, payload)
@@ -88,7 +165,18 @@ def test_partial_update_escolha(api_client: Any, escolha_matematica: Any) -> Non
 
 @pytest.mark.django_db
 def test_delete_escolha(api_client: Any, escolha_matematica: Any) -> None:
-    """Verifica delete escolha."""
+    """Verifica delete escolha.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_matematica: Parâmetro escolha matematica da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-detail', kwargs={'pk': escolha_matematica.uuid})
     response = api_client.delete(url)
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -96,7 +184,17 @@ def test_delete_escolha(api_client: Any, escolha_matematica: Any) -> None:
 
 @pytest.mark.django_db
 def test_busca_por_candidatos(api_client: Any) -> None:
-    """Verifica busca por candidatos."""
+    """Verifica busca por candidatos.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
     escola = Escola.objects.create(codigo_eol='000001', nome_oficial='Escola Teste', dre=dre, cep='04001-000')
     lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome='Proc')
@@ -118,7 +216,17 @@ def test_busca_por_candidatos(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_busca_payload_invalido(api_client: Any) -> None:
-    """Verifica busca payload invalido."""
+    """Verifica busca payload invalido.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     url = reverse('escolha-busca')
     response = api_client.post(url, {'candidato_uuid': 'nao-e-lista'})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -128,8 +236,15 @@ def test_busca_payload_invalido(api_client: Any) -> None:
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_definitiva(api_client: Any) -> None:
     """Testa se a criação de uma escolha com vaga definitiva decrementa.
-
-    vagas_definitivas_restantes.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
     escola = Escola.objects.create(codigo_eol='000001', nome_oficial='Escola Teste', dre=dre, cep='04001-000')
@@ -148,8 +263,15 @@ def test_create_escolha_decrementa_vaga_definitiva(api_client: Any) -> None:
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_precaria(api_client: Any) -> None:
     """Testa se a criação de uma escolha com vaga precária decrementa.
-
-    vagas_precarias_restantes.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     dre = Dre.objects.create(codigo='02', nome='DRE 02', sigla='DRE-02')
     escola = Escola.objects.create(codigo_eol='000002', nome_oficial='Escola Teste 2', dre=dre, cep='04001-000')
@@ -168,8 +290,15 @@ def test_create_escolha_decrementa_vaga_precaria(api_client: Any) -> None:
 @pytest.mark.django_db
 def test_create_escolha_nao_escolha_nao_decrementa(api_client: Any) -> None:
     """Testa que escolhas com situação diferente de 'escolha' não decrementam.
-
-    vagas.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     dre = Dre.objects.create(codigo='03', nome='DRE 03', sigla='DRE-03')
     escola = Escola.objects.create(codigo_eol='000003', nome_oficial='Escola Teste 3', dre=dre, cep='04001-000')
@@ -188,7 +317,17 @@ def test_create_escolha_nao_escolha_nao_decrementa(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client: Any) -> None:
-    """Verifica agrupar por cargo retorna dict so com situacao escolha."""
+    """Verifica agrupar por cargo retorna dict so com situacao escolha.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='10', nome='DRE 10', sigla='DRE-10')
     escola = Escola.objects.create(codigo_eol='000010', nome_oficial='Escola 10', dre=dre, cep='04001-000')
     lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome='Proc')
@@ -207,7 +346,17 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client: Any)
 
 @pytest.mark.django_db
 def test_reconvocacao_endpoint(api_client: Any) -> None:
-    """Testa endpoint de reconvocação."""
+    """Testa endpoint de reconvocação.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
     escola = Escola.objects.create(codigo_eol='000001', nome_oficial='Escola Teste', dre=dre, cep='04001-000')
     lote = VagasEscolasLote.objects.create(processo_uuid=uuid.uuid4(), processo_nome='Proc')
@@ -224,7 +373,18 @@ def test_reconvocacao_endpoint(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_importacao_prodam_sucesso(api_client: Any, settings: Any) -> None:
-    """Testa importação Prodam com sucesso."""
+    """Testa importação Prodam com sucesso.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
@@ -251,7 +411,18 @@ def test_importacao_prodam_sucesso(api_client: Any, settings: Any) -> None:
 
 @pytest.mark.django_db
 def test_importacao_prodam_candidato_nao_encontrado(api_client: Any, settings: Any) -> None:
-    """Testa importação Prodam quando candidato não é encontrado."""
+    """Testa importação Prodam quando candidato não é encontrado.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     processo_uuid = uuid.uuid4()
@@ -271,7 +442,18 @@ def test_importacao_prodam_candidato_nao_encontrado(api_client: Any, settings: A
 
 @pytest.mark.django_db
 def test_importacao_prodam_multiplas_escolhas(api_client: Any, settings: Any) -> None:
-    """Testa importação Prodam com múltiplas escolhas."""
+    """Testa importação Prodam com múltiplas escolhas.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
@@ -296,7 +478,18 @@ def test_importacao_prodam_multiplas_escolhas(api_client: Any, settings: Any) ->
 
 @pytest.mark.django_db
 def test_importacao_prodam_mapeamento_situacao(api_client: Any, settings: Any) -> None:
-    """Testa mapeamento de situações na importação Prodam."""
+    """Testa mapeamento de situações na importação Prodam.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     processo_uuid = uuid.uuid4()
@@ -318,7 +511,18 @@ def test_importacao_prodam_mapeamento_situacao(api_client: Any, settings: Any) -
 
 @pytest.mark.django_db
 def test_importacao_prodam_mapeamento_tipo_vaga(api_client: Any, settings: Any) -> None:
-    """Testa mapeamento de tipo_vaga na importação Prodam."""
+    """Testa mapeamento de tipo_vaga na importação Prodam.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     processo_uuid = uuid.uuid4()
@@ -341,7 +545,18 @@ def test_importacao_prodam_mapeamento_tipo_vaga(api_client: Any, settings: Any) 
 
 @pytest.mark.django_db
 def test_importacao_prodam_codigo_eol_normalizado(api_client: Any, settings: Any) -> None:
-    """Testa normalização de código EOL na importação Prodam."""
+    """Testa normalização de código EOL na importação Prodam.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     dre = Dre.objects.create(codigo='01', nome='DRE 01', sigla='DRE-01')
@@ -365,7 +580,17 @@ def test_importacao_prodam_codigo_eol_normalizado(api_client: Any, settings: Any
 
 @pytest.mark.django_db
 def test_importacao_prodam_payload_invalido(api_client: Any) -> None:
-    """Testa importação Prodam com payload inválido."""
+    """Testa importação Prodam com payload inválido.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     payload = {'concurso_uuid': 'invalid-uuid', 'escolhas': []}
     url = reverse('escolha-importacao-prodam')
     response = api_client.post(url, payload, format='json')
@@ -373,7 +598,18 @@ def test_importacao_prodam_payload_invalido(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_importacao_prodam_escolha_sem_codigo_eol(api_client: Any, settings: Any) -> None:
-    """Testa importação Prodam com escolha sem código EOL."""
+    """Testa importação Prodam com escolha sem código EOL.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        settings: Parâmetro settings da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     settings.CANDIDATOS_API_URL = 'http://test-api.com'
     processo_uuid = uuid.uuid4()
@@ -394,8 +630,15 @@ def test_importacao_prodam_escolha_sem_codigo_eol(api_client: Any, settings: Any
 @pytest.mark.django_db
 def test_buscar_candidatos_sem_parametros_retorna_400(api_client: Any) -> None:
     """GET buscar-candidatos sem nome, cpf, rg ou registro_funcional deve retornar.
-
-    400.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     url = reverse('escolha-buscar-candidatos')
     response = api_client.get(url)
@@ -406,8 +649,15 @@ def test_buscar_candidatos_sem_parametros_retorna_400(api_client: Any) -> None:
 @pytest.mark.django_db
 def test_buscar_candidatos_com_parametro_retorna_200(api_client: Any) -> None:
     """GET buscar-candidatos com parâmetro deve delegar ao serviço e retornar 200.
-
-    com lista.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     from unittest.mock import Mock, patch
     url = reverse('escolha-buscar-candidatos')
@@ -423,7 +673,17 @@ def test_buscar_candidatos_com_parametro_retorna_200(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_buscar_candidatos_servico_retorna_none_retorna_400(api_client: Any) -> None:
-    """Quando o serviço retorna None (erro), deve retornar 502."""
+    """Quando o serviço retorna None (erro), deve retornar 502.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from unittest.mock import Mock, patch
     url = reverse('escolha-buscar-candidatos')
     with patch('escolhas.views.escolha.CandidatoAPIService') as mock_service_class:
@@ -436,7 +696,18 @@ def test_buscar_candidatos_servico_retorna_none_retorna_400(api_client: Any) -> 
 
 @pytest.mark.django_db
 def test_list_escolhas_inclui_campo_historico(api_client: Any, escolha_matematica: Any) -> None:
-    """Listagem inclui campo historico (lista) em cada item."""
+    """Listagem inclui campo historico (lista) em cada item.
+    
+    Args:
+        api_client: Cliente de API para requisições de teste.
+        escolha_matematica: Parâmetro escolha matematica da operação.
+    
+    Returns:
+        Não retorna valor.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     from escolhas.models import HistoricoEscolha
     HistoricoEscolha.objects.create(escolha=escolha_matematica, situacao_anterior=None, situacao_nova=SituacaoChoices.ESCOLHA)
     url = reverse('escolha-list')

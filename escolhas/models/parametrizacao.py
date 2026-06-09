@@ -6,10 +6,7 @@ from django.db import models
 from .base import BaseModel
 
 class Parametrizacao(BaseModel):
-    """Parametriza o uso de tipos de unidade escolar (tipo_ue) no sistema.
-
-    Cada registro representa um tipo_ue único e se ele deve ser utilizado.
-    """
+    """Parametriza o uso de tipos de unidade escolar (tipo_ue) no sistema."""
     tipo_ue = models.CharField(max_length=255, unique=True, db_index=True, verbose_name='Tipo UE')
     usar = models.BooleanField(default=False, verbose_name='Utilizar este tipo de UE')
 
@@ -21,14 +18,31 @@ class Parametrizacao(BaseModel):
         ordering = ['tipo_ue']
 
     def __str__(self) -> Any:
-        """Executa   str  ."""
+        """Executa   str  .
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         return f'{self.tipo_ue} ({('usar' if self.usar else 'não usar')})'
 
     @classmethod
     def sync_from_escolas(cls) -> int:
         """Garante que exista um registro para cada tipo_ue distinto em Escola.
-
-        Retorna a quantidade de registros criados.
+        
+        Args:
+            cls: Classe referenciada.
+        
+        Returns:
+            Valor inteiro calculado.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         from .escola import Escola
         qs = Escola.objects.exclude(tipo_ue__isnull=True).exclude(tipo_ue='').order_by('tipo_ue').values_list('tipo_ue', flat=True).distinct()

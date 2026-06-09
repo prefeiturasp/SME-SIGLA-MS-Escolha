@@ -9,25 +9,67 @@ class TestCandidatoAPIService:
     """Testes para CandidatoAPIService."""
 
     def test_init_com_base_url_personalizada(self) -> None:
-        """Testa inicialização com base_url personalizada."""
+        """Testa inicialização com base_url personalizada.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         service = CandidatoAPIService(base_url='http://custom-url.com', timeout_seconds=60)
         assert service.base_url == 'http://custom-url.com'
         assert service.timeout_seconds == 60
 
     def test_init_sem_base_url_usando_settings(self, settings: Any) -> None:
-        """Testa inicialização sem base_url usando settings."""
+        """Testa inicialização sem base_url usando settings.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://default-url.com'
         service = CandidatoAPIService()
         assert service.base_url == 'http://default-url.com'
         assert service.timeout_seconds == 30
 
     def test_init_remove_barra_final(self) -> None:
-        """Testa que remove barra final da URL."""
+        """Testa que remove barra final da URL.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         service = CandidatoAPIService(base_url='http://test.com/')
         assert service.base_url == 'http://test.com'
 
     def test_buscar_candidatos_por_cpfs_sucesso(self, settings: Any) -> None:
-        """Testa busca de candidatos por CPFs com sucesso."""
+        """Testa busca de candidatos por CPFs com sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901', '98765432100']
@@ -48,7 +90,18 @@ class TestCandidatoAPIService:
             assert 'Content-Type' in call_args[1]['headers']
 
     def test_buscar_candidatos_por_cpfs_lista_vazia(self, settings: Any) -> None:
-        """Testa busca com lista de CPFs vazia."""
+        """Testa busca com lista de CPFs vazia.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = []  # type: ignore[var-annotated]
@@ -63,7 +116,18 @@ class TestCandidatoAPIService:
             assert result == mock_response_data
 
     def test_buscar_candidatos_por_cpfs_http_error(self, settings: Any) -> None:
-        """Testa tratamento de erro HTTP."""
+        """Testa tratamento de erro HTTP.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901']
@@ -74,7 +138,18 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_connection_error(self, settings: Any) -> None:
-        """Testa tratamento de erro de conexão."""
+        """Testa tratamento de erro de conexão.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901']
@@ -85,7 +160,18 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_timeout(self, settings: Any) -> None:
-        """Testa tratamento de timeout."""
+        """Testa tratamento de timeout.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901']
@@ -96,7 +182,18 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_excecao_generica(self, settings: Any) -> None:
-        """Testa tratamento de exceção genérica."""
+        """Testa tratamento de exceção genérica.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901']
@@ -107,7 +204,18 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_timeout_personalizado(self, settings: Any) -> None:
-        """Testa que usa timeout personalizado."""
+        """Testa que usa timeout personalizado.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService(timeout_seconds=60)
         cpfs = ['12345678901']
@@ -122,7 +230,18 @@ class TestCandidatoAPIService:
             assert call_args[1]['timeout'] == 60
 
     def test_buscar_candidatos_por_cpfs_headers_corretos(self, settings: Any) -> None:
-        """Testa que headers estão corretos."""
+        """Testa que headers estão corretos.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         cpfs = ['12345678901']
@@ -140,8 +259,16 @@ class TestCandidatoAPIService:
 
     def test_buscar_candidatos_sucesso(self, settings: Any) -> None:
         """Testa busca de candidatos por nome/cpf/rg/registro_funcional com.
-
-        sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
@@ -161,8 +288,16 @@ class TestCandidatoAPIService:
 
     def test_buscar_candidatos_sem_parametros_retorna_lista_vazia(self, settings: Any) -> None:
         """Sem nenhum parâmetro informado, deve retornar lista vazia (não chama.
-
-        API).
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
@@ -173,8 +308,16 @@ class TestCandidatoAPIService:
 
     def test_buscar_candidatos_envia_params_corretos(self, settings: Any) -> None:
         """Testa que nome, cpf, rg e registro_funcional são enviados como query.
-
-        params.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
@@ -188,7 +331,18 @@ class TestCandidatoAPIService:
             assert call_args[1]['params'] == {'nome': 'Maria', 'cpf': '11122233344', 'rg': '12.345.678-9', 'registro_funcional': 'RF001'}
 
     def test_buscar_candidatos_http_error_retorna_none(self, settings: Any) -> None:
-        """Em erro HTTP, deve retornar None."""
+        """Em erro HTTP, deve retornar None.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -197,7 +351,18 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_connection_error_retorna_none(self, settings: Any) -> None:
-        """Em erro de conexão, deve retornar None."""
+        """Em erro de conexão, deve retornar None.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CANDIDATOS_API_URL = 'http://test-api.com'
         service = CandidatoAPIService()
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:

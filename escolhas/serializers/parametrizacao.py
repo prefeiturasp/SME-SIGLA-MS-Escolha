@@ -14,10 +14,7 @@ class ParametrizacaoSerializer(serializers.ModelSerializer):
 
 
 class ParametrizacaoBulkItemSerializer(serializers.Serializer):
-    """Valida itens de atualização em massa para Parametrizacao.
-
-    Apenas o campo 'usar' é atualizável; 'uuid' identifica o registro.
-    """
+    """Valida itens de atualização em massa para Parametrizacao."""
 
     uuid = serializers.UUIDField()
     usar = serializers.BooleanField()

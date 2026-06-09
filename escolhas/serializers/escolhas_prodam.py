@@ -18,7 +18,18 @@ class EscolhasProdamImportacaoSerializer(serializers.Serializer):
     escolhas = serializers.ListField(child=EscolhaProdamItemSerializer(), required=True, allow_empty=False)
 
     def validate_escolhas(self, value: Any) -> Any:
-        """Valida que cada escolha tem os campos obrigatórios."""
+        """Valida que cada escolha tem os campos obrigatórios.
+        
+        Args:
+            self: Instância do objeto.
+            value: Valor recebido para validação.
+        
+        Returns:
+            Valor validado do campo escolhas.
+        
+        Raises:
+            ValidationError: Se ocorrer erro nesta operação.
+        """
         for escolha in value:
             if not escolha.get('cpf'):
                 raise serializers.ValidationError('CPF é obrigatório em cada escolha')

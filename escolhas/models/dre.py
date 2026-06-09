@@ -19,6 +19,16 @@ class Dre(BaseModel):
         ordering = ['nome']
 
     def __str__(self) -> Any:
-        """Executa   str  ."""
+        """Executa   str  .
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         return f'{self.sigla} - {self.nome}'
 auditlog.register(Dre)

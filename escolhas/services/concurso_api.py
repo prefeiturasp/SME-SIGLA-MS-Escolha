@@ -10,7 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 def _cargos_list_from_response(data: Any) -> list[dict]:
-    """Extrai lista de cargos da resposta da API (lista direta ou paginada)."""
+    """Extrai lista de cargos da resposta da API (lista direta ou paginada).
+    
+    Args:
+        data: Dados de entrada.
+    
+    Returns:
+        Lista com os registros resultantes.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and "results" in data:
@@ -24,16 +34,15 @@ class ConcursoAPIService:
     @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
         """Busca no MS-Concursos os cargos pelos códigos e retorna um mapa codigo.
-
-        -> nome.
-
+        
         Args:
-            codigos: Lista de códigos de cargo (strings, ex.: do
-            ConcursoCandidato.codigo_cargo).
-
+            codigos: Lista de códigos de cargo (strings, ex.: do.
+        
         Returns:
-            Dicionário onde a chave é o código (string) e o valor é o nome do
-            cargo.
+            Dicionário com os dados processados.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         if not codigos:
             return {}
@@ -78,14 +87,15 @@ class ConcursoAPIService:
     @staticmethod
     def buscar_concurso_uuid(concurso_uuid: str) -> str | None:
         """Busca concurso_uuid a partir do concurso_uuid via.
-
-        MS-ProcessosConvocacao.
-
+        
         Args:
-            concurso_uuid: UUID do concurso
-
+            concurso_uuid: UUID do concurso.
+        
         Returns:
-            UUID do concurso se encontrado, None caso contrário
+            Texto resultante da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         try:
             base_url = settings.CONCURSOS_API_URL

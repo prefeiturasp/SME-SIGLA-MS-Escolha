@@ -15,7 +15,18 @@ logger = logging.getLogger(__name__)
 def criar_vagas_em_lote(
     vagas_data: list[dict[str, Any]], lote: VagasEscolasLote
 ) -> tuple[list[VagasEscolas], list[dict[str, Any]]]:
-    """Cria múltiplas vagas em lote."""
+    """Cria múltiplas vagas em lote.
+    
+    Args:
+        vagas_data: Parâmetro vagas data da operação.
+        lote: Parâmetro lote da operação.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     errors = []
     created_vagas = []
 
@@ -58,7 +69,17 @@ def criar_vagas_em_lote(
 def processar_criacao_vagas_lote(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Processa a criação de vagas em lote a partir dos dados da requisição."""
+    """Processa a criação de vagas em lote a partir dos dados da requisição.
+    
+    Args:
+        request_data: Parâmetro request data da operação.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        TipoUEDesabilitadoException: Se ocorrer erro nesta operação.
+    """
     serializer = VagasEscolasCreateSerializer(data=request_data)
 
     if not serializer.is_valid():
@@ -123,12 +144,15 @@ def atualizar_vagas_utilizadas_por_processo(
     vagas: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Atualiza *_utilizadas de VagasEscolas direto por UUID das vagas.
-
+    
     Args:
-        vagas: lista de dicts com keys: uuid, vagas_precarias_utilizadas?,
-        vagas_definitivas_utilizadas?
+        vagas: lista de dicts com keys: uuid, vagas_precarias_utilizadas?,.
+    
     Returns:
-        dict com listas de atualizados e não encontrados
+        Dicionário com os dados processados.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     from ..models import VagasEscolas  # import local para evitar ciclos
 
@@ -179,14 +203,15 @@ def adicionar_vagas_ao_lote_por_processo(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
     """Adiciona novas vagas a um lote existente identificado por processo_uuid.
-
-    Espera o mesmo payload do create:
-    {
-      "processo_uuid": "...",
-      "processo_nome": "opcional",
-      "vagas": [ {...}, ... ]
-    }
-    Retorna (response_dict, http_status_code)
+    
+    Args:
+        request_data: Parâmetro request data da operação.
+    
+    Returns:
+        Resultado da operação.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
     """
     serializer = VagasEscolasCreateSerializer(data=request_data)
     if not serializer.is_valid():

@@ -11,7 +11,19 @@ class Command(BaseCommand):
     help = 'Busca DREs na SME Integracao (/api/DREs) e cria/atualiza registros locais'
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """Executa a lógica principal do comando."""
+        """Executa a lógica principal do comando.
+        
+        Args:
+            self: Instância do objeto.
+            *args: Argumentos posicionais variáveis.
+            **options: Parâmetro options da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         self.stdout.write(self.style.SUCCESS('Buscando DREs da SME Integracao...'))
         try:
             dres = buscar_dres_de_smeintegracao()

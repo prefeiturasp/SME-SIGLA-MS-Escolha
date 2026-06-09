@@ -9,7 +9,18 @@ class TestConcursoAPIService:
     """Testes para ConcursoAPIService."""
 
     def test_buscar_concurso_uuid_sucesso(self, settings: Any) -> None:
-        """Testa busca de concurso_uuid com sucesso."""
+        """Testa busca de concurso_uuid com sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         mock_response_data = {'uuid': concurso_uuid, 'nome': 'Concurso Teste'}
@@ -26,7 +37,18 @@ class TestConcursoAPIService:
             assert call_args[1]['timeout'] == 30
 
     def test_buscar_concurso_uuid_nao_encontrado(self, settings: Any) -> None:
-        """Testa quando concurso não é encontrado."""
+        """Testa quando concurso não é encontrado.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         mock_response_data = {'uuid': None, 'nome': 'Concurso Teste'}
@@ -39,7 +61,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_http_error_404(self, settings: Any) -> None:
-        """Testa tratamento de erro HTTP 404."""
+        """Testa tratamento de erro HTTP 404.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -48,7 +81,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_http_error_500(self, settings: Any) -> None:
-        """Testa tratamento de erro HTTP 500."""
+        """Testa tratamento de erro HTTP 500.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -57,7 +101,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_connection_error(self, settings: Any) -> None:
-        """Testa tratamento de erro de conexão."""
+        """Testa tratamento de erro de conexão.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -66,7 +121,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_timeout(self, settings: Any) -> None:
-        """Testa tratamento de timeout."""
+        """Testa tratamento de timeout.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -75,7 +141,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_excecao_generica(self, settings: Any) -> None:
-        """Testa tratamento de exceção genérica."""
+        """Testa tratamento de exceção genérica.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -84,7 +161,18 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_resposta_sem_uuid(self, settings: Any) -> None:
-        """Testa quando resposta não contém campo uuid."""
+        """Testa quando resposta não contém campo uuid.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         concurso_uuid = '123e4567-e89b-12d3-a456-426614174000'
         mock_response_data = {'nome': 'Concurso Teste'}
@@ -97,13 +185,34 @@ class TestConcursoAPIService:
             assert result is None
 
     def test_buscar_concurso_uuid_metodo_estatico(self) -> None:
-        """Testa que o método é estático."""
+        """Testa que o método é estático.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         import inspect
         assert inspect.ismethod(ConcursoAPIService.buscar_concurso_uuid) is False
         assert hasattr(ConcursoAPIService, 'buscar_concurso_uuid')
 
     def test_get_cargos_por_codigos_sucesso(self, settings: Any) -> None:
-        """Testa busca de cargos por códigos com sucesso."""
+        """Testa busca de cargos por códigos com sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         mock_response_data = [{'codigo': '10', 'nome': 'Professor'}]
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
@@ -115,7 +224,18 @@ class TestConcursoAPIService:
             assert result == {'10': 'Professor'}
 
     def test_get_cargos_por_codigos_lista_vazia(self, settings: Any) -> None:
-        """Testa que lista vazia retorna dict vazio sem chamar API."""
+        """Testa que lista vazia retorna dict vazio sem chamar API.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             result = ConcursoAPIService.get_cargos_por_codigos([])
@@ -123,7 +243,18 @@ class TestConcursoAPIService:
             mock_get.assert_not_called()
 
     def test_get_cargos_por_codigos_sem_url(self, settings: Any) -> None:
-        """Testa que sem CONCURSOS_API_URL retorna dict vazio."""
+        """Testa que sem CONCURSOS_API_URL retorna dict vazio.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = ''
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             result = ConcursoAPIService.get_cargos_por_codigos(['10'])
@@ -131,7 +262,18 @@ class TestConcursoAPIService:
             mock_get.assert_not_called()
 
     def test_get_cargos_por_codigos_erro_http(self, settings: Any) -> None:
-        """Testa que erro HTTP retorna dict vazio."""
+        """Testa que erro HTTP retorna dict vazio.
+        
+        Args:
+            self: Instância do objeto.
+            settings: Parâmetro settings da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         settings.CONCURSOS_API_URL = 'http://test-api.com'
         with patch('sigla_sdk.http.api_client.http_client.get') as mock_get:
             mock_get.side_effect = requests.exceptions.ConnectionError('err')

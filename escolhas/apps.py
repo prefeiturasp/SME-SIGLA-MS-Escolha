@@ -9,5 +9,15 @@ class EscolhasConfig(AppConfig):
     name = 'escolhas'
 
     def ready(self) -> None:
-        """Importa os signals quando a aplicação estiver pronta."""
+        """Importa os signals quando a aplicação estiver pronta.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         import escolhas.signals

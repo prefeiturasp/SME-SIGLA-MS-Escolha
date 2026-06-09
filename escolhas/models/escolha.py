@@ -26,6 +26,16 @@ class Escolha(BaseModel):
         ordering = ['-criado_em']
 
     def __str__(self) -> Any:
-        """Executa   str  ."""
+        """Executa   str  .
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         return f'{self.candidato_uuid} - {(self.vaga_escola.uuid if self.vaga_escola else 'N/A')}'
 auditlog.register(Escolha)

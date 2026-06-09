@@ -22,7 +22,17 @@ class EscolaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Executa get queryset."""
+        """Executa get queryset.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Valor calculado para o campo ou propriedade.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         qs = super().get_queryset()
         tipos_ativos = list(Parametrizacao.objects.filter(usar=True).values_list('tipo_ue', flat=True))
         if tipos_ativos:

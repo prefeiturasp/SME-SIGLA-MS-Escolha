@@ -26,7 +26,17 @@ class VagasEscolasViewSet(ModelViewSet):
     filterset_fields = ['escola__codigo_eol', 'escola__dre__codigo', 'cargo_codigo']
 
     def get_queryset(self) -> Any:
-        """Executa get queryset."""
+        """Executa get queryset.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Valor calculado para o campo ou propriedade.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get('processo_uuid')
         if processo_uuid:
@@ -37,7 +47,20 @@ class VagasEscolasViewSet(ModelViewSet):
         return qs
 
     def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa list."""
+        """Executa list.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Resposta HTTP com os dados serializados.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         logger.info('Listando vagas das escolas', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'user': request.user})
         qs = self.filter_queryset(self.get_queryset())
         qs = qs.filter(esta_checada=True)
@@ -53,23 +76,18 @@ class VagasEscolasViewSet(ModelViewSet):
 
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """Cria vagas das escolas em lote.
-
-        Payload esperado:
-        {
-            "processo_uuid": "123e4567-e89b-12d3-a456-426614174000",
-            "processo_nome": "Concurso de Professor de Matemática",
-            "vagas": [
-                {
-                    "data_fechamento_modulo": "2025-09-10",
-                    "cargo_codigo": 123,
-                    "cargo_descricao": "Professor de Matemática",
-                    "codigo_eol": "123456",
-                    "vagas_precarias": 2,
-                    "vagas_definitivas": 3,
-                    "status": "ativo"
-                }
-            ]
-        }
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Resposta HTTP com os dados serializados.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         logger.info('Criando vagas das escolas em lote', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'processo_uuid': request.data.get('processo_uuid'), 'processo_nome': request.data.get('processo_nome'), 'vagas': len(request.data.get('vagas', [])), 'user': request.user})
         try:
@@ -86,7 +104,20 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=['patch'], url_path='utilizadas')
     def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa utilizadas."""
+        """Executa utilizadas.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         logger.info('Atualizando vagas utilizadas', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'params': request.query_params, 'data': request.data, 'user': request.user})
         payload = VagaEscolaUtilizadaItemSerializer(data=request.data, many=True)
         payload.is_valid(raise_exception=True)
@@ -97,17 +128,38 @@ class VagasEscolasViewSet(ModelViewSet):
     @action(detail=False, methods=['post'], url_path='inclusao')
     def atualizar_vagas_lote(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """Recebe um payload equivalente ao do create (processo_uuid,.
-
-        processo_nome opcional, vagas=[...])
-        e cria novas vagas em um lote já existente, identificado por
-        processo_uuid.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(request.data)
         return Response(response_data, status=status_code)
 
     @action(detail=False, methods=['get'], url_path='por-cargo-e-escolas')
     def por_cargo_e_escolas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa por cargo e escolas."""
+        """Executa por cargo e escolas.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+            *args: Argumentos posicionais variáveis.
+            **kwargs: Argumentos nomeados variáveis.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         logger.info('Buscando vagas por cargo e escolas', extra={'correlation_id': get_correlation_id(), 'method': request.method, 'path': request.path, 'user': request.user, 'params': request.query_params})
         codigo_cargo = request.query_params.get('cargo_codigo')
         eols = request.query_params.getlist('codigo_eol') or (request.query_params.get('codigo_eol__in', '').split(',') if request.query_params.get('codigo_eol__in') else [])
@@ -122,8 +174,16 @@ class VagasEscolasViewSet(ModelViewSet):
     @action(detail=False, methods=['delete'], url_path='por-processo')
     def excluir_por_processo(self, request: Any) -> Any:
         """Remove lotes de vagas (e vagas em cascata) do processo informado.
-
-        Query: processo_uuid=<uuid>.
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         processo_uuid = request.query_params.get('processo_uuid')
         if not processo_uuid:

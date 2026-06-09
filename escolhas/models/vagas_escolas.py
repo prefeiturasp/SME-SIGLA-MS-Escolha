@@ -33,6 +33,16 @@ class VagasEscolas(BaseModel):
         ordering = ['-data_fechamento_modulo', 'escola__nome_oficial']
 
     def __str__(self) -> Any:
-        """Executa   str  ."""
+        """Executa   str  .
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         return f'{self.escola.nome_oficial} - {self.cargo_descricao}'
 auditlog.register(VagasEscolas)

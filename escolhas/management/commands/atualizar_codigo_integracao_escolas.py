@@ -18,7 +18,19 @@ class Command(BaseCommand):
     help = 'Atualiza codigo_integracao das escolas: busca DREs na SME, para cada DRE obtém unidades (codigo-integracao) e atualiza as escolas pelo codigo_eol.'
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """Executa a lógica principal do comando."""
+        """Executa a lógica principal do comando.
+        
+        Args:
+            self: Instância do objeto.
+            *args: Argumentos posicionais variáveis.
+            **options: Parâmetro options da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         self.stdout.write(self.style.SUCCESS('Buscando DREs na SME Integracao...'))
         try:
             dres = buscar_dres_de_smeintegracao()

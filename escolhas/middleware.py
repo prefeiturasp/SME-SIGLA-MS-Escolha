@@ -10,7 +10,14 @@ _thread_locals = threading.local()
 logger = logging.getLogger('django.request_logger')
 
 def get_correlation_id() -> Any:
-    """Executa get correlation id."""
+    """Executa get correlation id.
+    
+    Returns:
+        Valor calculado para o campo ou propriedade.
+    
+    Raises:
+        Nenhuma exceção específica documentada.
+    """
     return getattr(_thread_locals, 'correlation_id', None)
 logger = logging.getLogger('django.request_logger')
 
@@ -18,11 +25,30 @@ class CorrelationIdMiddleware:
     """Define CorrelationIdMiddleware."""
 
     def __init__(self, get_response: Any) -> None:
-        """Executa   init  ."""
+        """Executa   init  .
+        
+        Args:
+            self: Instância do objeto.
+            get_response: Parâmetro get response da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         self.get_response = get_response
 
     def __call__(self, request: Any) -> Any:
-        """Executa   call  ."""
+        """Executa   call  .
+        
+        Args:
+            self: Instância do objeto.
+            request: Requisição HTTP recebida.
+        
+        Returns:
+            Resultado da operação.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         start_time = time.perf_counter()
         cid = request.headers.get('X-Correlation-ID', str(uuid.uuid4()))
         _thread_locals.correlation_id = cid

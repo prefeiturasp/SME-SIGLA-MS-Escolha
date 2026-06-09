@@ -8,7 +8,20 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
     """Define CustomJsonFormatter."""
 
     def add_fields(self, log_record: Any, record: Any, message_dict: Any) -> None:
-        """Executa add fields."""
+        """Executa add fields.
+        
+        Args:
+            self: Instância do objeto.
+            log_record: Parâmetro log record da operação.
+            record: Parâmetro record da operação.
+            message_dict: Parâmetro message dict da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         super().add_fields(log_record, record, message_dict)
         cid = get_correlation_id()
         if cid:

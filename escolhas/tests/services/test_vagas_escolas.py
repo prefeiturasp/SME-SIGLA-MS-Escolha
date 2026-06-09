@@ -13,7 +13,19 @@ class TestCriarVagasEmLote:
     """Testes para a função criar_vagas_em_lote."""
 
     def test_criar_vagas_em_lote_sucesso(self, escola_1: Any, vaga_data_valida: Any) -> None:
-        """Testa criação bem-sucedida de uma vaga."""
+        """Testa criação bem-sucedida de uma vaga.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            vaga_data_valida: Parâmetro vaga data valida da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         created_vagas, errors = criar_vagas_em_lote([vaga_data_valida], lote)
         assert len(created_vagas) == 1
@@ -22,7 +34,20 @@ class TestCriarVagasEmLote:
         assert created_vagas[0].lote == lote
 
     def test_criar_vagas_em_lote_multiplas_sucesso(self, escola_1: Any, escola_2: Any, vagas_data_multiplas: Any) -> None:
-        """Testa criação bem-sucedida de múltiplas vagas."""
+        """Testa criação bem-sucedida de múltiplas vagas.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            escola_2: Parâmetro escola 2 da operação.
+            vagas_data_multiplas: Parâmetro vagas data multiplas da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         created_vagas, errors = criar_vagas_em_lote(vagas_data_multiplas, lote)
         assert len(created_vagas) == 2
@@ -31,7 +56,18 @@ class TestCriarVagasEmLote:
         assert created_vagas[1].escola == escola_2
 
     def test_criar_vagas_em_lote_escola_nao_encontrada(self, vaga_data_valida: Any) -> None:
-        """Testa erro quando escola não é encontrada."""
+        """Testa erro quando escola não é encontrada.
+        
+        Args:
+            self: Instância do objeto.
+            vaga_data_valida: Parâmetro vaga data valida da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         vaga = {**vaga_data_valida, 'codigo_eol': '999999'}
         created_vagas, errors = criar_vagas_em_lote([vaga], lote)
@@ -39,7 +75,19 @@ class TestCriarVagasEmLote:
         assert len(errors) == 1
 
     def test_criar_vagas_em_lote_mistura_sucesso_erro(self, escola_1: Any, vaga_data_valida: Any) -> None:
-        """Testa criação com algumas vagas bem-sucedidas e outras com erro."""
+        """Testa criação com algumas vagas bem-sucedidas e outras com erro.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            vaga_data_valida: Parâmetro vaga data valida da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         vagas_data = [vaga_data_valida, {'data_fechamento_modulo': '2025-09-15', 'cargo_codigo': 456, 'cargo_descricao': 'Professor de Português', 'codigo_eol': '999999', 'vagas_precarias': 1, 'vagas_definitivas': 2, 'status': 'ativo'}]
         created_vagas, errors = criar_vagas_em_lote(vagas_data, lote)
@@ -49,7 +97,18 @@ class TestCriarVagasEmLote:
         assert errors[0]['vaga_index'] == 2
 
     def test_criar_vagas_em_lote_dados_invalidos(self, escola_1: Any) -> None:
-        """Testa erro com dados inválidos na criação da vaga."""
+        """Testa erro com dados inválidos na criação da vaga.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         vaga_data = {'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 'texto_invalido', 'vagas_definitivas': 3, 'status': 'ativo'}
         created_vagas, errors = criar_vagas_em_lote([vaga_data], lote)
@@ -63,7 +122,20 @@ class TestProcessarCriacaoVagasLote:
     """Testes para a função processar_criacao_vagas_lote."""
 
     def test_processar_criacao_sucesso(self, escola_1: Any, escola_2: Any, request_data_valido: Any) -> None:
-        """Testa processamento bem-sucedido de criação em lote."""
+        """Testa processamento bem-sucedido de criação em lote.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            escola_2: Parâmetro escola 2 da operação.
+            request_data_valido: Parâmetro request data valido da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         response_data, status_code = processar_criacao_vagas_lote(request_data_valido)
         assert status_code == status.HTTP_201_CREATED
         assert response_data['vagas_criadas'] == 2
@@ -72,19 +144,51 @@ class TestProcessarCriacaoVagasLote:
         assert VagasEscolas.objects.filter(lote__uuid=response_data['lote_uuid']).count() == 2
 
     def test_processar_criacao_dados_invalidos(self, request_data_invalido: Any) -> None:
-        """Testa processamento com dados inválidos."""
+        """Testa processamento com dados inválidos.
+        
+        Args:
+            self: Instância do objeto.
+            request_data_invalido: Parâmetro request data invalido da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         response_data, status_code = processar_criacao_vagas_lote(request_data_invalido)
         assert status_code == status.HTTP_400_BAD_REQUEST
         assert 'errors' in response_data
 
     def test_processar_criacao_lista_vazia(self, request_data_vazio: Any) -> None:
-        """Testa processamento com lista vazia."""
+        """Testa processamento com lista vazia.
+        
+        Args:
+            self: Instância do objeto.
+            request_data_vazio: Parâmetro request data vazio da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         response_data, status_code = processar_criacao_vagas_lote(request_data_vazio)
         assert status_code == status.HTTP_400_BAD_REQUEST
         assert 'errors' in response_data
 
     def test_processar_criacao_escolas_nao_encontradas(self) -> None:
-        """Testa processamento quando nenhuma escola é encontrada."""
+        """Testa processamento quando nenhuma escola é encontrada.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '999999', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -95,7 +199,18 @@ class TestProcessarCriacaoVagasLote:
         assert response_data['vagas_com_erro'] == 1
 
     def test_processar_criacao_mistura_sucesso_erro(self, escola_1: Any) -> None:
-        """Processamento com algumas vagas bem-sucedidas e outras com erro."""
+        """Processamento com algumas vagas bem-sucedidas e outras com erro.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}, {'data_fechamento_modulo': '2025-09-15', 'cargo_codigo': 456, 'cargo_descricao': 'Professor de Português', 'codigo_eol': '999999', 'vagas_precarias': 1, 'vagas_definitivas': 2, 'status': 'ativo'}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -106,7 +221,17 @@ class TestProcessarCriacaoVagasLote:
         assert response_data['vagas_com_erro'] == 1
 
     def test_processar_criacao_campos_obrigatorios_faltando(self) -> None:
-        """Testa processamento com campos obrigatórios faltando."""
+        """Testa processamento com campos obrigatórios faltando.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -115,8 +240,16 @@ class TestProcessarCriacaoVagasLote:
 
     def test_processar_criacao_bloqueia_por_parametrizacao_tipo_ue(self, escola_1: Any) -> None:
         """Quando o tipo_ue da escola está desabilitado (usar=False), deve lançar.
-
-        exceção.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         escola_1.tipo_ue = 'EMEF'
         escola_1.save(update_fields=['tipo_ue'])
@@ -127,8 +260,15 @@ class TestProcessarCriacaoVagasLote:
 
     def test_processar_criacao_ignora_escola_inexistente_na_validacao(self) -> None:
         """Se escola não existir, a validação de tipo_ue bloqueado não barra;.
-
-        segue para erros normais.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         Parametrizacao.objects.create(tipo_ue='EMEF', usar=False)
         request_data = {'processo_uuid': str(uuid4()), 'processo_nome': 'Proc', 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor', 'codigo_eol': '999999', 'vagas_precarias': 0, 'vagas_definitivas': 1, 'status': 'ativo'}]}
@@ -138,7 +278,17 @@ class TestProcessarCriacaoVagasLote:
         assert response_data.get('vagas_com_erro') == 1
 
     def test_processar_criacao_chave_vagas_faltando(self) -> None:
-        """Testa processamento sem a chave 'vagas'."""
+        """Testa processamento sem a chave 'vagas'.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'outros_dados': 'valor'}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -146,7 +296,17 @@ class TestProcessarCriacaoVagasLote:
         assert 'errors' in response_data
 
     def test_processar_criacao_processo_uuid_invalido_retorna_mensagem_em_portugues(self) -> None:
-        """Retorna erro de UUID inválido em PT-BR para processo_uuid."""
+        """Retorna erro de UUID inválido em PT-BR para processo_uuid.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         request_data = {'processo_uuid': 'uuid-invalido', 'processo_nome': 'Proc', 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor', 'codigo_eol': '123456', 'vagas_precarias': 0, 'vagas_definitivas': 1, 'status': 'ativo'}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
         assert status_code == status.HTTP_400_BAD_REQUEST
@@ -156,8 +316,18 @@ class TestProcessarCriacaoVagasLote:
 
     def test_processar_criacao_mesmo_processo_duas_vezes_cria_lotes_distintos(self, escola_1: Any, escola_2: Any, vagas_data_multiplas: Any) -> None:
         """Testa processamento de um mesmo processo duas vezes, criando lotes.
-
-        distintos.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            escola_2: Parâmetro escola 2 da operação.
+            vagas_data_multiplas: Parâmetro vagas data multiplas da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
         """
         proc_uuid = uuid4()
         req1 = {'processo_uuid': str(proc_uuid), 'processo_nome': 'P1', 'vagas': vagas_data_multiplas}
@@ -170,7 +340,19 @@ class TestProcessarCriacaoVagasLote:
         assert VagasEscolas.objects.filter(lote=lotes[-1]).count() == 1
 
     def test_processar_criacao_zfill_codigo_eol(self, escola_1: Any, vagas_data_multiplas: Any) -> None:
-        """Testa processamento de vagas com EOL zero-left."""
+        """Testa processamento de vagas com EOL zero-left.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            vagas_data_multiplas: Parâmetro vagas data multiplas da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         escola_1.codigo_eol = '000123'
         escola_1.save(update_fields=['codigo_eol'])
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
@@ -185,7 +367,19 @@ class TestIntegracaoVagasEscolas:
     """Testes de integração para o service de vagas das escolas."""
 
     def test_fluxo_completo_criacao_vagas(self, escola_1: Any, escola_2: Any) -> None:
-        """Testa o fluxo completo de criação de vagas."""
+        """Testa o fluxo completo de criação de vagas.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+            escola_2: Parâmetro escola 2 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}, {'data_fechamento_modulo': '2025-09-15', 'cargo_codigo': 456, 'cargo_descricao': 'Professor de Português', 'codigo_eol': '789012', 'vagas_precarias': 1, 'vagas_definitivas': 2, 'status': 'ativo'}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -205,7 +399,18 @@ class TestAtualizarVagasUtilizadasPorProcesso:
     """Define TestAtualizarVagasUtilizadasPorProcesso."""
 
     def test_atualizar_vagas_utilizadas_sucesso(self, escola_1: Any) -> None:
-        """Verifica atualizar vagas utilizadas sucesso."""
+        """Verifica atualizar vagas utilizadas sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         v1 = VagasEscolas.objects.create(escola=escola_1, lote=lote, data_fechamento_modulo='2025-01-01', cargo_codigo=100, cargo_descricao='Cargo 1', vagas_precarias=3, vagas_definitivas=2, status='1')
         v2 = VagasEscolas.objects.create(escola=escola_1, lote=lote, data_fechamento_modulo='2025-01-01', cargo_codigo=101, cargo_descricao='Cargo 2', vagas_precarias=1, vagas_definitivas=4, status='1')
@@ -218,14 +423,35 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         assert v2.vagas_definitivas_utilizadas == 3
 
     def test_atualizar_vagas_utilizadas_lote_nao_encontrado(self) -> None:
-        """Verifica atualizar vagas utilizadas lote nao encontrado."""
+        """Verifica atualizar vagas utilizadas lote nao encontrado.
+        
+        Args:
+            self: Instância do objeto.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         result = atualizar_vagas_utilizadas_por_processo(vagas=[])
         assert result['total'] == 0
         assert result['atualizados'] == []
         assert result['nao_encontrados'] == []
 
     def test_atualizar_vagas_utilizadas_nao_encontrados(self, escola_1: Any) -> None:
-        """Verifica atualizar vagas utilizadas nao encontrados."""
+        """Verifica atualizar vagas utilizadas nao encontrados.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         v1 = VagasEscolas.objects.create(escola=escola_1, lote=lote, data_fechamento_modulo='2025-01-01', cargo_codigo=100, cargo_descricao='Cargo 1', vagas_precarias=3, vagas_definitivas=2, status='1')
         uuid_inexistente = str(uuid4())
@@ -236,7 +462,18 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         assert v1.vagas_definitivas_utilizadas == 1
 
     def test_rollback_em_caso_de_erro(self, escola_1: Any) -> None:
-        """Não há rollback quando algumas vagas são criadas com sucesso."""
+        """Não há rollback quando algumas vagas são criadas com sucesso.
+        
+        Args:
+            self: Instância do objeto.
+            escola_1: Parâmetro escola 1 da operação.
+        
+        Returns:
+            Não retorna valor.
+        
+        Raises:
+            Nenhuma exceção específica documentada.
+        """
         lote = VagasEscolasLote.objects.create(processo_uuid=uuid4(), processo_nome='Proc')
         request_data = {'processo_uuid': str(lote.processo_uuid), 'processo_nome': lote.processo_nome, 'vagas': [{'data_fechamento_modulo': '2025-09-10', 'cargo_codigo': 123, 'cargo_descricao': 'Professor de Matemática', 'codigo_eol': '123456', 'vagas_precarias': 2, 'vagas_definitivas': 3, 'status': 'ativo'}, {'data_fechamento_modulo': '2025-09-15', 'cargo_codigo': 456, 'cargo_descricao': 'Professor de Português', 'codigo_eol': '999999', 'vagas_precarias': 1, 'vagas_definitivas': 2, 'status': 'ativo'}]}
         response_data, status_code = processar_criacao_vagas_lote(request_data)
