@@ -22,6 +22,7 @@ from .parametrizacao import (
 from .vagas_escolas import (
     VagaEscolaUtilizadaItemSerializer,
     VagasEscolasCreateSerializer,
+    VagasEscolasInclusaoSerializer,
     VagasEscolasSerializer,
     VagasEscolasUtilizadasBulkSerializer,
     VagasEscolasUtilizadasUpdateSerializer,

@@ -120,6 +120,7 @@ def payload(processo_uuid, eol1="123456", eol2=None):
     return {
         "processo_uuid": str(processo_uuid),
         "processo_nome": "Processo Teste",
+        "concurso_uuid": str(uuid4()),
         "vagas": vagas,
     }
 
