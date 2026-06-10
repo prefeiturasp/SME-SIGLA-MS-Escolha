@@ -6,10 +6,10 @@ from ..models import Parametrizacao
 
 
 class ParametrizacaoSerializer(serializers.ModelSerializer):
-    """Define ParametrizacaoSerializer."""
+    """Serializer do modelo Parametrizacao."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Parametrizacao
         fields = ["uuid", "tipo_ue", "usar", "criado_em", "atualizado_em"]

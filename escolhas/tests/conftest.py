@@ -61,7 +61,7 @@ def vaga_escola(escola: Any, lote: Any) -> Any:
 
 
 def _criar_escolha(**override: Any) -> Any:
-    """Executa  criar escolha."""
+    """Criar escolha."""
     if "vaga_escola_uuid" in override:
         vaga_uuid = override.pop("vaga_escola_uuid")
         if vaga_uuid:

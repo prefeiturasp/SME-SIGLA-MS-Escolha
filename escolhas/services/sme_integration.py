@@ -7,13 +7,13 @@ from django.conf import settings
 
 
 def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
-    """Executa  get base url and headers.
+    """Obtém base url and headers.
 
     Returns:
-        Resultado da operação.
+        Tupla com os objetos criados ou atualizados.
 
     Raises:
-        ValueError: Se ocorrer erro nesta operação.
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url = getattr(settings, "SMEINTEGRACAO_API_URL", None)
     token = getattr(settings, "SMEINTEGRACAO_API_TOKEN", None)
@@ -31,13 +31,13 @@ def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
 
 
 def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
-    """Executa buscar dres de smeintegracao.
+    """Busca dres de smeintegracao.
 
     Returns:
-        Lista com os registros resultantes.
+        Lista com os registros obtidos.
 
     Raises:
-        ValueError: Se ocorrer erro nesta operação.
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + "/api/DREs"
@@ -71,16 +71,16 @@ def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
 
 
 def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
-    """Executa buscar ues codigos por dre.
+    """Busca ues codigos por dre.
 
     Args:
-        codigo_dre: Parâmetro codigo dre.
+        codigo_dre: Codigo dre utilizado na operação.
 
     Returns:
-        Lista com os registros resultantes.
+        Lista com os registros obtidos.
 
     Raises:
-        ValueError: Se ocorrer erro nesta operação.
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/ues"
@@ -98,16 +98,16 @@ def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
 
 
 def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
-    """Executa buscar dados escola por eol.
+    """Busca dados escola por eol.
 
     Args:
-        codigo_eol: Parâmetro codigo eol.
+        codigo_eol: Codigo eol utilizado na operação.
 
     Returns:
-        Dicionário com os dados processados.
+        Dicionário com os dados retornados pela operação.
 
     Raises:
-        ValueError: Se ocorrer erro nesta operação.
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/escolas/dados/{codigo_eol}"
@@ -127,16 +127,16 @@ def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
 def buscar_unidades_codigo_integracao_por_dre(
     codigo_dre: str,
 ) -> list[dict[str, Any]]:
-    """GET /api/DREs/{dreCodigo}/unidades/codigo-integracao.
+    """Busca unidades codigo integracao por dre.
 
     Args:
-        codigo_dre: Parâmetro codigo dre.
+        codigo_dre: Codigo dre utilizado na operação.
 
     Returns:
-        Lista com os registros resultantes.
+        Lista com os registros obtidos.
 
     Raises:
-        ValueError: Se ocorrer erro nesta operação.
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/unidades/codigo-integracao"

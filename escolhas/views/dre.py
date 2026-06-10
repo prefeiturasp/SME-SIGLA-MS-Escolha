@@ -11,7 +11,7 @@ from ..utils import CustomPagination
 
 
 class DreViewSet(viewsets.ModelViewSet):
-    """Define DreViewSet."""
+    """ViewSet para o recurso Dre."""
 
     queryset = Dre.objects.all()
     serializer_class = DreSerializer

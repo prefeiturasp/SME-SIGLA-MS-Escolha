@@ -32,7 +32,7 @@ class ParametrizacaoViewSet(
     pagination_class = None
 
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa create.
+        """Create.
 
         Args:
             self: Instância do objeto.
@@ -42,9 +42,6 @@ class ParametrizacaoViewSet(
 
         Returns:
             Resposta HTTP com os dados serializados.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         return Response(
             {"detail": 'Method "POST" not allowed.'},
@@ -65,10 +62,7 @@ class ParametrizacaoViewSet(
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         created = Parametrizacao.sync_from_escolas()
         return Response({"created": created})
@@ -81,17 +75,14 @@ class ParametrizacaoViewSet(
         permission_classes=[AllowAny],
     )
     def bulk_update(self, request: Any) -> Any:
-        """Atualiza múltiplos registros apenas no campo 'usar', recebendo uma.
+        """Atualiza em lote apenas o campo usar dos registros.
 
         Args:
             self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         serializer = ParametrizacaoBulkItemSerializer(
             data=request.data, many=True

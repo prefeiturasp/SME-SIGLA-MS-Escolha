@@ -49,7 +49,7 @@ class Escolha(BaseModel):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "escolhas"
         verbose_name = "Escolha"
@@ -57,16 +57,13 @@ class Escolha(BaseModel):
         ordering = ["-criado_em"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return f'{self.candidato_uuid} - {(self.vaga_escola.uuid if self.vaga_escola else 'N/A')}'  # noqa: E501
 

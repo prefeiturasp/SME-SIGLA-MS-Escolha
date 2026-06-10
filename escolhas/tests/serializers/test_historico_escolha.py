@@ -26,13 +26,13 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def dre() -> Any:
-    """Executa dre."""
+    """Dre."""
     return Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
 
 
 @pytest.fixture
 def escola(dre: Any) -> Any:
-    """Executa escola."""
+    """Escola."""
     return Escola.objects.create(
         codigo_eol="000001",
         nome_oficial="Escola Teste",
@@ -43,7 +43,7 @@ def escola(dre: Any) -> Any:
 
 @pytest.fixture
 def lote() -> Any:
-    """Executa lote."""
+    """Lote."""
     return VagasEscolasLote.objects.create(
         processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
     )
@@ -51,7 +51,7 @@ def lote() -> Any:
 
 @pytest.fixture
 def vaga_escola(escola: Any, lote: Any) -> Any:
-    """Executa vaga escola."""
+    """Vaga escola."""
     return VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -68,7 +68,7 @@ def vaga_escola(escola: Any, lote: Any) -> Any:
 
 @pytest.fixture
 def escolha(vaga_escola: Any) -> Any:
-    """Executa escolha."""
+    """Escolha."""
     return Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         concurso_uuid=uuid.uuid4(),
@@ -80,7 +80,7 @@ def escolha(vaga_escola: Any) -> Any:
 
 
 def test_historico_escolha_serializer_campos(escolha: Any) -> None:
-    """HistoricoEscolhaSerializer deve serializar uuid, situacao_anterior,."""
+    """Verifica historico escolha serializer campos."""
     historico = HistoricoEscolha.objects.create(
         escolha=escolha,
         situacao_anterior=SituacaoChoices.NAO_ESCOLHA,
@@ -98,7 +98,7 @@ def test_historico_escolha_serializer_campos(escolha: Any) -> None:
 def test_historico_escolha_serializer_situacao_anterior_null(
     escolha: Any,
 ) -> None:
-    """situacao_anterior pode ser null (primeira situação)."""
+    """Verifica historico escolha serializer situacao anterior null."""
     historico = HistoricoEscolha.objects.create(
         escolha=escolha,
         situacao_anterior=None,
@@ -110,7 +110,7 @@ def test_historico_escolha_serializer_situacao_anterior_null(
 
 
 def test_historico_escolha_serializer_multiplos(escolha: Any) -> None:
-    """Serializer com many=True deve retornar lista de históricos (inclui os."""
+    """Verifica historico escolha serializer multiplos."""
     HistoricoEscolha.objects.create(
         escolha=escolha,
         situacao_anterior=None,

@@ -13,7 +13,7 @@ from escolhas.models import Dre, Escola
 @pytest.fixture
 @pytest.mark.django_db
 def dre_teste() -> Any:
-    """Executa dre teste."""
+    """Dre teste."""
     return Dre.objects.create(
         codigo="123456", nome="DRE Teste", sigla="DRE-TESTE"
     )
@@ -22,7 +22,7 @@ def dre_teste() -> Any:
 @pytest.fixture
 @pytest.mark.django_db
 def escola_1(dre_teste: Any) -> Any:
-    """Executa escola 1."""
+    """Escola 1."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="123456",
@@ -44,7 +44,7 @@ def escola_1(dre_teste: Any) -> Any:
 @pytest.fixture
 @pytest.mark.django_db
 def escola_2(dre_teste: Any) -> Any:
-    """Executa escola 2."""
+    """Escola 2."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="789012",
@@ -65,7 +65,7 @@ def escola_2(dre_teste: Any) -> Any:
 
 @pytest.fixture
 def vaga_data_valida() -> Any:
-    """Executa vaga data valida."""
+    """Vaga data valida."""
     return {
         "data_fechamento_modulo": "2025-09-10",
         "cargo_codigo": 123,
@@ -79,7 +79,7 @@ def vaga_data_valida() -> Any:
 
 @pytest.fixture
 def vagas_data_multiplas() -> Any:
-    """Executa vagas data multiplas."""
+    """Vagas data multiplas."""
     return [
         {
             "data_fechamento_modulo": "2025-09-10",
@@ -104,7 +104,7 @@ def vagas_data_multiplas() -> Any:
 
 @pytest.fixture
 def request_data_valido(vagas_data_multiplas: Any) -> Any:
-    """Executa request data valido."""
+    """Request data valido."""
     return {
         "processo_uuid": str(uuid4()),
         "processo_nome": "Processo Teste",
@@ -114,7 +114,7 @@ def request_data_valido(vagas_data_multiplas: Any) -> Any:
 
 @pytest.fixture
 def request_data_invalido() -> Any:
-    """Executa request data invalido."""
+    """Request data invalido."""
     return {
         "vagas": [
             {"data_fechamento_modulo": "2025-09-10", "cargo_codigo": 123}
@@ -124,19 +124,19 @@ def request_data_invalido() -> Any:
 
 @pytest.fixture
 def request_data_vazio() -> Any:
-    """Executa request data vazio."""
+    """Request data vazio."""
     return {"vagas": []}
 
 
 @pytest.fixture
 def concurso_uuid_teste() -> Any:
-    """Executa concurso uuid teste."""
+    """Concurso uuid teste."""
     return uuid4()
 
 
 @pytest.fixture
 def request_data_com_concurso(vagas_data_multiplas: Any) -> Any:
-    """Executa request data com concurso."""
+    """Request data com concurso."""
     return {
         "processo_uuid": str(uuid4()),
         "processo_nome": "Concurso Professor 2024",
@@ -146,7 +146,7 @@ def request_data_com_concurso(vagas_data_multiplas: Any) -> Any:
 
 @pytest.fixture
 def vaga_data_com_concurso(vaga_data_valida: Any) -> Any:
-    """Executa vaga data com concurso."""
+    """Vaga data com concurso."""
     return {
         **vaga_data_valida,
         "processo_uuid": str(uuid4()),

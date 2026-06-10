@@ -13,7 +13,7 @@ from escolhas.models import Dre, Escola, Parametrizacao
 
 @pytest.fixture
 def dre_bt() -> Any:
-    """Executa dre bt."""
+    """Dre bt."""
     return Dre.objects.create(
         codigo="108100",
         nome="DIRETORIA REGIONAL DE EDUCACAO BUTANTA",
@@ -23,7 +23,7 @@ def dre_bt() -> Any:
 
 @pytest.fixture
 def dre_ip() -> Any:
-    """Executa dre ip."""
+    """Dre ip."""
     return Dre.objects.create(
         codigo="108200",
         nome="DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
@@ -33,12 +33,12 @@ def dre_ip() -> Any:
 
 @pytest.fixture
 def param_ativo_emef() -> Any:
-    """Executa param ativo emef."""
+    """Param ativo emef."""
     return Parametrizacao.objects.create(tipo_ue="EMEF", usar=True)
 
 
 def criar_escola(dre: Dre, idx: int = 1) -> Escola:
-    """Executa criar escola."""
+    """Criar escola."""
     return Escola.objects.create(
         dre=dre,
         codigo_eol=f"{400000 + idx}",
@@ -72,7 +72,7 @@ def criar_escola(dre: Dre, idx: int = 1) -> Escola:
 
 @pytest.mark.django_db
 class TestEscolaViewSet:
-    """Define TestEscolaViewSet."""
+    """ViewSet para o recurso TestEscola."""
 
     def test_list_escolas_vazio(
         self, api_client: Any, param_ativo_emef: Any

@@ -17,10 +17,7 @@ def _cargos_list_from_response(data: Any) -> list[dict]:
         data: Dados de entrada.
 
     Returns:
-        Lista com os registros resultantes.
-
-    Raises:
-        Nenhuma exceção específica documentada.
+        Lista com os registros obtidos.
     """
     if isinstance(data, list):
         return data
@@ -34,16 +31,13 @@ class ConcursoAPIService:
 
     @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
-        """Busca no MS-Concursos os cargos pelos códigos e retorna um mapa.
+        """Retorna cargos por codigos.
 
         Args:
-            codigos: Lista de códigos de cargo (strings, ex.: do.
+            codigos: Codigos utilizado na operação.
 
         Returns:
-            Dicionário com os dados processados.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Dicionário com os dados retornados pela operação.
         """
         if not codigos:
             return {}
@@ -87,16 +81,13 @@ class ConcursoAPIService:
 
     @staticmethod
     def buscar_concurso_uuid(concurso_uuid: str) -> str | None:
-        """Busca concurso_uuid a partir do concurso_uuid via.
+        """Busca concurso uuid.
 
         Args:
-            concurso_uuid: UUID do concurso.
+            concurso_uuid: UUID do concurso relacionado.
 
         Returns:
             Texto resultante da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         try:
             base_url = settings.CONCURSOS_API_URL

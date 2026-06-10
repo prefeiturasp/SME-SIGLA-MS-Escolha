@@ -16,17 +16,14 @@ logger = logging.getLogger(__name__)
 def criar_vagas_em_lote(
     vagas_data: list[dict[str, Any]], lote: VagasEscolasLote
 ) -> tuple[list[VagasEscolas], list[dict[str, Any]]]:
-    """Cria múltiplas vagas em lote.
+    """Cria vagas em lote.
 
     Args:
-        vagas_data: Parâmetro vagas data.
-        lote: Parâmetro lote.
+        vagas_data: Vagas data utilizado na operação.
+        lote: Lote de concurso usado no teste.
 
     Returns:
-        Resultado da operação.
-
-    Raises:
-        Nenhuma exceção específica documentada.
+        Tupla com os objetos criados ou atualizados.
     """
     errors = []
     created_vagas = []
@@ -70,13 +67,13 @@ def criar_vagas_em_lote(
 def processar_criacao_vagas_lote(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Processa a criação de vagas em lote a partir dos dados da requisição.
+    """Processa criacao vagas lote.
 
     Args:
-        request_data: Parâmetro request data.
+        request_data: Request data utilizado na operação.
 
     Returns:
-        Resultado da operação.
+        Tupla com os objetos criados ou atualizados.
 
     Raises:
         TipoUEDesabilitadoException: Se ocorrer erro nesta operação.
@@ -144,16 +141,13 @@ def processar_criacao_vagas_lote(
 def atualizar_vagas_utilizadas_por_processo(
     vagas: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Atualiza *_utilizadas de VagasEscolas direto por UUID das vagas.
+    """Atualiza vagas utilizadas por processo.
 
     Args:
-        vagas: lista de dicts com keys: uuid, vagas_precarias_utilizadas?,.
+        vagas: Vagas utilizado na operação.
 
     Returns:
-        Dicionário com os dados processados.
-
-    Raises:
-        Nenhuma exceção específica documentada.
+        Dicionário com os dados retornados pela operação.
     """
     from ..models import VagasEscolas  # import local para evitar ciclos
 
@@ -203,16 +197,13 @@ def atualizar_vagas_utilizadas_por_processo(
 def adicionar_vagas_ao_lote_por_processo(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Adiciona novas vagas a um lote existente identificado por processo_uuid.
+    """Adiciona vagas a um lote existente pelo processo_uuid.
 
     Args:
-        request_data: Parâmetro request data.
+        request_data: Request data utilizado na operação.
 
     Returns:
-        Resultado da operação.
-
-    Raises:
-        Nenhuma exceção específica documentada.
+        Tupla com os objetos criados ou atualizados.
     """
     serializer = VagasEscolasCreateSerializer(data=request_data)
     if not serializer.is_valid():

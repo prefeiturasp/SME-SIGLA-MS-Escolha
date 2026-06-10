@@ -15,7 +15,7 @@ from ..utils import CustomPagination
 
 
 class EscolaViewSet(viewsets.ModelViewSet):
-    """Define EscolaViewSet."""
+    """ViewSet para o recurso Escola."""
 
     queryset = Escola.objects.select_related("dre").all()
     serializer_class = EscolaSerializer
@@ -28,16 +28,13 @@ class EscolaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Executa get queryset.
+        """Retorna queryset.
 
         Args:
             self: Instância do objeto.
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         qs = super().get_queryset()
         tipos_ativos = list(

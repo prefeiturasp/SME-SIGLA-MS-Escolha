@@ -13,13 +13,13 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def dre_teste() -> Any:
-    """Executa dre teste."""
+    """Dre teste."""
     return Dre.objects.create(codigo="123456", nome="DRE Teste", sigla="DRE-T")
 
 
 @pytest.fixture
 def escola_1(dre_teste: Any) -> Any:
-    """Executa escola 1."""
+    """Escola 1."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="123456",
@@ -40,7 +40,7 @@ def escola_1(dre_teste: Any) -> Any:
 
 @pytest.fixture
 def escola_2(dre_teste: Any) -> Any:
-    """Executa escola 2."""
+    """Escola 2."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="789012",

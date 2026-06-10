@@ -46,16 +46,13 @@ class VagasEscolasViewSet(ModelViewSet):
     ]
 
     def get_queryset(self) -> Any:
-        """Executa get queryset.
+        """Retorna queryset.
 
         Args:
             self: Instância do objeto.
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get("processo_uuid")
@@ -71,7 +68,7 @@ class VagasEscolasViewSet(ModelViewSet):
         return qs
 
     def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa list.
+        """List.
 
         Args:
             self: Instância do objeto.
@@ -81,9 +78,6 @@ class VagasEscolasViewSet(ModelViewSet):
 
         Returns:
             Resposta HTTP com os dados serializados.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         logger.info(
             "Listando vagas das escolas",
@@ -151,9 +145,6 @@ class VagasEscolasViewSet(ModelViewSet):
 
         Returns:
             Resposta HTTP com os dados serializados.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         logger.info(
             "Criando vagas das escolas em lote",
@@ -190,7 +181,7 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=["patch"], url_path="utilizadas")
     def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Executa utilizadas.
+        """Utilizadas.
 
         Args:
             self: Instância do objeto.
@@ -199,10 +190,7 @@ class VagasEscolasViewSet(ModelViewSet):
             **kwargs: Argumentos nomeados variáveis.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Atualizando vagas utilizadas",
@@ -227,7 +215,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def atualizar_vagas_lote(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Recebe um payload equivalente ao do create (processo_uuid,.
+        """Atualiza vagas lote.
 
         Args:
             self: Instância do objeto.
@@ -236,10 +224,7 @@ class VagasEscolasViewSet(ModelViewSet):
             **kwargs: Argumentos nomeados variáveis.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(
             request.data
@@ -250,7 +235,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def por_cargo_e_escolas(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Executa por cargo e escolas.
+        """Por cargo e escolas.
 
         Args:
             self: Instância do objeto.
@@ -259,10 +244,7 @@ class VagasEscolasViewSet(ModelViewSet):
             **kwargs: Argumentos nomeados variáveis.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Buscando vagas por cargo e escolas",
@@ -297,10 +279,7 @@ class VagasEscolasViewSet(ModelViewSet):
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         processo_uuid = request.query_params.get("processo_uuid")
         if not processo_uuid:

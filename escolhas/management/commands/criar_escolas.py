@@ -11,7 +11,7 @@ from escolhas.models import Dre, Escola
 
 
 class Command(BaseCommand):
-    """Define Command."""
+    """Representa Command."""
 
     help = "Cria escolas de exemplo para desenvolvimento"
 
@@ -20,13 +20,10 @@ class Command(BaseCommand):
 
         Args:
             self: Instância do objeto.
-            parser: Parâmetro parser.
+            parser: Parser utilizado na operação.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """
         parser.add_argument(
             "--count",
@@ -36,18 +33,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """Executa a lógica principal do comando.
+        """A lógica principal do comando.
 
         Args:
             self: Instância do objeto.
             *args: Argumentos posicionais variáveis.
-            **options: Parâmetro options da operação.
+            **options: Opções do comando de management.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """
         count = options["count"]
         self.stdout.write(self.style.SUCCESS(f"Criando {count} escolas..."))

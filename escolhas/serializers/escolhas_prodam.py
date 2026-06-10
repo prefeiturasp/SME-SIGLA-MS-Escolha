@@ -41,7 +41,7 @@ class EscolhasProdamImportacaoSerializer(serializers.Serializer):
             Valor validado do campo escolhas.
 
         Raises:
-            ValidationError: Se ocorrer erro nesta operação.
+            ValidationError: Se os dados não passarem na validação.
         """
         for escolha in value:
             if not escolha.get("cpf"):

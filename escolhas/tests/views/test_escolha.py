@@ -274,7 +274,7 @@ def test_busca_payload_invalido(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_definitiva(api_client: Any) -> None:
-    """Testa se a criação de uma escolha com vaga definitiva decrementa."""
+    """Verifica create escolha decrementa vaga definitiva."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -320,7 +320,7 @@ def test_create_escolha_decrementa_vaga_definitiva(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_precaria(api_client: Any) -> None:
-    """Testa se a criação de uma escolha com vaga precária decrementa."""
+    """Verifica create escolha decrementa vaga precaria."""
     dre = Dre.objects.create(codigo="02", nome="DRE 02", sigla="DRE-02")
     escola = Escola.objects.create(
         codigo_eol="000002",
@@ -363,7 +363,7 @@ def test_create_escolha_decrementa_vaga_precaria(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_create_escolha_nao_escolha_nao_decrementa(api_client: Any) -> None:
-    """Testa que escolhas com situação diferente de 'escolha' não decrementam."""
+    """Verifica create escolha nao escolha nao decrementa."""
     dre = Dre.objects.create(codigo="03", nome="DRE 03", sigla="DRE-03")
     escola = Escola.objects.create(
         codigo_eol="000003",
@@ -479,7 +479,7 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(
 
 @pytest.mark.django_db
 def test_reconvocacao_endpoint(api_client: Any) -> None:
-    """Testa endpoint de reconvocação."""
+    """Verifica reconvocacao endpoint."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -529,7 +529,7 @@ def test_reconvocacao_endpoint(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_importacao_prodam_sucesso(api_client: Any, settings: Any) -> None:
-    """Testa importação Prodam com sucesso."""
+    """Verifica importacao prodam sucesso."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -602,7 +602,7 @@ def test_importacao_prodam_sucesso(api_client: Any, settings: Any) -> None:
 def test_importacao_prodam_candidato_nao_encontrado(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa importação Prodam quando candidato não é encontrado."""
+    """Verifica importacao prodam candidato nao encontrado."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -640,7 +640,7 @@ def test_importacao_prodam_candidato_nao_encontrado(
 def test_importacao_prodam_multiplas_escolhas(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa importação Prodam com múltiplas escolhas."""
+    """Verifica importacao prodam multiplas escolhas."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -719,7 +719,7 @@ def test_importacao_prodam_multiplas_escolhas(
 def test_importacao_prodam_mapeamento_situacao(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa mapeamento de situações na importação Prodam."""
+    """Verifica importacao prodam mapeamento situacao."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -774,7 +774,7 @@ def test_importacao_prodam_mapeamento_situacao(
 def test_importacao_prodam_mapeamento_tipo_vaga(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa mapeamento de tipo_vaga na importação Prodam."""
+    """Verifica importacao prodam mapeamento tipo vaga."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -831,7 +831,7 @@ def test_importacao_prodam_mapeamento_tipo_vaga(
 def test_importacao_prodam_codigo_eol_normalizado(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa normalização de código EOL na importação Prodam."""
+    """Verifica importacao prodam codigo eol normalizado."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -895,7 +895,7 @@ def test_importacao_prodam_codigo_eol_normalizado(
 
 @pytest.mark.django_db
 def test_importacao_prodam_payload_invalido(api_client: Any) -> None:
-    """Testa importação Prodam com payload inválido."""
+    """Verifica importacao prodam payload invalido."""
     payload = {"concurso_uuid": "invalid-uuid", "escolhas": []}
     url = reverse("escolha-importacao-prodam")
     response = api_client.post(url, payload, format="json")
@@ -906,7 +906,7 @@ def test_importacao_prodam_payload_invalido(api_client: Any) -> None:
 def test_importacao_prodam_escolha_sem_codigo_eol(
     api_client: Any, settings: Any
 ) -> None:
-    """Testa importação Prodam com escolha sem código EOL."""
+    """Verifica importacao prodam escolha sem codigo eol."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
@@ -947,7 +947,7 @@ def test_importacao_prodam_escolha_sem_codigo_eol(
 
 @pytest.mark.django_db
 def test_buscar_candidatos_sem_parametros_retorna_400(api_client: Any) -> None:
-    """GET buscar-candidatos sem nome, cpf, rg ou registro_funcional deve."""
+    """Verifica buscar candidatos sem parametros retorna 400."""
     url = reverse("escolha-buscar-candidatos")
     response = api_client.get(url)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -959,7 +959,7 @@ def test_buscar_candidatos_sem_parametros_retorna_400(api_client: Any) -> None:
 
 @pytest.mark.django_db
 def test_buscar_candidatos_com_parametro_retorna_200(api_client: Any) -> None:
-    """GET buscar-candidatos com parâmetro deve delegar ao serviço e retornar."""
+    """Verifica buscar candidatos com parametro retorna 200."""
     from unittest.mock import Mock, patch
 
     url = reverse("escolha-buscar-candidatos")
@@ -984,7 +984,7 @@ def test_buscar_candidatos_com_parametro_retorna_200(api_client: Any) -> None:
 def test_buscar_candidatos_servico_retorna_none_retorna_400(
     api_client: Any,
 ) -> None:
-    """Quando o serviço retorna None (erro), deve retornar 502."""
+    """Verifica buscar candidatos servico retorna none retorna 400."""
     from unittest.mock import Mock, patch
 
     url = reverse("escolha-buscar-candidatos")
@@ -1006,7 +1006,7 @@ def test_buscar_candidatos_servico_retorna_none_retorna_400(
 def test_list_escolhas_inclui_campo_historico(
     api_client: Any, escolha_matematica: Any
 ) -> None:
-    """Listagem inclui campo historico (lista) em cada item."""
+    """Verifica list escolhas inclui campo historico."""
     from escolhas.models import HistoricoEscolha
 
     HistoricoEscolha.objects.create(

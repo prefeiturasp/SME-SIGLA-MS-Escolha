@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class EscolhaViewSet(viewsets.ModelViewSet):
-    """Define EscolhaViewSet."""
+    """ViewSet para o recurso Escolha."""
 
     queryset = Escolha.objects.all()
     serializer_class = EscolhaSerializer
@@ -50,16 +50,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Executa get queryset.
+        """Retorna queryset.
 
         Args:
             self: Instância do objeto.
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
@@ -71,16 +68,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_serializer_class(self) -> Any:
-        """Executa get serializer class.
+        """Retorna serializer class.
 
         Args:
             self: Instância do objeto.
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         if self.action in ["list", "busca"]:
             return EscolhaListSerializer
@@ -91,24 +85,21 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def paginate_queryset(self, queryset: Any) -> Any:
-        """Executa paginate queryset.
+        """Paginate queryset.
 
         Args:
             self: Instância do objeto.
-            queryset: Parâmetro queryset da operação.
+            queryset: Queryset utilizado na operação.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         if "no_page" in self.request.query_params:
             return None
         return super().paginate_queryset(queryset)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
-        """Executa get serializer.
+        """Retorna serializer.
 
         Args:
             self: Instância do objeto.
@@ -117,9 +108,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get("fields")
@@ -129,17 +117,14 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=False, url_path="busca")
     def busca(self, request: Any) -> Any:
-        """Executa busca.
+        """Busca.
 
         Args:
             self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Buscando escolhas por candidato_uuid",
@@ -182,10 +167,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Buscando escolhas com situação de reconvocação",
@@ -205,17 +187,14 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="buscar-candidatos")
     def buscar_candidatos(self, request: Any) -> Any:
-        """Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro.
+        """Busca candidatos.
 
         Args:
             self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Buscando candidatos",
@@ -293,10 +272,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Agrupando escolhas por cargo",
@@ -339,10 +315,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             request: Requisição HTTP recebida.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         logger.info(
             "Iniciando importação de escolhas da Prodam",

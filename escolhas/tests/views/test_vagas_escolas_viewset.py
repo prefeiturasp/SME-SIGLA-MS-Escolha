@@ -19,19 +19,19 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def api_client() -> Any:
-    """Executa api client."""
+    """Api client."""
     return APIClient()
 
 
 @pytest.fixture
 def dre() -> Any:
-    """Executa dre."""
+    """Dre."""
     return Dre.objects.create(codigo="01", nome="DRE 01")
 
 
 @pytest.fixture
 def escola(dre: Any) -> Any:
-    """Executa escola."""
+    """Escola."""
     return Escola.objects.create(
         codigo_eol="000001",
         nome_oficial="Escola Teste",
@@ -42,7 +42,7 @@ def escola(dre: Any) -> Any:
 
 @pytest.fixture
 def lote() -> Any:
-    """Executa lote."""
+    """Lote."""
     return VagasEscolasLote.objects.create(
         processo_uuid=uuid4(), processo_nome="Proc"
     )
@@ -50,7 +50,7 @@ def lote() -> Any:
 
 @pytest.fixture
 def vagas(escola: Any, lote: Any) -> Any:
-    """Executa vagas."""
+    """Vagas."""
     v1 = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -107,7 +107,7 @@ def test_action_utilizadas_patch_lote_inexistente(api_client: Any) -> None:
 
 
 def payload(processo_uuid: Any, eol1: Any = "123456", eol2: Any = None) -> Any:
-    """Executa payload."""
+    """Payload."""
     vagas = [
         {
             "data_fechamento_modulo": "2025-09-10",

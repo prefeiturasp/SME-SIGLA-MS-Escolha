@@ -19,6 +19,6 @@ class BaseModel(models.Model):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         abstract = True

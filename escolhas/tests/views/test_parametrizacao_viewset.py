@@ -41,7 +41,7 @@ MAPPING_FIXTURE = [
 
 @pytest.fixture
 def parametrizacoes_db() -> Any:
-    """Executa parametrizacoes db."""
+    """Parametrizacoes db."""
     objs = [
         Parametrizacao(tipo_ue=nome, usar=False)
         for nome, slug in MAPPING_FIXTURE

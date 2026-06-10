@@ -12,7 +12,7 @@ class EscolaSerializer(serializers.ModelSerializer):
     dre = DreSerializer(read_only=True)
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escola
         fields = [
@@ -51,23 +51,23 @@ class EscolaSerializer(serializers.ModelSerializer):
 
 
 class EscolaSelectSerializer(serializers.ModelSerializer):
-    """Define EscolaSelectSerializer."""
+    """Serializer do modelo EscolaSelect."""
 
     value = serializers.UUIDField(source="uuid")
     label = serializers.CharField(source="nome_oficial")  # type: ignore[assignment]
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escola
         fields = ["value", "label"]
 
 
 class EscolaListSerializer(serializers.ModelSerializer):
-    """Define EscolaListSerializer."""
+    """Serializer do modelo EscolaList."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escola
         fields = ["uuid", "codigo_eol", "nome_oficial", "status"]

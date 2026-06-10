@@ -13,7 +13,7 @@ from .vagas_lote import VagasEscolasLote
 
 
 class VagasEscolas(BaseModel):
-    """Define VagasEscolas."""
+    """Representa VagasEscolas."""
 
     STATUS_CHOICES = [
         ("1", "Ativo"),
@@ -74,7 +74,7 @@ class VagasEscolas(BaseModel):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "vagas_escolas"
         verbose_name = "Vagas da Escola"
@@ -82,16 +82,13 @@ class VagasEscolas(BaseModel):
         ordering = ["-data_fechamento_modulo", "escola__nome_oficial"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return f"{self.escola.nome_oficial} - {self.cargo_descricao}"
 

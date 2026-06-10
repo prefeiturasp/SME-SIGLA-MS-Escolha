@@ -19,7 +19,7 @@ def test_parametrizacao_str_true_and_false() -> None:
 def _criar_escola(
     dre: Dre, codigo_eol: str, nome: str, tipo_ue: str
 ) -> Escola:
-    """Executa  criar escola."""
+    """Criar escola."""
     return Escola.objects.create(
         dre=dre,
         codigo_eol=codigo_eol,

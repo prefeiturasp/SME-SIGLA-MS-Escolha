@@ -10,24 +10,21 @@ from escolhas.middleware import get_correlation_id
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    """Define CustomJsonFormatter."""
+    """Representa CustomJsonFormatter."""
 
     def add_fields(
         self, log_record: Any, record: Any, message_dict: Any
     ) -> None:
-        """Executa add fields.
+        """Add fields.
 
         Args:
             self: Instância do objeto.
-            log_record: Parâmetro log record.
-            record: Parâmetro record.
-            message_dict: Parâmetro message dict.
+            log_record: Log record utilizado na operação.
+            record: Record utilizado na operação.
+            message_dict: Message dict utilizado na operação.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """
         super().add_fields(log_record, record, message_dict)
         cid = get_correlation_id()

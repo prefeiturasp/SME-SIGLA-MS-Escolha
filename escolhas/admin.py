@@ -49,7 +49,7 @@ class EscolhaAdmin(admin.ModelAdmin):
 
 @admin.register(Dre)
 class DreAdmin(admin.ModelAdmin):
-    """Define DreAdmin."""
+    """Configuração do admin para Dre."""
 
     list_display = [
         "sigla",
@@ -67,7 +67,7 @@ class DreAdmin(admin.ModelAdmin):
 
 @admin.register(Escola)
 class EscolaAdmin(admin.ModelAdmin):
-    """Define EscolaAdmin."""
+    """Configuração do admin para Escola."""
 
     list_display = [
         "nome_oficial",
@@ -100,7 +100,7 @@ class EscolaAdmin(admin.ModelAdmin):
 
 @admin.register(VagasEscolasLote)
 class VagasEscolasLoteAdmin(admin.ModelAdmin):
-    """Define VagasEscolasLoteAdmin."""
+    """Configuração do admin para VagasEscolasLote."""
 
     list_display = ["processo_nome", "processo_uuid", "criado_em"]
     search_fields = ["processo_nome", "processo_uuid", "criado_em"]
@@ -111,7 +111,7 @@ class VagasEscolasLoteAdmin(admin.ModelAdmin):
 
 @admin.register(VagasEscolas)
 class VagasEscolasAdmin(admin.ModelAdmin):
-    """Define VagasEscolasAdmin."""
+    """Configuração do admin para VagasEscolas."""
 
     list_display = [
         "escola",

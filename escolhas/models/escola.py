@@ -12,7 +12,7 @@ from .dre import Dre
 
 
 class Escola(BaseModel):
-    """Define Escola."""
+    """Representa Escola."""
 
     dre = models.ForeignKey(Dre, on_delete=models.CASCADE, verbose_name="DRE")
     codigo_eol = models.CharField(max_length=20, verbose_name="Código EOL")
@@ -78,7 +78,7 @@ class Escola(BaseModel):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "escolas"
         verbose_name = "Escola"
@@ -86,16 +86,13 @@ class Escola(BaseModel):
         ordering = ["nome_oficial"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return self.nome_oficial
 

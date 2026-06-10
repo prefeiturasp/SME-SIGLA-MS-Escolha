@@ -16,7 +16,7 @@ from escolhas.services import (
 
 
 def _setup_settings(settings: Any) -> None:
-    """Executa  setup settings."""
+    """Setup settings."""
     settings.SMEINTEGRACAO_API_URL = "https://api.example.com"
     settings.SMEINTEGRACAO_API_TOKEN = "token"
 

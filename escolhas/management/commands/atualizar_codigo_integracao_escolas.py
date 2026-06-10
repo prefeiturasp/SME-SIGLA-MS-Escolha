@@ -22,23 +22,20 @@ from escolhas.services.sme_integration import (
 
 
 class Command(BaseCommand):
-    """Define Command."""
+    """Representa Command."""
 
     help = "Atualiza codigo_integracao das escolas: busca DREs na SME, para cada DRE obtém unidades (codigo-integracao) e atualiza as escolas pelo codigo_eol."  # noqa: E501
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """Executa a lógica principal do comando.
+        """A lógica principal do comando.
 
         Args:
             self: Instância do objeto.
             *args: Argumentos posicionais variáveis.
-            **options: Parâmetro options da operação.
+            **options: Opções do comando de management.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """
         self.stdout.write(
             self.style.SUCCESS("Buscando DREs na SME Integracao...")

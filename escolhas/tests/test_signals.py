@@ -63,7 +63,7 @@ def vaga_escola_com_vagas(escola: Any, lote: Any) -> Any:
 def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(
     vaga_escola_com_vagas: Any,
 ) -> None:
-    """Executa operação."""
+    """Verifica signal decrementa vaga definitiva ao criar escolha."""
     "\n    vagas_definitivas_inicial = (\n        vaga_escola_com_vagas.vagas_definitivas_restantes\n    )\n    vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes\n\n    Escolha.objects.create(\n        candidato_uuid=uuid.uuid4(),\n        concurso_uuid=uuid.uuid4(),\n        situacao=SituacaoChoices.ESCOLHA,\n        tipo_vaga=TipoVagaChoices.DEFINITIVA,\n        e_retardatario=False,\n        vaga_escola=vaga_escola_com_vagas,\n    )\n\n    vaga_escola_com_vagas.refresh_from_db()\n    assert (\n        vaga_escola_com_vagas.vagas_definitivas_restantes\n        == vagas_definitivas_inicial - 1\n    )\n    assert (\n        vaga_escola_com_vagas.vagas_precarias_restantes\n        == vagas_precarias_inicial\n    )\n\n\n@pytest.mark.django_db\ndef test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):\n    \n    "
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
@@ -96,7 +96,7 @@ def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(
 def test_signal_nao_decrementa_se_situacao_nao_for_escolha(
     escola: Any, lote: Any
 ) -> None:
-    """O signal não decrementa vagas se a situação não for 'escolha'."""
+    """Verifica signal nao decrementa se situacao nao for escolha."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -128,7 +128,7 @@ def test_signal_nao_decrementa_se_situacao_nao_for_escolha(
 def test_signal_nao_decrementa_se_vaga_escola_nao_fornecido(
     vaga_escola_com_vagas: Any,
 ) -> None:
-    """Testa que o signal não decrementa se vaga_escola não for fornecido."""
+    """Verifica signal nao decrementa se vaga escola nao fornecido."""
     vagas_definitivas_inicial = (
         vaga_escola_com_vagas.vagas_definitivas_restantes
     )
@@ -156,7 +156,7 @@ def test_signal_nao_decrementa_se_vaga_escola_nao_fornecido(
 def test_signal_nao_decrementa_se_tipo_vaga_nao_fornecido(
     vaga_escola_com_vagas: Any,
 ) -> None:
-    """Testa que o signal não decrementa se tipo_vaga não for fornecido."""
+    """Verifica signal nao decrementa se tipo vaga nao fornecido."""
     vagas_definitivas_inicial = (
         vaga_escola_com_vagas.vagas_definitivas_restantes
     )
@@ -182,7 +182,7 @@ def test_signal_nao_decrementa_se_tipo_vaga_nao_fornecido(
 
 @pytest.mark.django_db
 def test_signal_nao_falha_se_vaga_escola_nao_existir() -> None:
-    """Testa que o signal não falha se a vaga_escola não existir."""
+    """Verifica signal nao falha se vaga escola nao existir."""
     escolha = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         concurso_uuid=uuid.uuid4(),
@@ -198,7 +198,7 @@ def test_signal_nao_falha_se_vaga_escola_nao_existir() -> None:
 def test_signal_decrementa_multiplas_escolhas_sequencialmente(
     escola: Any, lote: Any
 ) -> None:
-    """Signal decrementa corretamente múltiplas escolhas sequenciais."""
+    """Verifica signal decrementa multiplas escolhas sequencialmente."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,
@@ -233,7 +233,7 @@ def test_signal_decrementa_multiplas_escolhas_sequencialmente(
 def test_signal_nao_decrementa_em_atualizacao_apenas_em_criacao(
     escola: Any, lote: Any
 ) -> None:
-    """Testa que o signal só decrementa na criação, não na atualização."""
+    """Verifica signal nao decrementa em atualizacao apenas em criacao."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,

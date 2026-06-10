@@ -10,10 +10,10 @@ from ..models import Dre, Escola, VagasEscolas
 
 
 class DreSimpleSerializer(serializers.ModelSerializer):
-    """Define DreSimpleSerializer."""
+    """Serializer do modelo DreSimple."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Dre
         fields = ["uuid", "codigo", "nome", "sigla"]
@@ -25,7 +25,7 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
     dre = DreSimpleSerializer(read_only=True)
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escola
         fields = [
@@ -38,13 +38,13 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
-    """Define VagasEscolasSerializer."""
+    """Serializer do modelo VagasEscolas."""
 
     escola = EscolaSimpleSerializer(read_only=True)
     lote_uuid = serializers.UUIDField(source="lote.uuid", read_only=True)
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = VagasEscolas
         fields = [
@@ -95,7 +95,7 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
             Valor validado do campo vagas.
 
         Raises:
-            ValidationError: Se ocorrer erro nesta operação.
+            ValidationError: Se os dados não passarem na validação.
         """
         if not value:
             raise serializers.ValidationError(
@@ -120,10 +120,10 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
-    """Define VagasEscolasUtilizadasUpdateSerializer."""
+    """Serializer do modelo VagasEscolasUtilizadasUpdate."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = VagasEscolas
         fields = [
@@ -135,7 +135,7 @@ class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
 
 
 class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
-    """Define VagaEscolaUtilizadaItemSerializer."""
+    """Serializer do modelo VagaEscolaUtilizadaItem."""
 
     uuid = serializers.UUIDField()
     foi_utilizada = serializers.BooleanField(required=True)
@@ -144,6 +144,6 @@ class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasBulkSerializer(serializers.Serializer):
-    """Define VagasEscolasUtilizadasBulkSerializer."""
+    """Serializer do modelo VagasEscolasUtilizadasBulk."""
 
     pass

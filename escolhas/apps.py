@@ -6,7 +6,7 @@ from django.apps import AppConfig
 
 
 class EscolhasConfig(AppConfig):
-    """Define EscolhasConfig."""
+    """Representa EscolhasConfig."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "escolhas"
@@ -18,8 +18,5 @@ class EscolhasConfig(AppConfig):
             self: Instância do objeto.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """

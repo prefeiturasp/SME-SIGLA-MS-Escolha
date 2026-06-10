@@ -35,7 +35,7 @@ class HistoricoEscolha(BaseModel):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "historico_escolhas"
         verbose_name = "Histórico de Escolha"
@@ -43,16 +43,13 @@ class HistoricoEscolha(BaseModel):
         ordering = ["-criado_em"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return f"{self.escolha.uuid} - {self.situacao_anterior} -> {self.situacao_nova}"  # noqa: E501
 

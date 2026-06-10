@@ -12,18 +12,15 @@ from .vagas_escolas import VagasEscolasSerializer
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer):
-    """Define DynamicFieldsSerializer."""
+    """Serializer do modelo DynamicFields."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Executa   init  .
+        """Inicializa a instância com os parâmetros informados.
 
         Args:
             self: Instância do objeto.
             *args: Argumentos posicionais variáveis.
             **kwargs: Argumentos nomeados variáveis.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
@@ -38,7 +35,7 @@ class HistoricoEscolhaSerializer(serializers.ModelSerializer):
     """Serializer para o modelo HistoricoEscolha (histórico de mudanças de."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = HistoricoEscolha
         fields = ["uuid", "situacao_anterior", "situacao_nova", "criado_em"]
@@ -56,7 +53,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escolha
         fields = [
@@ -92,10 +89,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             instance: Instância do modelo em atualização.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         data = super().to_representation(instance)
         if instance.vaga_escola:
@@ -112,10 +106,10 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             attrs: Atributos em validação.
 
         Returns:
-            Resultado da operação.
+            Valor calculado conforme a regra aplicada.
 
         Raises:
-            ValidationError: Se ocorrer erro nesta operação.
+            ValidationError: Se os dados não passarem na validação.
         """
         situacao = attrs.get("situacao")
         if self.instance:
@@ -165,7 +159,7 @@ class EscolhaSelectSerializer(serializers.ModelSerializer):
     label = serializers.CharField(source="situacao")  # type: ignore[assignment]
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escolha
         fields = ["value", "label"]
@@ -179,7 +173,7 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
     historico = HistoricoEscolhaSerializer(many=True, read_only=True)
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escolha
         fields = [
@@ -196,17 +190,14 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
         ]
 
     def get_vaga_escola_uuid(self, obj: Any) -> Any:
-        """Retorna o UUID da vaga_escola se existir.
+        """Retorna vaga escola uuid.
 
         Args:
             self: Instância do objeto.
-            obj: Parâmetro obj.
+            obj: Obj utilizado na operação.
 
         Returns:
             Valor calculado para o campo ou propriedade.
-
-        Raises:
-            Nenhuma exceção específica documentada.
         """
         return str(obj.vaga_escola.uuid) if obj.vaga_escola else None
 
@@ -215,7 +206,7 @@ class EscolhaReconvocacaoSerializer(serializers.ModelSerializer):
     """Serializer para reconvocação, retorna apenas uuid e candidato_uuid."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Escolha
         fields = ["uuid", "candidato_uuid"]

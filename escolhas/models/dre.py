@@ -18,7 +18,7 @@ class Dre(BaseModel):
     sigla = models.CharField(max_length=50, verbose_name="Sigla da DRE")
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "dres"
         verbose_name = "DRE"
@@ -26,16 +26,13 @@ class Dre(BaseModel):
         ordering = ["nome"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return f"{self.sigla} - {self.nome}"
 

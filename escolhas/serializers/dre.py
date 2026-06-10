@@ -9,7 +9,7 @@ class DreSerializer(serializers.ModelSerializer):
     """Serializer para o modelo Dre."""
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         model = Dre
         fields = ["uuid", "codigo", "nome", "sigla"]

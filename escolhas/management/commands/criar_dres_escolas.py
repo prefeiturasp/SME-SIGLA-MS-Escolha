@@ -16,23 +16,20 @@ from escolhas.services.sme_integration import (
 
 
 class Command(BaseCommand):
-    """Define Command."""
+    """Representa Command."""
 
     help = "Busca DREs na SME Integracao (/api/DREs) e cria/atualiza registros locais"  # noqa: E501
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """Executa a lógica principal do comando.
+        """A lógica principal do comando.
 
         Args:
             self: Instância do objeto.
             *args: Argumentos posicionais variáveis.
-            **options: Parâmetro options da operação.
+            **options: Opções do comando de management.
 
         Returns:
-            Não retorna valor.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Nenhum valor.
         """
         self.stdout.write(
             self.style.SUCCESS("Buscando DREs da SME Integracao...")

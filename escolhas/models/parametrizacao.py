@@ -21,7 +21,7 @@ class Parametrizacao(BaseModel):
     )
 
     class Meta:
-        """Define Meta."""
+        """Representa Meta."""
 
         db_table = "escolhas_parametrizacao"
         verbose_name = "Parametrização de Tipo UE"
@@ -29,31 +29,25 @@ class Parametrizacao(BaseModel):
         ordering = ["tipo_ue"]
 
     def __str__(self) -> Any:
-        """Executa   str  .
+        """Retorna representação textual do registro.
 
         Args:
             self: Instância do objeto.
 
         Returns:
-            Resultado da operação.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor calculado conforme a regra aplicada.
         """
         return f'{self.tipo_ue} ({('usar' if self.usar else 'não usar')})'
 
     @classmethod
     def sync_from_escolas(cls) -> int:
-        """Garante que exista um registro para cada tipo_ue distinto em Escola.
+        """Garante registro para cada tipo_ue distinto em Escola.
 
         Args:
             cls: Classe referenciada.
 
         Returns:
-            Valor inteiro calculado.
-
-        Raises:
-            Nenhuma exceção específica documentada.
+            Valor inteiro resultante do cálculo.
         """
         from .escola import Escola
 

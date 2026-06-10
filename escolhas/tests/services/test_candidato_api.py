@@ -14,7 +14,7 @@ class TestCandidatoAPIService:
     """Testes para CandidatoAPIService."""
 
     def test_init_com_base_url_personalizada(self) -> None:
-        """Testa inicialização com base_url personalizada."""
+        """Verifica init com base url personalizada."""
         service = CandidatoAPIService(
             base_url="http://custom-url.com", timeout_seconds=60
         )
@@ -22,19 +22,19 @@ class TestCandidatoAPIService:
         assert service.timeout_seconds == 60
 
     def test_init_sem_base_url_usando_settings(self, settings: Any) -> None:
-        """Testa inicialização sem base_url usando settings."""
+        """Verifica init sem base url usando settings."""
         settings.CANDIDATOS_API_URL = "http://default-url.com"
         service = CandidatoAPIService()
         assert service.base_url == "http://default-url.com"
         assert service.timeout_seconds == 30
 
     def test_init_remove_barra_final(self) -> None:
-        """Testa que remove barra final da URL."""
+        """Verifica init remove barra final."""
         service = CandidatoAPIService(base_url="http://test.com/")
         assert service.base_url == "http://test.com"
 
     def test_buscar_candidatos_por_cpfs_sucesso(self, settings: Any) -> None:
-        """Testa busca de candidatos por CPFs com sucesso."""
+        """Verifica buscar candidatos por cpfs sucesso."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901", "98765432100"]
@@ -74,7 +74,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_lista_vazia(
         self, settings: Any
     ) -> None:
-        """Testa busca com lista de CPFs vazia."""
+        """Verifica buscar candidatos por cpfs lista vazia."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = []  # type: ignore[var-annotated]
@@ -91,7 +91,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_http_error(
         self, settings: Any
     ) -> None:
-        """Testa tratamento de erro HTTP."""
+        """Verifica buscar candidatos por cpfs http error."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
@@ -106,7 +106,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_connection_error(
         self, settings: Any
     ) -> None:
-        """Testa tratamento de erro de conexão."""
+        """Verifica buscar candidatos por cpfs connection error."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
@@ -119,7 +119,7 @@ class TestCandidatoAPIService:
             assert result is None
 
     def test_buscar_candidatos_por_cpfs_timeout(self, settings: Any) -> None:
-        """Testa tratamento de timeout."""
+        """Verifica buscar candidatos por cpfs timeout."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
@@ -134,7 +134,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_excecao_generica(
         self, settings: Any
     ) -> None:
-        """Testa tratamento de exceção genérica."""
+        """Verifica buscar candidatos por cpfs excecao generica."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
@@ -147,7 +147,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_timeout_personalizado(
         self, settings: Any
     ) -> None:
-        """Testa que usa timeout personalizado."""
+        """Verifica buscar candidatos por cpfs timeout personalizado."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService(timeout_seconds=60)
         cpfs = ["12345678901"]
@@ -164,7 +164,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_headers_corretos(
         self, settings: Any
     ) -> None:
-        """Testa que headers estão corretos."""
+        """Verifica buscar candidatos por cpfs headers corretos."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
@@ -181,7 +181,7 @@ class TestCandidatoAPIService:
             assert headers["Content-Type"] == "application/json"
 
     def test_buscar_candidatos_sucesso(self, settings: Any) -> None:
-        """Testa busca de candidatos por nome/cpf/rg/registro_funcional com."""
+        """Verifica buscar candidatos sucesso."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         mock_response_data = [
@@ -206,7 +206,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_sem_parametros_retorna_lista_vazia(
         self, settings: Any
     ) -> None:
-        """Sem nenhum parâmetro informado, deve retornar lista vazia (não."""
+        """Verifica buscar candidatos sem parametros retorna lista vazia."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
@@ -217,7 +217,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_envia_params_corretos(
         self, settings: Any
     ) -> None:
-        """Testa que nome, cpf, rg e registro_funcional são enviados como."""
+        """Verifica buscar candidatos envia params corretos."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
@@ -242,7 +242,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_http_error_retorna_none(
         self, settings: Any
     ) -> None:
-        """Em erro HTTP, deve retornar None."""
+        """Verifica buscar candidatos http error retorna none."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
@@ -255,7 +255,7 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_connection_error_retorna_none(
         self, settings: Any
     ) -> None:
-        """Em erro de conexão, deve retornar None."""
+        """Verifica buscar candidatos connection error retorna none."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
         service = CandidatoAPIService()
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:

@@ -13,7 +13,7 @@ from escolhas.models import Dre
 
 @pytest.fixture
 def dres_criadas() -> Any:
-    """Executa dres criadas."""
+    """Dres criadas."""
     return [
         Dre.objects.create(
             codigo="108100",
@@ -35,7 +35,7 @@ def dres_criadas() -> Any:
 
 @pytest.mark.django_db
 class TestDreViewSet:
-    """Define TestDreViewSet."""
+    """ViewSet para o recurso TestDre."""
 
     def test_list_vazio(self, api_client: Any) -> None:
         """Verifica list vazio."""
