@@ -14,6 +14,7 @@ from .escolhas_prodam import (
     EscolhaProdamItemSerializer,
     EscolhasProdamImportacaoSerializer,
 )
+from .extracao_dados import ExtracaoDadosSerializer
 from .parametrizacao import (
     ParametrizacaoBulkItemSerializer,
     ParametrizacaoSerializer,

@@ -1,5 +1,6 @@
 from .candidato_api import CandidatoAPIService
 from .concurso_api import ConcursoAPIService
+from .extracao_dados import montar_extracao_dados
 from .sme_integration import (
     buscar_dados_escola_por_eol,
     buscar_dres_de_smeintegracao,
