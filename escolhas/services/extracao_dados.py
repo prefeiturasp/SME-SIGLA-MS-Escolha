@@ -1,6 +1,6 @@
 """Agregações para a extração de dados de escolhas."""
 
-from typing import Any, Optional, Union
+from typing import Any
 from uuid import UUID
 
 from django.db.models import Count, F, Sum
@@ -10,16 +10,17 @@ from escolhas.models import Escolha, VagasEscolas
 
 
 def montar_extracao_dados(
-    concurso_uuid: Optional[Union[UUID, str]] = None,
-    filtros: Optional[list[dict[str, Any]]] = None,
+    concurso_uuid: UUID | str | None = None,
+    filtros: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """
     Monta o dicionário de indicadores de escolhas.
 
     - Com ``filtros``: para cada ``ano`` (de ``filtros``), conta as escolhas do
-      ``concurso_uuid`` por ``situacao`` (escolha / reconvocacao / nao-escolha),
-      filtrando pelo ano de criação (``criado_em``), e monta o array ``dres``
-      com escolhas e vagas por DRE (vagas dos ``processo_uuids`` do ano).
+      ``concurso_uuid`` por ``situacao`` (escolha / reconvocacao /
+      nao-escolha), filtrando pelo ano de criação (``criado_em``), e monta o
+      array ``dres`` com escolhas e vagas por DRE (vagas dos
+      ``processo_uuids`` do ano).
     - Sem ``filtros`` (None ou lista vazia): retorna uma única chave ``total``
       agregando as escolhas (de ``concurso_uuid`` se informado, senão de todos
       os concursos) e, em ``dres``, todas as ``VagasEscolas`` por DRE.
@@ -53,8 +54,8 @@ def montar_extracao_dados(
 
 
 def contar_escolhas(
-    concurso_uuid: Optional[Union[UUID, str]] = None,
-    ano: Optional[int] = None,
+    concurso_uuid: UUID | str | None = None,
+    ano: int | None = None,
 ) -> dict[str, int]:
     qs = Escolha.objects.all()
     if concurso_uuid:
@@ -73,9 +74,9 @@ def contar_escolhas(
 
 
 def _montar_dres(
-    concurso_uuid: Optional[Union[UUID, str]] = None,
-    ano: Optional[int] = None,
-    processo_uuids: Optional[list[Union[UUID, str]]] = None,
+    concurso_uuid: UUID | str | None = None,
+    ano: int | None = None,
+    processo_uuids: list[UUID | str] | None = None,
 ) -> list[dict[str, Any]]:
     """
     Une, por DRE, as escolhas realizadas (situacao=escolha, com vaga) e as
@@ -130,9 +131,9 @@ def _montar_dres(
 
 
 def _montar_dres_concursos(
-    concurso_uuid: Optional[Union[UUID, str]] = None,
-    anos: Optional[list[int]] = None,
-    processo_uuids: Optional[list[Union[UUID, str]]] = None,
+    concurso_uuid: UUID | str | None = None,
+    anos: list[int] | None = None,
+    processo_uuids: list[UUID | str] | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """
     Detalha, por concurso, as escolhas e vagas por DRE + cargo.
@@ -144,10 +145,10 @@ def _montar_dres_concursos(
       ``vagas``, ``codigo_cargo``, ``cargo_descricao``.
     - Escolhas: somente ``situacao=escolha`` com vaga (cargo vem da vaga);
       ``anos`` (se informado) filtra por ``criado_em__year``.
-    - Vagas: atribuídas direto ao concurso via ``VagasEscolas.lote.concurso_uuid``
-      (não vazam entre concursos). Vagas cujo ``lote.concurso_uuid`` é nulo
-      (lotes legados) são ignoradas. Combinação DRE+cargo só com vaga aparece
-      com ``escolhas=0``.
+    - Vagas: atribuídas direto ao concurso via
+      ``VagasEscolas.lote.concurso_uuid`` (não vazam entre concursos). Vagas
+      cujo ``lote.concurso_uuid`` é nulo (lotes legados) são ignoradas.
+      Combinação DRE+cargo só com vaga aparece com ``escolhas=0``.
     """
     escolhas_qs = Escolha.objects.filter(
         situacao=SituacaoChoices.ESCOLHA,
@@ -208,6 +209,5 @@ def _montar_dres_concursos(
         linha["vagas"] += vaga["vagas"] or 0
 
     return {
-        cuuid: list(linhas.values())
-        for cuuid, linhas in por_concurso.items()
+        cuuid: list(linhas.values()) for cuuid, linhas in por_concurso.items()
     }

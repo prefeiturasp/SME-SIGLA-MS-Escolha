@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from django.urls import reverse
@@ -25,7 +25,7 @@ def api_client():
 def _set_ano(escolha, ano):
     """criado_em é auto_now_add; sobrescreve via update() para o ano dado."""
     Escolha.objects.filter(pk=escolha.pk).update(
-        criado_em=datetime(ano, 6, 1, tzinfo=timezone.utc)
+        criado_em=datetime(ano, 6, 1, tzinfo=UTC)
     )
 
 
@@ -236,18 +236,33 @@ def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
 
     # DRE-A: cargo 1001 (Backend) -> 2 escolhas na MESMA vaga (vagas conta 1x)
     vaga_a1 = criar_vaga(
-        processo, dre_a, 70, 50, cargo_codigo=1001, cargo_descricao="Backend",
+        processo,
+        dre_a,
+        70,
+        50,
+        cargo_codigo=1001,
+        cargo_descricao="Backend",
         concurso_uuid=concurso_uuid,
     )  # vagas = 120
     # DRE-B: cargo 1002 (Frontend) -> 1 escolha
     vaga_b2 = criar_vaga(
-        processo, dre_b, 60, 40, cargo_codigo=1002, cargo_descricao="Frontend",
+        processo,
+        dre_b,
+        60,
+        40,
+        cargo_codigo=1002,
+        cargo_descricao="Frontend",
         concurso_uuid=concurso_uuid,
     )  # vagas = 100
     # DRE-A cargo 1003 (Mobile) -> SO vaga, SEM escolha:
     # vagas vêm do lote.concurso_uuid, então esta linha aparece com escolhas=0.
     criar_vaga(
-        processo, dre_a, 5, 5, cargo_codigo=1003, cargo_descricao="Mobile",
+        processo,
+        dre_a,
+        5,
+        5,
+        cargo_codigo=1003,
+        cargo_descricao="Mobile",
         concurso_uuid=concurso_uuid,
     )  # vagas = 10
 
@@ -317,11 +332,21 @@ def test_dres_concursos_vagas_nao_vazam_entre_concursos(api_client):
 
     # concurso_x: cargo 1004 ; concurso_y: cargo 1008 (lote.concurso_uuid)
     vaga_x = criar_vaga(
-        processo_x, dre, 30, 0, cargo_codigo=1004, cargo_descricao="Infantil",
+        processo_x,
+        dre,
+        30,
+        0,
+        cargo_codigo=1004,
+        cargo_descricao="Infantil",
         concurso_uuid=concurso_x,
     )
     vaga_y = criar_vaga(
-        processo_y, dre, 90, 0, cargo_codigo=1008, cargo_descricao="Fund",
+        processo_y,
+        dre,
+        90,
+        0,
+        cargo_codigo=1008,
+        cargo_descricao="Fund",
         concurso_uuid=concurso_y,
     )
 
@@ -337,21 +362,27 @@ def test_dres_concursos_vagas_nao_vazam_entre_concursos(api_client):
     assert set(dres_concursos.keys()) == {str(concurso_x), str(concurso_y)}
 
     # concurso_x: SO cargo 1004 (vagas de 1008 nao vazam)
-    cargos_x = {linha["codigo_cargo"] for linha in dres_concursos[str(concurso_x)]}
+    cargos_x = {
+        linha["codigo_cargo"] for linha in dres_concursos[str(concurso_x)]
+    }
     assert cargos_x == {1004}
     linha_x = dres_concursos[str(concurso_x)][0]
     assert linha_x["vagas"] == 30
     assert linha_x["escolhas"] == 1
 
     # concurso_y: SO cargo 1008
-    cargos_y = {linha["codigo_cargo"] for linha in dres_concursos[str(concurso_y)]}
+    cargos_y = {
+        linha["codigo_cargo"] for linha in dres_concursos[str(concurso_y)]
+    }
     assert cargos_y == {1008}
     linha_y = dres_concursos[str(concurso_y)][0]
     assert linha_y["vagas"] == 90
     assert linha_y["escolhas"] == 1
 
 
-def test_dres_concursos_vaga_sem_escolha_aparece_pelo_lote_concurso(api_client):
+def test_dres_concursos_vaga_sem_escolha_aparece_pelo_lote_concurso(
+    api_client,
+):
     """Vaga sem nenhuma escolha mas com lote.concurso_uuid -> aparece no
     concurso (escolhas=0). Vaga com lote.concurso_uuid nulo -> ignorada."""
     url = reverse("extracao-dados-list")
@@ -362,18 +393,33 @@ def test_dres_concursos_vaga_sem_escolha_aparece_pelo_lote_concurso(api_client):
 
     dre = criar_dre("DRE-X")
     vaga_ok = criar_vaga(
-        processo_com_escolha, dre, 20, 0, cargo_codigo=1004,
-        cargo_descricao="Infantil", concurso_uuid=concurso,
+        processo_com_escolha,
+        dre,
+        20,
+        0,
+        cargo_codigo=1004,
+        cargo_descricao="Infantil",
+        concurso_uuid=concurso,
     )
     # vaga SEM escolha, mas com lote.concurso_uuid -> agora aparece
     criar_vaga(
-        processo_sem_escolha, dre, 99, 0, cargo_codigo=1008,
-        cargo_descricao="Fund", concurso_uuid=concurso,
+        processo_sem_escolha,
+        dre,
+        99,
+        0,
+        cargo_codigo=1008,
+        cargo_descricao="Fund",
+        concurso_uuid=concurso,
     )
     # vaga com lote.concurso_uuid NULO (legado) -> ignorada
     criar_vaga(
-        processo_legado, dre, 7, 0, cargo_codigo=1009,
-        cargo_descricao="Legado", concurso_uuid=None,
+        processo_legado,
+        dre,
+        7,
+        0,
+        cargo_codigo=1009,
+        cargo_descricao="Legado",
+        concurso_uuid=None,
     )
 
     criar_escolha(concurso, SituacaoChoices.ESCOLHA, 2026, vaga_ok)
@@ -385,8 +431,7 @@ def test_dres_concursos_vaga_sem_escolha_aparece_pelo_lote_concurso(api_client):
 
     assert set(dres_concursos.keys()) == {str(concurso)}
     por_cargo = {
-        linha["codigo_cargo"]: linha
-        for linha in dres_concursos[str(concurso)]
+        linha["codigo_cargo"]: linha for linha in dres_concursos[str(concurso)]
     }
     # cargo 1008 (vaga sem escolha) APARECE com escolhas=0
     assert por_cargo[1008]["escolhas"] == 0
@@ -408,11 +453,21 @@ def test_dres_concursos_concurso_so_com_vaga_aparece(api_client):
 
     dre = criar_dre("DRE-X")
     vaga_a = criar_vaga(
-        processo_a, dre, 10, 0, cargo_codigo=1004, cargo_descricao="Infantil",
+        processo_a,
+        dre,
+        10,
+        0,
+        cargo_codigo=1004,
+        cargo_descricao="Infantil",
         concurso_uuid=concurso_com_escolha,
     )
     criar_vaga(
-        processo_b, dre, 50, 0, cargo_codigo=1008, cargo_descricao="Fund",
+        processo_b,
+        dre,
+        50,
+        0,
+        cargo_codigo=1008,
+        cargo_descricao="Fund",
         concurso_uuid=concurso_so_vaga,
     )
 
