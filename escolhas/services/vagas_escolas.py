@@ -5,7 +5,10 @@ from django.db import transaction
 from rest_framework import status
 
 from ..models import Escola, Parametrizacao, VagasEscolas, VagasEscolasLote
-from ..serializers import VagasEscolasCreateSerializer
+from ..serializers import (
+    VagasEscolasCreateSerializer,
+    VagasEscolasInclusaoSerializer,
+)
 from .exceptions import TipoUEDesabilitadoException
 
 logger = logging.getLogger(__name__)
@@ -68,6 +71,7 @@ def processar_criacao_vagas_lote(
         return {"errors": serializer.errors}, status.HTTP_400_BAD_REQUEST
     processo_uuid = serializer.validated_data["processo_uuid"]
     processo_nome = serializer.validated_data.get("processo_nome", "")
+    concurso_uuid = serializer.validated_data["concurso_uuid"]
     vagas_data = serializer.validated_data["vagas"]
 
     # Validação: impedir criação de vagas para escolas cujo tipo_ue está desabilitado em Parametrizacao (usar=False)  # noqa: E501
@@ -96,7 +100,9 @@ def processar_criacao_vagas_lote(
 
     with transaction.atomic():
         lote = VagasEscolasLote.objects.create(
-            processo_uuid=processo_uuid, processo_nome=processo_nome
+            processo_uuid=processo_uuid,
+            processo_nome=processo_nome,
+            concurso_uuid=concurso_uuid,
         )
         created_vagas, errors = criar_vagas_em_lote(vagas_data, lote)
 
@@ -191,7 +197,7 @@ def adicionar_vagas_ao_lote_por_processo(
     }
     Retorna (response_dict, http_status_code)
     """
-    serializer = VagasEscolasCreateSerializer(data=request_data)
+    serializer = VagasEscolasInclusaoSerializer(data=request_data)
     if not serializer.is_valid():
         return {"errors": serializer.errors}, status.HTTP_400_BAD_REQUEST
 

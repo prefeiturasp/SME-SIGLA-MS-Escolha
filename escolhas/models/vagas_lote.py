@@ -6,6 +6,9 @@ from .base import BaseModel
 
 class VagasEscolasLote(BaseModel):
     processo_uuid = models.UUIDField(verbose_name="UUID do Processo")
+    concurso_uuid = models.UUIDField(
+        verbose_name="UUID do Concurso", null=True, blank=True
+    )
     processo_nome = models.CharField(
         max_length=255, verbose_name="Nome do Processo", blank=True
     )

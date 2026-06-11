@@ -97,6 +97,7 @@ def request_data_valido(vagas_data_multiplas):
     return {
         "processo_uuid": str(uuid4()),
         "processo_nome": "Processo Teste",
+        "concurso_uuid": str(uuid4()),
         "vagas": vagas_data_multiplas,
     }
 
