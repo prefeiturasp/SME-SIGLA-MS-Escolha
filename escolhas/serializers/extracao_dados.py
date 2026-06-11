@@ -22,8 +22,8 @@ class ExtracaoDadosSerializer(serializers.Serializer):
     - ``concurso_uuid`` (opcional): concurso cujas escolhas serão contadas.
       Ausente → agrega escolhas de todos os concursos.
     - ``filtros`` (opcional): lista de ``{ano}``; cada ano filtra as escolhas
-      pelo ano de criação (``criado_em``). Ausente (ou vazia) → o resultado traz
-      uma única chave agregada ``"total"`` sem quebra por ano.
+      pelo ano de criação (``criado_em``). Ausente (ou vazia) → o resultado
+      traz uma única chave agregada ``"total"`` sem quebra por ano.
     """
 
     concurso_uuid = serializers.UUIDField(required=False, allow_null=True)
