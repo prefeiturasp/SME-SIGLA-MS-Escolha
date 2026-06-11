@@ -195,14 +195,20 @@ def test_extracao_dados_sem_filtros_retorna_total(api_client):
     assert resp.status_code == 200, resp.content
     data = resp.json()
 
-    # sem quebra por ano: chave "total" + a chave global "dres_concursos"
-    assert set(data.keys()) == {"total", "dres_concursos"}
-    total = data["total"]
-    assert total["escolha"] == 2
-    assert total["reconvocacao"] == 1
-    assert total["nao-escolha"] == 1
+    # sem quebra por ano: o agregado vem direto na raiz (sem chave "total"),
+    # junto com "dres" e a chave global "dres_concursos"
+    assert set(data.keys()) == {
+        "escolha",
+        "reconvocacao",
+        "nao-escolha",
+        "dres",
+        "dres_concursos",
+    }
+    assert data["escolha"] == 2
+    assert data["reconvocacao"] == 1
+    assert data["nao-escolha"] == 1
 
-    dres = {d["nome"]: d for d in total["dres"]}
+    dres = {d["nome"]: d for d in data["dres"]}
     # DRE-A: 2 escolhas (anos diferentes agregados) + todas as vagas
     assert dres["DRE-A"] == {"nome": "DRE-A", "escolhas": 2, "vagas": 120}
     # DRE-B: so vaga (todas as VagasEscolas entram no agregado)
@@ -221,9 +227,15 @@ def test_extracao_dados_body_vazio_agrega_tudo(api_client):
 
     assert resp.status_code == 200, resp.content
     data = resp.json()
-    assert set(data.keys()) == {"total", "dres_concursos"}
-    assert data["total"]["escolha"] == 1
-    assert data["total"]["nao-escolha"] == 1
+    assert set(data.keys()) == {
+        "escolha",
+        "reconvocacao",
+        "nao-escolha",
+        "dres",
+        "dres_concursos",
+    }
+    assert data["escolha"] == 1
+    assert data["nao-escolha"] == 1
 
 
 def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
