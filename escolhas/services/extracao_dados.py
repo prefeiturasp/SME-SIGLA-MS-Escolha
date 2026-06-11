@@ -21,16 +21,17 @@ def montar_extracao_dados(
       nao-escolha), filtrando pelo ano de criação (``criado_em``), e monta o
       array ``dres`` com escolhas e vagas por DRE (vagas dos
       ``processo_uuids`` do ano).
-    - Sem ``filtros`` (None ou lista vazia): retorna uma única chave ``total``
-      agregando as escolhas (de ``concurso_uuid`` se informado, senão de todos
-      os concursos) e, em ``dres``, todas as ``VagasEscolas`` por DRE.
+    - Sem ``filtros`` (None ou lista vazia): retorna o agregado direto na raiz
+      (chaves ``escolha`` / ``reconvocacao`` / ``nao-escolha``), agregando as
+      escolhas (de ``concurso_uuid`` se informado, senão de todos os concursos)
+      e, em ``dres``, todas as ``VagasEscolas`` por DRE.
 
     Filtramos por ``Escolha.concurso_uuid`` (sempre preenchido) e NÃO pela
     vaga, porque escolhas ``nao-escolha`` / ``reconvocacao`` normalmente não
     têm ``vaga_escola`` vinculada — filtrar pela vaga as excluiria.
     """
+    resultado: dict[str, Any] = {}
     if filtros:
-        resultado: dict[str, Any] = {}
         processos_uniao: list = []
         for filtro in filtros:
             ano = filtro["ano"]
@@ -43,7 +44,7 @@ def montar_extracao_dados(
     else:
         dados = contar_escolhas(concurso_uuid, ano=None)
         dados["dres"] = _montar_dres(concurso_uuid)
-        resultado = {"total": dados}
+        resultado.update(dados)
         anos = None
         processos_uniao = []
 
