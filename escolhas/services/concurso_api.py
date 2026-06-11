@@ -14,7 +14,7 @@ def _cargos_list_from_response(data: Any) -> list[dict]:
     """Extrai lista de cargos da resposta da API (lista direta ou paginada).
 
     Args:
-        data: Dados de entrada.
+        data: Data.
 
     Returns:
         Lista com os registros obtidos.
@@ -34,10 +34,10 @@ class ConcursoAPIService:
         """Retorna cargos por codigos.
 
         Args:
-            codigos: Codigos utilizado na operação.
+            codigos: Codigos.
 
         Returns:
-            Dicionário com os dados retornados pela operação.
+            Dicionário com os dados processados.
         """
         if not codigos:
             return {}
@@ -87,7 +87,7 @@ class ConcursoAPIService:
             concurso_uuid: UUID do concurso relacionado.
 
         Returns:
-            Texto resultante da operação.
+            Conteúdo textual gerado.
         """
         try:
             base_url = settings.CONCURSOS_API_URL

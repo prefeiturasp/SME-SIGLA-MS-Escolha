@@ -30,11 +30,8 @@ class EscolaViewSet(viewsets.ModelViewSet):
     def get_queryset(self) -> Any:
         """Retorna queryset.
 
-        Args:
-            self: Instância do objeto.
-
         Returns:
-            Valor calculado para o campo ou propriedade.
+            Resposta HTTP com os dados solicitados.
         """
         qs = super().get_queryset()
         tipos_ativos = list(

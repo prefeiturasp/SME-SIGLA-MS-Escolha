@@ -27,16 +27,7 @@ class Command(BaseCommand):
     help = "Atualiza codigo_integracao das escolas: busca DREs na SME, para cada DRE obtém unidades (codigo-integracao) e atualiza as escolas pelo codigo_eol."  # noqa: E501
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """A lógica principal do comando.
-
-        Args:
-            self: Instância do objeto.
-            *args: Argumentos posicionais variáveis.
-            **options: Opções do comando de management.
-
-        Returns:
-            Nenhum valor.
-        """
+        """Roda a lógica principal do comando."""
         self.stdout.write(
             self.style.SUCCESS("Buscando DREs na SME Integracao...")
         )

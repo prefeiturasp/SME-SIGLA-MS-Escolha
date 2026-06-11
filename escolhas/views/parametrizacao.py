@@ -35,10 +35,9 @@ class ParametrizacaoViewSet(
         """Create.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
-            *args: Argumentos posicionais variáveis.
-            **kwargs: Argumentos nomeados variáveis.
+            *args: Argumentos posicionais repassados ao comando.
+            **kwargs: Argumentos nomeados repassados ao comando.
 
         Returns:
             Resposta HTTP com os dados serializados.
@@ -58,11 +57,10 @@ class ParametrizacaoViewSet(
         """Opcional: sincroniza registros a partir dos tipo_ue distintos em.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         created = Parametrizacao.sync_from_escolas()
         return Response({"created": created})
@@ -78,11 +76,10 @@ class ParametrizacaoViewSet(
         """Atualiza em lote apenas o campo usar dos registros.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         serializer = ParametrizacaoBulkItemSerializer(
             data=request.data, many=True

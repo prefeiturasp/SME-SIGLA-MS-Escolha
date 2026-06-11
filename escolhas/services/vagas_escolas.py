@@ -19,8 +19,8 @@ def criar_vagas_em_lote(
     """Cria vagas em lote.
 
     Args:
-        vagas_data: Vagas data utilizado na operação.
-        lote: Lote de concurso usado no teste.
+        vagas_data: Vagas data.
+        lote: Lote.
 
     Returns:
         Tupla com os objetos criados ou atualizados.
@@ -70,13 +70,14 @@ def processar_criacao_vagas_lote(
     """Processa criacao vagas lote.
 
     Args:
-        request_data: Request data utilizado na operação.
+        request_data: Request data.
 
     Returns:
         Tupla com os objetos criados ou atualizados.
 
     Raises:
-        TipoUEDesabilitadoException: Se ocorrer erro nesta operação.
+        TipoUEDesabilitadoException: Quando o tipo de UE informado está
+        desabilitado.
     """
     serializer = VagasEscolasCreateSerializer(data=request_data)
 
@@ -144,10 +145,10 @@ def atualizar_vagas_utilizadas_por_processo(
     """Atualiza vagas utilizadas por processo.
 
     Args:
-        vagas: Vagas utilizado na operação.
+        vagas: Vagas.
 
     Returns:
-        Dicionário com os dados retornados pela operação.
+        Dicionário com os dados processados.
     """
     from ..models import VagasEscolas  # import local para evitar ciclos
 
@@ -200,7 +201,7 @@ def adicionar_vagas_ao_lote_por_processo(
     """Adiciona vagas a um lote existente pelo processo_uuid.
 
     Args:
-        request_data: Request data utilizado na operação.
+        request_data: Request data.
 
     Returns:
         Tupla com os objetos criados ou atualizados.

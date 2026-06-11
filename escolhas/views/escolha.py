@@ -52,11 +52,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def get_queryset(self) -> Any:
         """Retorna queryset.
 
-        Args:
-            self: Instância do objeto.
-
         Returns:
-            Valor calculado para o campo ou propriedade.
+            Resposta HTTP com os dados solicitados.
         """
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
@@ -70,11 +67,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self) -> Any:
         """Retorna serializer class.
 
-        Args:
-            self: Instância do objeto.
-
         Returns:
-            Valor calculado para o campo ou propriedade.
+            Resposta HTTP com os dados solicitados.
         """
         if self.action in ["list", "busca"]:
             return EscolhaListSerializer
@@ -88,11 +82,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Paginate queryset.
 
         Args:
-            self: Instância do objeto.
-            queryset: Queryset utilizado na operação.
+            queryset: Queryset.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         if "no_page" in self.request.query_params:
             return None
@@ -102,12 +95,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Retorna serializer.
 
         Args:
-            self: Instância do objeto.
-            *args: Argumentos posicionais variáveis.
-            **kwargs: Argumentos nomeados variáveis.
+            *args: Argumentos posicionais repassados ao comando.
+            **kwargs: Argumentos nomeados repassados ao comando.
 
         Returns:
-            Valor calculado para o campo ou propriedade.
+            Resposta HTTP com os dados solicitados.
         """
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get("fields")
@@ -120,11 +112,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Busca.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         logger.info(
             "Buscando escolhas por candidato_uuid",
@@ -163,11 +154,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Endpoint para buscar escolhas com situação de reconvocação.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         logger.info(
             "Buscando escolhas com situação de reconvocação",
@@ -190,11 +180,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Busca candidatos.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         logger.info(
             "Buscando candidatos",
@@ -268,11 +257,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Agrupa escolhas por cargo e retorna totais por vaga.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         logger.info(
             "Agrupando escolhas por cargo",
@@ -311,11 +299,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Endpoint para receber dados de escolhas.
 
         Args:
-            self: Instância do objeto.
             request: Requisição HTTP recebida.
 
         Returns:
-            Valor calculado conforme a regra aplicada.
+            Resposta HTTP com os dados solicitados.
         """
         logger.info(
             "Iniciando importação de escolhas da Prodam",

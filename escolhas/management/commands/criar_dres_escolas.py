@@ -21,16 +21,7 @@ class Command(BaseCommand):
     help = "Busca DREs na SME Integracao (/api/DREs) e cria/atualiza registros locais"  # noqa: E501
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """A lógica principal do comando.
-
-        Args:
-            self: Instância do objeto.
-            *args: Argumentos posicionais variáveis.
-            **options: Opções do comando de management.
-
-        Returns:
-            Nenhum valor.
-        """
+        """Roda a lógica principal do comando."""
         self.stdout.write(
             self.style.SUCCESS("Buscando DREs da SME Integracao...")
         )

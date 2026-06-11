@@ -15,13 +15,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
     """Serializer do modelo DynamicFields."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Inicializa a instância com os parâmetros informados.
-
-        Args:
-            self: Instância do objeto.
-            *args: Argumentos posicionais variáveis.
-            **kwargs: Argumentos nomeados variáveis.
-        """
+        """Inicializa a instância com os parâmetros informados."""
         fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
         if fields is not None:
@@ -82,15 +76,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
         }
 
     def to_representation(self, instance: Any) -> Any:
-        """Converte a ForeignKey vaga_escola para UUID na representação.
-
-        Args:
-            self: Instância do objeto.
-            instance: Instância do modelo em atualização.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Converte a ForeignKey vaga_escola para UUID na representação."""
         data = super().to_representation(instance)
         if instance.vaga_escola:
             data["vaga_escola_uuid"] = str(instance.vaga_escola.uuid)
@@ -99,18 +85,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
         return data
 
     def validate(self, attrs: Any) -> Any:
-        """Validação customizada: tipo_vaga e vaga_escola são obrigatórios.
-
-        Args:
-            self: Instância do objeto.
-            attrs: Atributos em validação.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-
-        Raises:
-            ValidationError: Se os dados não passarem na validação.
-        """
+        """Validação customizada: tipo_vaga e vaga_escola são obrigatórios."""
         situacao = attrs.get("situacao")
         if self.instance:
             tipo_vaga = attrs.get("tipo_vaga", self.instance.tipo_vaga)  # type: ignore[union-attr]
@@ -193,11 +168,10 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
         """Retorna vaga escola uuid.
 
         Args:
-            self: Instância do objeto.
-            obj: Obj utilizado na operação.
+            obj: Instância do modelo sendo serializada.
 
         Returns:
-            Valor calculado para o campo ou propriedade.
+            Valor do campo serializado.
         """
         return str(obj.vaga_escola.uuid) if obj.vaga_escola else None
 

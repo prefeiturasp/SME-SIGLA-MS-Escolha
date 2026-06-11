@@ -29,22 +29,12 @@ class Parametrizacao(BaseModel):
         ordering = ["tipo_ue"]
 
     def __str__(self) -> Any:
-        """Retorna representação textual do registro.
-
-        Args:
-            self: Instância do objeto.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Retorna representação textual do registro."""
         return f'{self.tipo_ue} ({('usar' if self.usar else 'não usar')})'
 
     @classmethod
     def sync_from_escolas(cls) -> int:
         """Garante registro para cada tipo_ue distinto em Escola.
-
-        Args:
-            cls: Classe referenciada.
 
         Returns:
             Valor inteiro resultante do cálculo.

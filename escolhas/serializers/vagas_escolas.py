@@ -85,18 +85,7 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
     )
 
     def validate_vagas(self, value: Any) -> Any:
-        """Valida a lista de vagas e converte status descritivos.
-
-        Args:
-            self: Instância do objeto.
-            value: Valor recebido para validação.
-
-        Returns:
-            Valor validado do campo vagas.
-
-        Raises:
-            ValidationError: Se os dados não passarem na validação.
-        """
+        """Valida vagas."""
         if not value:
             raise serializers.ValidationError(
                 "A lista de vagas não pode estar vazia."

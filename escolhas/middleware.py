@@ -17,7 +17,7 @@ def get_correlation_id() -> Any:
     """Retorna correlation id.
 
     Returns:
-        Valor calculado para o campo ou propriedade.
+        Valor do campo serializado.
     """
     return getattr(_thread_locals, "correlation_id", None)
 
@@ -32,21 +32,12 @@ class CorrelationIdMiddleware:
         """Inicializa a instância com os parâmetros informados.
 
         Args:
-            self: Instância do objeto.
-            get_response: Get response utilizado na operação.
+            get_response: Get response.
         """
         self.get_response = get_response
 
     def __call__(self, request: Any) -> Any:
-        """Call  .
-
-        Args:
-            self: Instância do objeto.
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Call middleware para adicionar correlation id às requisições."""
         start_time = time.perf_counter()
         cid = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
         _thread_locals.correlation_id = cid

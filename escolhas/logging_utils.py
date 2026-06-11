@@ -18,10 +18,9 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         """Add fields.
 
         Args:
-            self: Instância do objeto.
-            log_record: Log record utilizado na operação.
-            record: Record utilizado na operação.
-            message_dict: Message dict utilizado na operação.
+            log_record: Log record.
+            record: Record.
+            message_dict: Message dict.
 
         Returns:
             Nenhum valor.

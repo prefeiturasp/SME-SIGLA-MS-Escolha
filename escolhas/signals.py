@@ -21,9 +21,9 @@ def escolha_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     """Captura o estado anterior de situacao antes de salvar.
 
     Args:
-        sender: Sender utilizado na operação.
-        instance: Instância do modelo em atualização.
-        **kwargs: Argumentos nomeados variáveis.
+        sender: Sender.
+        instance: Instância do modelo em processamento.
+        **kwargs: Argumentos nomeados repassados ao comando.
 
     Returns:
         Nenhum valor; persiste alterações no banco.
@@ -45,10 +45,10 @@ def escolha_post_save(
     """Cria histórico de escolha e atualiza vagas após salvar.
 
     Args:
-        sender: Sender utilizado na operação.
-        instance: Instância do modelo em atualização.
-        created: Created utilizado na operação.
-        **kwargs: Argumentos nomeados variáveis.
+        sender: Sender.
+        instance: Instância do modelo em processamento.
+        created: Created.
+        **kwargs: Argumentos nomeados repassados ao comando.
 
     Returns:
         Nenhum valor; persiste alterações no banco.

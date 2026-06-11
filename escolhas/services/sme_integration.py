@@ -74,7 +74,7 @@ def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
     """Busca ues codigos por dre.
 
     Args:
-        codigo_dre: Codigo dre utilizado na operação.
+        codigo_dre: Codigo dre.
 
     Returns:
         Lista com os registros obtidos.
@@ -101,10 +101,10 @@ def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
     """Busca dados escola por eol.
 
     Args:
-        codigo_eol: Codigo eol utilizado na operação.
+        codigo_eol: Codigo eol.
 
     Returns:
-        Dicionário com os dados retornados pela operação.
+        Dicionário com os dados processados.
 
     Raises:
         ValueError: Se os dados informados forem inválidos.
@@ -130,7 +130,7 @@ def buscar_unidades_codigo_integracao_por_dre(
     """Busca unidades codigo integracao por dre.
 
     Args:
-        codigo_dre: Codigo dre utilizado na operação.
+        codigo_dre: Codigo dre.
 
     Returns:
         Lista com os registros obtidos.

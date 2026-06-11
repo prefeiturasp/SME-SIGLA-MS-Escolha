@@ -14,9 +14,6 @@ class EscolhasConfig(AppConfig):
     def ready(self) -> None:
         """Importa os signals quando a aplicação estiver pronta.
 
-        Args:
-            self: Instância do objeto.
-
         Returns:
             Nenhum valor.
         """

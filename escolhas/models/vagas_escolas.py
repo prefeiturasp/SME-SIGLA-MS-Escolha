@@ -82,14 +82,7 @@ class VagasEscolas(BaseModel):
         ordering = ["-data_fechamento_modulo", "escola__nome_oficial"]
 
     def __str__(self) -> Any:
-        """Retorna representação textual do registro.
-
-        Args:
-            self: Instância do objeto.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Retorna representação textual do registro."""
         return f"{self.escola.nome_oficial} - {self.cargo_descricao}"
 
 

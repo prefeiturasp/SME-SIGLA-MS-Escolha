@@ -26,14 +26,7 @@ class Dre(BaseModel):
         ordering = ["nome"]
 
     def __str__(self) -> Any:
-        """Retorna representação textual do registro.
-
-        Args:
-            self: Instância do objeto.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Retorna representação textual do registro."""
         return f"{self.sigla} - {self.nome}"
 
 

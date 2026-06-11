@@ -86,14 +86,7 @@ class Escola(BaseModel):
         ordering = ["nome_oficial"]
 
     def __str__(self) -> Any:
-        """Retorna representação textual do registro.
-
-        Args:
-            self: Instância do objeto.
-
-        Returns:
-            Valor calculado conforme a regra aplicada.
-        """
+        """Retorna representação textual do registro."""
         return self.nome_oficial
 
 

@@ -15,15 +15,7 @@ class Command(BaseCommand):
     help = "Cria DREs de exemplo para desenvolvimento"
 
     def add_arguments(self, parser: Any) -> None:
-        """Registra argumentos da linha de comando.
-
-        Args:
-            self: Instância do objeto.
-            parser: Parser utilizado na operação.
-
-        Returns:
-            Nenhum valor.
-        """
+        """Registra os argumentos da linha de comando."""
         parser.add_argument(
             "--count",
             type=int,
@@ -32,16 +24,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        """A lógica principal do comando.
-
-        Args:
-            self: Instância do objeto.
-            *args: Argumentos posicionais variáveis.
-            **options: Opções do comando de management.
-
-        Returns:
-            Nenhum valor.
-        """
+        """Roda a lógica principal do comando."""
         count = options["count"]
         self.stdout.write(self.style.SUCCESS(f"Criando {count} DREs..."))
         nomes = [

@@ -20,9 +20,8 @@ class CandidatoAPIService:
         """Inicializa a instância com os parâmetros informados.
 
         Args:
-            self: Instância do objeto.
             base_url: URL base do serviço remoto.
-            timeout_seconds: Tempo máximo de espera pela resposta, em segundos.
+            timeout_seconds: Tempo máximo de espera, em segundos.
         """
         if base_url is None:
             base_url = settings.CANDIDATOS_API_URL
@@ -39,12 +38,11 @@ class CandidatoAPIService:
         """Busca candidatos por cpfs.
 
         Args:
-            self: Instância do objeto.
-            cpfs: Cpfs utilizado na operação.
+            cpfs: Cpfs.
             processo_uuid: UUID do processo de convocação.
 
         Returns:
-            Texto resultante da operação.
+            Conteúdo textual gerado.
         """
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
         payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
@@ -99,11 +97,10 @@ class CandidatoAPIService:
         """Busca candidatos.
 
         Args:
-            self: Instância do objeto.
-            nome: Nome utilizado na operação.
-            cpf: Cpf utilizado na operação.
-            rg: Rg utilizado na operação.
-            registro_funcional: Registro funcional utilizado na operação.
+            nome: Nome.
+            cpf: Cpf.
+            rg: Rg.
+            registro_funcional: Registro funcional do servidor.
 
         Returns:
             Lista com os registros obtidos.

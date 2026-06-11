@@ -31,18 +31,7 @@ class EscolhasProdamImportacaoSerializer(serializers.Serializer):
     )
 
     def validate_escolhas(self, value: Any) -> Any:
-        """Valida que cada escolha tem os campos obrigatórios.
-
-        Args:
-            self: Instância do objeto.
-            value: Valor recebido para validação.
-
-        Returns:
-            Valor validado do campo escolhas.
-
-        Raises:
-            ValidationError: Se os dados não passarem na validação.
-        """
+        """Valida escolhas."""
         for escolha in value:
             if not escolha.get("cpf"):
                 raise serializers.ValidationError(
