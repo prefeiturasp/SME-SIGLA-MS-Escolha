@@ -29,8 +29,9 @@ def montar_extracao_dados(
     vaga, porque escolhas ``nao-escolha`` / ``reconvocacao`` normalmente não
     têm ``vaga_escola`` vinculada — filtrar pela vaga as excluiria.
     """
+    
+    resultado: dict[str, Any] = {}
     if filtros:
-        resultado: dict[str, Any] = {}
         processos_uniao: list = []
         for filtro in filtros:
             ano = filtro["ano"]
@@ -43,7 +44,7 @@ def montar_extracao_dados(
     else:
         dados = contar_escolhas(concurso_uuid, ano=None)
         dados["dres"] = _montar_dres(concurso_uuid)
-        resultado = {"total": dados}
+        resultado.update(dados)
         anos = None
         processos_uniao = []
 
