@@ -202,22 +202,8 @@ def atualizar_vagas_utilizadas_por_processo(
 def adicionar_vagas_ao_lote_por_processo(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-<<<<<<< HEAD
     """Inclui novas vagas no lote mais recente do processo."""
     serializer = VagasEscolasCreateSerializer(data=request_data)
-=======
-    """Adiciona novas vagas a um lote existente identificado por processo_uuid.
-
-    Espera o mesmo payload do create:
-    {
-      "processo_uuid": "...",
-      "processo_nome": "opcional",
-      "vagas": [ {...}, ... ]
-    }
-    Retorna (response_dict, http_status_code)
-    """
-    serializer = VagasEscolasInclusaoSerializer(data=request_data)
->>>>>>> origin/test
     if not serializer.is_valid():
         return {"errors": serializer.errors}, status.HTTP_400_BAD_REQUEST
 
