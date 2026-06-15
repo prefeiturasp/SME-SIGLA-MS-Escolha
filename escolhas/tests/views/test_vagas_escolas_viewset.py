@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -18,19 +17,19 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def api_client() -> Any:
+def api_client():
     """Api client."""
     return APIClient()
 
 
 @pytest.fixture
-def dre() -> Any:
+def dre():
     """Dre."""
     return Dre.objects.create(codigo="01", nome="DRE 01")
 
 
 @pytest.fixture
-def escola(dre: Any) -> Any:
+def escola(dre):
     """Escola."""
     return Escola.objects.create(
         codigo_eol="000001",
@@ -41,7 +40,7 @@ def escola(dre: Any) -> Any:
 
 
 @pytest.fixture
-def lote() -> Any:
+def lote():
     """Lote."""
     return VagasEscolasLote.objects.create(
         processo_uuid=uuid4(), processo_nome="Proc"
@@ -49,7 +48,7 @@ def lote() -> Any:
 
 
 @pytest.fixture
-def vagas(escola: Any, lote: Any) -> Any:
+def vagas(escola, lote):
     """Vagas."""
     v1 = VagasEscolas.objects.create(
         escola=escola,
@@ -74,9 +73,7 @@ def vagas(escola: Any, lote: Any) -> Any:
     return (v1, v2)
 
 
-def test_action_utilizadas_patch_sucesso(
-    api_client: Any, lote: Any, vagas: Any
-) -> None:
+def test_action_utilizadas_patch_sucesso(api_client, lote, vagas):
     """Verifica action utilizadas patch sucesso."""
     url = reverse("vagas-escolas-utilizadas")
     v1, v2 = vagas
@@ -97,16 +94,16 @@ def test_action_utilizadas_patch_sucesso(
     assert resp.data.get("total") == 2
 
 
-def test_action_utilizadas_patch_lote_inexistente(api_client: Any) -> None:
+def test_action_utilizadas_patch_lote_inexistente(api_client):
     """Verifica action utilizadas patch lote inexistente."""
     url = reverse("vagas-escolas-utilizadas")
-    payload = []  # type: ignore[var-annotated]
+    payload = []
     resp = api_client.patch(url, payload, format="json")
     assert resp.status_code == status.HTTP_200_OK
     assert resp.data.get("total") == 0
 
 
-def payload(processo_uuid: Any, eol1: Any = "123456", eol2: Any = None) -> Any:
+def payload(processo_uuid, eol1="123456", eol2=None):
     """Payload."""
     vagas = [
         {
@@ -139,8 +136,8 @@ def payload(processo_uuid: Any, eol1: Any = "123456", eol2: Any = None) -> Any:
 
 
 def test_post_cria_lote_e_vagas_e_list_retorna_so_ultimo_lote(
-    escola_1: Any, escola_2: Any
-) -> None:
+    escola_1, escola_2
+):
     """Verifica post cria lote e vagas e list retorna so ultimo lote."""
     p_uuid = uuid4()
     client = APIClient()
@@ -166,7 +163,7 @@ def test_post_cria_lote_e_vagas_e_list_retorna_so_ultimo_lote(
     assert {"codigo", "nome", "uuid"} <= set(list_resp.data["dres"][0].keys())
 
 
-def test_list_processo_inexistente_retorna_vazio(escola_1: Any) -> None:
+def test_list_processo_inexistente_retorna_vazio(escola_1):
     """Verifica list processo inexistente retorna vazio."""
     client = APIClient()
     url = reverse("vagas-escolas-list")
@@ -177,7 +174,7 @@ def test_list_processo_inexistente_retorna_vazio(escola_1: Any) -> None:
     assert resp.data["dres"] == []
 
 
-def test_filter_cargo_codigo_sozinho(escola_1: Any, escola_2: Any) -> None:
+def test_filter_cargo_codigo_sozinho(escola_1, escola_2):
     """Verifica filter cargo codigo sozinho."""
     client = APIClient()
     url = reverse("vagas-escolas-list")
@@ -191,9 +188,7 @@ def test_filter_cargo_codigo_sozinho(escola_1: Any, escola_2: Any) -> None:
     assert resp.data["total_vagas"] >= 10
 
 
-def test_filter_por_processo_uuid_e_cargo_codigo(
-    escola_1: Any, escola_2: Any
-) -> None:
+def test_filter_por_processo_uuid_e_cargo_codigo(escola_1, escola_2):
     """Verifica filter por processo uuid e cargo codigo."""
     client = APIClient()
     url = reverse("vagas-escolas-list")
@@ -204,7 +199,7 @@ def test_filter_por_processo_uuid_e_cargo_codigo(
     client.post(url, payload(p_uuid, eol1="123456"), format="json")
     resp_123 = client.get(
         url, {"processo_uuid": str(p_uuid), "cargo_codigo": 123}
-    )  # type: ignore[arg-type]
+    )
     assert resp_123.status_code == 200
     vagas_123 = resp_123.data.get("vagas", [])
     assert len(vagas_123) == 1
@@ -212,16 +207,14 @@ def test_filter_por_processo_uuid_e_cargo_codigo(
     assert resp_123.data["total_vagas"] == 5
     resp_456 = client.get(
         url, {"processo_uuid": str(p_uuid), "cargo_codigo": 456}
-    )  # type: ignore[arg-type]
+    )
     assert resp_456.status_code == 200
     vagas_456 = resp_456.data.get("vagas", [])
     assert len(vagas_456) == 0
     assert resp_456.data["total_vagas"] == 0
 
 
-def test_create_retorna_400_quando_tipo_ue_desabilitado(
-    api_client: Any,
-) -> None:
+def test_create_retorna_400_quando_tipo_ue_desabilitado(api_client):
     """Verifica create retorna 400 quando tipo ue desabilitado."""
     url = reverse("vagas-escolas-list")
     p_uuid = uuid4()
@@ -250,7 +243,7 @@ def test_create_retorna_400_quando_tipo_ue_desabilitado(
     assert "Tipo UE bloqueado" in resp.data.get("detail", "")
 
 
-def test_create_retorna_500_quando_excecao_generica(api_client: Any) -> None:
+def test_create_retorna_500_quando_excecao_generica(api_client):
     """Verifica create retorna 500 quando excecao generica."""
     url = reverse("vagas-escolas-list")
     p_uuid = uuid4()

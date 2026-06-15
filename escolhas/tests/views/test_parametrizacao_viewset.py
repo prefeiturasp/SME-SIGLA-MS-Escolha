@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -40,7 +38,7 @@ MAPPING_FIXTURE = [
 
 
 @pytest.fixture
-def parametrizacoes_db() -> Any:
+def parametrizacoes_db():
     """Parametrizacoes db."""
     objs = [
         Parametrizacao(tipo_ue=nome, usar=False)
@@ -51,9 +49,7 @@ def parametrizacoes_db() -> Any:
 
 
 @pytest.mark.django_db
-def test_list_parametrizacoes(
-    api_client: Any, parametrizacoes_db: Any
-) -> None:
+def test_list_parametrizacoes(api_client, parametrizacoes_db):
     """Verifica list parametrizacoes."""
     url = reverse("parametrizacao-list")
     response = api_client.get(url)
@@ -64,9 +60,7 @@ def test_list_parametrizacoes(
 
 
 @pytest.mark.django_db
-def test_bulk_update_usar_updates_multiple(
-    api_client: Any, parametrizacoes_db: Any
-) -> None:
+def test_bulk_update_usar_updates_multiple(api_client, parametrizacoes_db):
     """Verifica bulk update usar updates multiple."""
     p1 = Parametrizacao.objects.get(tipo_ue="EMEF")
     p2 = Parametrizacao.objects.get(tipo_ue="EMEI")

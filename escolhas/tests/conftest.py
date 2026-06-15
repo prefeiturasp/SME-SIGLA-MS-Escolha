@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 import pytest
 from rest_framework.test import APIClient
@@ -19,13 +18,13 @@ from escolhas.models import (
 
 
 @pytest.fixture
-def dre() -> Any:
+def dre():
     """Fixture para criar uma DRE."""
     return Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
 
 
 @pytest.fixture
-def escola(dre: Any) -> Any:
+def escola(dre):
     """Fixture para criar uma escola."""
     return Escola.objects.create(
         codigo_eol="000001",
@@ -36,7 +35,7 @@ def escola(dre: Any) -> Any:
 
 
 @pytest.fixture
-def lote() -> Any:
+def lote():
     """Fixture para criar um lote de vagas."""
     return VagasEscolasLote.objects.create(
         processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
@@ -44,7 +43,7 @@ def lote() -> Any:
 
 
 @pytest.fixture
-def vaga_escola(escola: Any, lote: Any) -> Any:
+def vaga_escola(escola, lote):
     """Fixture para criar uma vaga de escola."""
     return VagasEscolas.objects.create(
         escola=escola,
@@ -60,7 +59,7 @@ def vaga_escola(escola: Any, lote: Any) -> Any:
     )
 
 
-def _criar_escolha(**override: Any) -> Any:
+def _criar_escolha(**override):
     """Criar escolha."""
     if "vaga_escola_uuid" in override:
         vaga_uuid = override.pop("vaga_escola_uuid")
@@ -131,42 +130,39 @@ def _criar_escolha(**override: Any) -> Any:
 
 
 @pytest.fixture
-def api_client() -> Any:
+def api_client():
     """Fixture para criar um cliente API de teste."""
     return APIClient()
 
 
 @pytest.fixture
-def escolha_matematica() -> Any:
+def escolha_matematica():
     """Fixture para criar uma escolha de matemática."""
     return _criar_escolha()
 
 
 @pytest.fixture
-def escolha_portugues() -> Any:
+def escolha_portugues():
     """Fixture para criar uma escolha de português."""
     return _criar_escolha()
 
 
 @pytest.fixture
-def escolha_historia() -> Any:
+def escolha_historia():
     """Fixture para criar uma escolha de história."""
     return _criar_escolha()
 
 
 @pytest.fixture
-def escolha_ciencias() -> Any:
+def escolha_ciencias():
     """Fixture para criar uma escolha de ciências."""
     return _criar_escolha()
 
 
 @pytest.fixture
 def escolhas_multiplas(
-    escolha_matematica: Any,
-    escolha_portugues: Any,
-    escolha_historia: Any,
-    escolha_ciencias: Any,
-) -> Any:
+    escolha_matematica, escolha_portugues, escolha_historia, escolha_ciencias
+):
     """Fixture para criar múltiplas escolhas de teste."""
     return {
         "matematica": escolha_matematica,
@@ -177,7 +173,7 @@ def escolhas_multiplas(
 
 
 @pytest.fixture
-def escolha_data(vaga_escola: Any) -> Any:
+def escolha_data(vaga_escola):
     """Fixture para dados de escolha válidos."""
     return {
         "candidato_uuid": str(uuid.uuid4()),
@@ -190,7 +186,7 @@ def escolha_data(vaga_escola: Any) -> Any:
 
 
 @pytest.fixture
-def escolha_data_invalid() -> Any:
+def escolha_data_invalid():
     """Fixture para dados de escolha inválidos."""
     return {
         "candidato_uuid": None,
@@ -201,7 +197,7 @@ def escolha_data_invalid() -> Any:
 
 
 @pytest.fixture
-def escolha_data_long_name() -> Any:
+def escolha_data_long_name():
     """Fixture para dados inválidos com valores fora das choices."""
     return {
         "candidato_uuid": str(uuid.uuid4()),
@@ -213,7 +209,7 @@ def escolha_data_long_name() -> Any:
 
 
 @pytest.fixture
-def escolha_data_updated() -> Any:
+def escolha_data_updated():
     """Fixture para dados de escolha atualizados."""
     return {
         "candidato_uuid": str(uuid.uuid4()),
@@ -225,13 +221,13 @@ def escolha_data_updated() -> Any:
 
 
 @pytest.fixture
-def fake_uuid() -> Any:
+def fake_uuid():
     """Fixture para gerar UUIDs falsos para testes."""
     return uuid.uuid4()
 
 
 @pytest.fixture
-def multiple_escolhas() -> Any:
+def multiple_escolhas():
     """Fixture para criar múltiplas escolhas para testes de paginação."""
     escolhas = []
     for _ in range(25):
@@ -241,7 +237,7 @@ def multiple_escolhas() -> Any:
 
 
 @pytest.fixture
-def escolhas_ordenadas() -> Any:
+def escolhas_ordenadas():
     """Fixture para criar escolhas com situações específicas para teste de."""
     escolhas = []
     situacoes = [
@@ -256,7 +252,7 @@ def escolhas_ordenadas() -> Any:
 
 
 @pytest.fixture
-def escolhas_para_busca() -> Any:
+def escolhas_para_busca():
     """Fixture para criar escolhas específicas para teste de busca."""
     escolhas = []
     situacoes = [

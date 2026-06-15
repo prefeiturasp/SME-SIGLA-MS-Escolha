@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -12,7 +10,7 @@ from escolhas.models import Dre
 
 
 @pytest.fixture
-def dres_criadas() -> Any:
+def dres_criadas():
     """Dres criadas."""
     return [
         Dre.objects.create(
@@ -37,7 +35,7 @@ def dres_criadas() -> Any:
 class TestDreViewSet:
     """ViewSet para o recurso TestDre."""
 
-    def test_list_vazio(self, api_client: Any) -> None:
+    def test_list_vazio(self, api_client):
         """Verifica list vazio."""
         url = reverse("dre-list")
         response = api_client.get(url)
@@ -47,7 +45,7 @@ class TestDreViewSet:
         assert "links" in response.data
         assert "results" in response.data
 
-    def test_list_com_dados(self, api_client: Any, dres_criadas: Any) -> None:
+    def test_list_com_dados(self, api_client, dres_criadas):
         """Verifica list com dados."""
         url = reverse("dre-list")
         response = api_client.get(url)
@@ -57,7 +55,7 @@ class TestDreViewSet:
         item = response.data["results"][0]
         assert {"uuid", "codigo", "nome", "sigla"} <= set(item.keys())
 
-    def test_retrieve(self, api_client: Any, dres_criadas: Any) -> None:
+    def test_retrieve(self, api_client, dres_criadas):
         """Verifica retrieve."""
         dre = dres_criadas[0]
         url = reverse("dre-detail", kwargs={"pk": dre.uuid})
@@ -68,7 +66,7 @@ class TestDreViewSet:
         assert response.data["nome"] == dre.nome
         assert response.data["sigla"] == dre.sigla
 
-    def test_search(self, api_client: Any, dres_criadas: Any) -> None:
+    def test_search(self, api_client, dres_criadas):
         """Verifica search."""
         url = reverse("dre-list")
         response = api_client.get(url, {"search": "PENHA"})
@@ -76,7 +74,7 @@ class TestDreViewSet:
         assert response.data["count"] == 1
         assert response.data["results"][0]["sigla"] == "DRE - PE"
 
-    def test_ordering(self, api_client: Any, dres_criadas: Any) -> None:
+    def test_ordering(self, api_client, dres_criadas):
         """Verifica ordering."""
         url = reverse("dre-list")
         response = api_client.get(url, {"ordering": "nome"})
@@ -84,7 +82,7 @@ class TestDreViewSet:
         nomes = [e["nome"] for e in response.data["results"]]
         assert nomes == sorted(nomes)
 
-    def test_pagination(self, api_client: Any) -> None:
+    def test_pagination(self, api_client):
         """Verifica pagination."""
         for i in range(1, 12):
             Dre.objects.create(

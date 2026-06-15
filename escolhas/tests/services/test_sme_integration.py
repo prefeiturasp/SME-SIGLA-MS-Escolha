@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -15,13 +14,13 @@ from escolhas.services import (
 )
 
 
-def _setup_settings(settings: Any) -> None:
+def _setup_settings(settings):
     """Setup settings."""
     settings.SMEINTEGRACAO_API_URL = "https://api.example.com"
     settings.SMEINTEGRACAO_API_TOKEN = "token"
 
 
-def test_buscar_dres_de_smeintegracao_happy(settings: Any) -> None:
+def test_buscar_dres_de_smeintegracao_happy(settings):
     """Verifica buscar dres de smeintegracao happy."""
     _setup_settings(settings)
     payload = [
@@ -40,7 +39,7 @@ def test_buscar_dres_de_smeintegracao_happy(settings: Any) -> None:
         assert result[0]["sigla"] == "DRE - BT"
 
 
-def test_buscar_ues_codigos_por_dre_happy(settings: Any) -> None:
+def test_buscar_ues_codigos_por_dre_happy(settings):
     """Verifica buscar ues codigos por dre happy."""
     _setup_settings(settings)
     payload = ["400292", "307306"]
@@ -53,7 +52,7 @@ def test_buscar_ues_codigos_por_dre_happy(settings: Any) -> None:
         assert result == ["400292", "307306"]
 
 
-def test_buscar_dados_escola_por_eol_happy(settings: Any) -> None:
+def test_buscar_dados_escola_por_eol_happy(settings):
     """Verifica buscar dados escola por eol happy."""
     _setup_settings(settings)
     payload = {"codigo": "400292", "nome": "ESCOLA X"}
@@ -67,7 +66,7 @@ def test_buscar_dados_escola_por_eol_happy(settings: Any) -> None:
         assert result["nome"] == "ESCOLA X"
 
 
-def test_buscar_dres_de_smeintegracao_erros_de_config(settings: Any) -> None:
+def test_buscar_dres_de_smeintegracao_erros_de_config(settings):
     """Verifica buscar dres de smeintegracao erros de config."""
     settings.SMEINTEGRACAO_API_URL = None
     settings.SMEINTEGRACAO_API_TOKEN = None
@@ -75,7 +74,7 @@ def test_buscar_dres_de_smeintegracao_erros_de_config(settings: Any) -> None:
         buscar_dres_de_smeintegracao()
 
 
-def test_buscar_dres_formato_invalido(settings: Any) -> None:
+def test_buscar_dres_formato_invalido(settings):
     """Verifica buscar dres formato invalido."""
     _setup_settings(settings)
     with patch("escolhas.services.sme_integration.requests.get") as mock_get:
@@ -87,7 +86,7 @@ def test_buscar_dres_formato_invalido(settings: Any) -> None:
             buscar_dres_de_smeintegracao()
 
 
-def test_buscar_dres_http_error(settings: Any) -> None:
+def test_buscar_dres_http_error(settings):
     """Verifica buscar dres http error."""
     _setup_settings(settings)
     with patch("escolhas.services.sme_integration.requests.get") as mock_get:
@@ -98,7 +97,7 @@ def test_buscar_dres_http_error(settings: Any) -> None:
             buscar_dres_de_smeintegracao()
 
 
-def test_buscar_ues_formato_invalido(settings: Any) -> None:
+def test_buscar_ues_formato_invalido(settings):
     """Verifica buscar ues formato invalido."""
     _setup_settings(settings)
     with patch("escolhas.services.sme_integration.requests.get") as mock_get:
@@ -110,7 +109,7 @@ def test_buscar_ues_formato_invalido(settings: Any) -> None:
             buscar_ues_codigos_por_dre("108100")
 
 
-def test_buscar_escola_formato_invalido(settings: Any) -> None:
+def test_buscar_escola_formato_invalido(settings):
     """Verifica buscar escola formato invalido."""
     _setup_settings(settings)
     with patch("escolhas.services.sme_integration.requests.get") as mock_get:
@@ -122,7 +121,7 @@ def test_buscar_escola_formato_invalido(settings: Any) -> None:
             buscar_dados_escola_por_eol("400292")
 
 
-def test_buscar_escola_http_error(settings: Any) -> None:
+def test_buscar_escola_http_error(settings):
     """Verifica buscar escola http error."""
     _setup_settings(settings)
     with patch("escolhas.services.sme_integration.requests.get") as mock_get:
@@ -133,7 +132,7 @@ def test_buscar_escola_http_error(settings: Any) -> None:
             buscar_dados_escola_por_eol("400292")
 
 
-def test_buscar_dres_de_smeintegracao_sem_token(settings: Any) -> None:
+def test_buscar_dres_de_smeintegracao_sem_token(settings):
     """Verifica buscar dres de smeintegracao sem token."""
     settings.SMEINTEGRACAO_API_URL = "https://api.example.com"
     settings.SMEINTEGRACAO_API_TOKEN = None
@@ -142,7 +141,7 @@ def test_buscar_dres_de_smeintegracao_sem_token(settings: Any) -> None:
     assert "SMEINTEGRACAO_API_TOKEN" in str(exc.value)
 
 
-def test_buscar_dres_ignora_itens_nao_dict(settings: Any) -> None:
+def test_buscar_dres_ignora_itens_nao_dict(settings):
     """Verifica buscar dres ignora itens nao dict."""
     _setup_settings(settings)
     payload = [

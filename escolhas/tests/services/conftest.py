@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -12,7 +11,7 @@ from escolhas.models import Dre, Escola
 
 @pytest.fixture
 @pytest.mark.django_db
-def dre_teste() -> Any:
+def dre_teste():
     """Dre teste."""
     return Dre.objects.create(
         codigo="123456", nome="DRE Teste", sigla="DRE-TESTE"
@@ -21,7 +20,7 @@ def dre_teste() -> Any:
 
 @pytest.fixture
 @pytest.mark.django_db
-def escola_1(dre_teste: Any) -> Any:
+def escola_1(dre_teste):
     """Escola 1."""
     return Escola.objects.create(
         dre=dre_teste,
@@ -43,7 +42,7 @@ def escola_1(dre_teste: Any) -> Any:
 
 @pytest.fixture
 @pytest.mark.django_db
-def escola_2(dre_teste: Any) -> Any:
+def escola_2(dre_teste):
     """Escola 2."""
     return Escola.objects.create(
         dre=dre_teste,
@@ -64,7 +63,7 @@ def escola_2(dre_teste: Any) -> Any:
 
 
 @pytest.fixture
-def vaga_data_valida() -> Any:
+def vaga_data_valida():
     """Vaga data valida."""
     return {
         "data_fechamento_modulo": "2025-09-10",
@@ -78,7 +77,7 @@ def vaga_data_valida() -> Any:
 
 
 @pytest.fixture
-def vagas_data_multiplas() -> Any:
+def vagas_data_multiplas():
     """Vagas data multiplas."""
     return [
         {
@@ -103,7 +102,7 @@ def vagas_data_multiplas() -> Any:
 
 
 @pytest.fixture
-def request_data_valido(vagas_data_multiplas: Any) -> Any:
+def request_data_valido(vagas_data_multiplas):
     """Request data valido."""
     return {
         "processo_uuid": str(uuid4()),
@@ -113,7 +112,7 @@ def request_data_valido(vagas_data_multiplas: Any) -> Any:
 
 
 @pytest.fixture
-def request_data_invalido() -> Any:
+def request_data_invalido():
     """Request data invalido."""
     return {
         "vagas": [
@@ -123,19 +122,19 @@ def request_data_invalido() -> Any:
 
 
 @pytest.fixture
-def request_data_vazio() -> Any:
+def request_data_vazio():
     """Request data vazio."""
     return {"vagas": []}
 
 
 @pytest.fixture
-def concurso_uuid_teste() -> Any:
+def concurso_uuid_teste():
     """Concurso uuid teste."""
     return uuid4()
 
 
 @pytest.fixture
-def request_data_com_concurso(vagas_data_multiplas: Any) -> Any:
+def request_data_com_concurso(vagas_data_multiplas):
     """Request data com concurso."""
     return {
         "processo_uuid": str(uuid4()),
@@ -145,7 +144,7 @@ def request_data_com_concurso(vagas_data_multiplas: Any) -> Any:
 
 
 @pytest.fixture
-def vaga_data_com_concurso(vaga_data_valida: Any) -> Any:
+def vaga_data_com_concurso(vaga_data_valida):
     """Vaga data com concurso."""
     return {
         **vaga_data_valida,

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -12,7 +10,7 @@ from escolhas.models import Dre, Escola, Parametrizacao
 
 
 @pytest.fixture
-def dre_bt() -> Any:
+def dre_bt():
     """Dre bt."""
     return Dre.objects.create(
         codigo="108100",
@@ -22,7 +20,7 @@ def dre_bt() -> Any:
 
 
 @pytest.fixture
-def dre_ip() -> Any:
+def dre_ip():
     """Dre ip."""
     return Dre.objects.create(
         codigo="108200",
@@ -32,12 +30,12 @@ def dre_ip() -> Any:
 
 
 @pytest.fixture
-def param_ativo_emef() -> Any:
+def param_ativo_emef():
     """Param ativo emef."""
     return Parametrizacao.objects.create(tipo_ue="EMEF", usar=True)
 
 
-def criar_escola(dre: Dre, idx: int = 1) -> Escola:
+def criar_escola(dre, idx=1):
     """Criar escola."""
     return Escola.objects.create(
         dre=dre,
@@ -74,9 +72,7 @@ def criar_escola(dre: Dre, idx: int = 1) -> Escola:
 class TestEscolaViewSet:
     """ViewSet para o recurso TestEscola."""
 
-    def test_list_escolas_vazio(
-        self, api_client: Any, param_ativo_emef: Any
-    ) -> None:
+    def test_list_escolas_vazio(self, api_client, param_ativo_emef):
         """Verifica list escolas vazio."""
         url = reverse("escola-list")
         response = api_client.get(url)
@@ -87,8 +83,8 @@ class TestEscolaViewSet:
         assert "results" in response.data
 
     def test_list_escolas_com_dados(
-        self, api_client: Any, dre_bt: Any, param_ativo_emef: Any
-    ) -> None:
+        self, api_client, dre_bt, param_ativo_emef
+    ):
         """Verifica list escolas com dados."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)
@@ -102,9 +98,7 @@ class TestEscolaViewSet:
         assert "dre" in item
         assert set(item["dre"].keys()) == {"uuid", "codigo", "nome", "sigla"}
 
-    def test_retrieve_escola(
-        self, api_client: Any, dre_bt: Any, param_ativo_emef: Any
-    ) -> None:
+    def test_retrieve_escola(self, api_client, dre_bt, param_ativo_emef):
         """Verifica retrieve escola."""
         escola = criar_escola(dre_bt, 3)
         url = reverse("escola-detail", kwargs={"pk": escola.uuid})
@@ -116,9 +110,7 @@ class TestEscolaViewSet:
         assert response.data["dre"]["nome"] == dre_bt.nome
         assert response.data["dre"]["sigla"] == dre_bt.sigla
 
-    def test_search_escolas(
-        self, api_client: Any, dre_bt: Any, param_ativo_emef: Any
-    ) -> None:
+    def test_search_escolas(self, api_client, dre_bt, param_ativo_emef):
         """Verifica search escolas."""
         criar_escola(dre_bt, 1)
         e2 = criar_escola(dre_bt, 2)
@@ -137,8 +129,8 @@ class TestEscolaViewSet:
         assert response.data["count"] == 1
 
     def test_list_escolas_sem_parametrizacao_ativa_retorna_vazio(
-        self, api_client: Any, dre_bt: Any
-    ) -> None:
+        self, api_client, dre_bt
+    ):
         """Verifica list escolas sem parametrizacao ativa retorna vazio."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)
@@ -150,8 +142,8 @@ class TestEscolaViewSet:
         assert len(response.data["results"]) == 0
 
     def test_list_escolas_filtra_por_nome_param(
-        self, api_client: Any, dre_bt: Any, param_ativo_emef: Any
-    ) -> None:
+        self, api_client, dre_bt, param_ativo_emef
+    ):
         """Verifica list escolas filtra por nome param."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)

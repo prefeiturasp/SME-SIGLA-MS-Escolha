@@ -48,5 +48,5 @@ class Command(BaseCommand):
                     f"  - DRE já existe: {dre.sigla} - {dre.nome}"
                 )
         self.stdout.write(
-            self.style.SUCCESS(f"✅ {len(criadas)} DREs criadas!")
+            self.style.SUCCESS(f"{len(criadas)} DREs criadas!")
         )

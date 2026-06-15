@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import Mock, patch
 
 import requests
@@ -13,7 +12,7 @@ from escolhas.services.concurso_api import ConcursoAPIService
 class TestConcursoAPIService:
     """Testes para ConcursoAPIService."""
 
-    def test_buscar_concurso_uuid_sucesso(self, settings: Any) -> None:
+    def test_buscar_concurso_uuid_sucesso(self, settings):
         """Verifica buscar concurso uuid sucesso."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -33,7 +32,7 @@ class TestConcursoAPIService:
             )
             assert call_args[1]["timeout"] == 30
 
-    def test_buscar_concurso_uuid_nao_encontrado(self, settings: Any) -> None:
+    def test_buscar_concurso_uuid_nao_encontrado(self, settings):
         """Verifica buscar concurso uuid nao encontrado."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -46,7 +45,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_http_error_404(self, settings: Any) -> None:
+    def test_buscar_concurso_uuid_http_error_404(self, settings):
         """Verifica buscar concurso uuid http error 404."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -57,7 +56,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_http_error_500(self, settings: Any) -> None:
+    def test_buscar_concurso_uuid_http_error_500(self, settings):
         """Verifica buscar concurso uuid http error 500."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -68,9 +67,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_connection_error(
-        self, settings: Any
-    ) -> None:
+    def test_buscar_concurso_uuid_connection_error(self, settings):
         """Verifica buscar concurso uuid connection error."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -81,7 +78,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_timeout(self, settings: Any) -> None:
+    def test_buscar_concurso_uuid_timeout(self, settings):
         """Verifica buscar concurso uuid timeout."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -92,9 +89,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_excecao_generica(
-        self, settings: Any
-    ) -> None:
+    def test_buscar_concurso_uuid_excecao_generica(self, settings):
         """Verifica buscar concurso uuid excecao generica."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -103,9 +98,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_resposta_sem_uuid(
-        self, settings: Any
-    ) -> None:
+    def test_buscar_concurso_uuid_resposta_sem_uuid(self, settings):
         """Verifica buscar concurso uuid resposta sem uuid."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -118,7 +111,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_metodo_estatico(self) -> None:
+    def test_buscar_concurso_uuid_metodo_estatico(self):
         """Verifica buscar concurso uuid metodo estatico."""
         import inspect
 
@@ -127,7 +120,7 @@ class TestConcursoAPIService:
         )
         assert hasattr(ConcursoAPIService, "buscar_concurso_uuid")
 
-    def test_get_cargos_por_codigos_sucesso(self, settings: Any) -> None:
+    def test_get_cargos_por_codigos_sucesso(self, settings):
         """Verifica get cargos por codigos sucesso."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         mock_response_data = [{"codigo": "10", "nome": "Professor"}]
@@ -139,7 +132,7 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.get_cargos_por_codigos(["10"])
             assert result == {"10": "Professor"}
 
-    def test_get_cargos_por_codigos_lista_vazia(self, settings: Any) -> None:
+    def test_get_cargos_por_codigos_lista_vazia(self, settings):
         """Verifica get cargos por codigos lista vazia."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
@@ -147,7 +140,7 @@ class TestConcursoAPIService:
             assert result == {}
             mock_get.assert_not_called()
 
-    def test_get_cargos_por_codigos_sem_url(self, settings: Any) -> None:
+    def test_get_cargos_por_codigos_sem_url(self, settings):
         """Verifica get cargos por codigos sem url."""
         settings.CONCURSOS_API_URL = ""
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
@@ -155,7 +148,7 @@ class TestConcursoAPIService:
             assert result == {}
             mock_get.assert_not_called()
 
-    def test_get_cargos_por_codigos_erro_http(self, settings: Any) -> None:
+    def test_get_cargos_por_codigos_erro_http(self, settings):
         """Verifica get cargos por codigos erro http."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:

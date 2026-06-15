@@ -76,5 +76,5 @@ class Command(BaseCommand):
                 f"  ✓ Criada escola: {item.nome_oficial} ({item.codigo_eol})"
             )
         self.stdout.write(
-            self.style.SUCCESS(f"✅ {len(criadas)} escolas criadas!")
+            self.style.SUCCESS(f"{len(criadas)} escolas criadas!")
         )

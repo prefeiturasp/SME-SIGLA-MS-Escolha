@@ -69,7 +69,7 @@ class Command(BaseCommand):
                     )
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Concluído: criadas={created_count}, atualizadas={updated_count}, sem_alteracao={skipped_count}"  # noqa: E501
+                f"Concluído: criadas={created_count}, atualizadas={updated_count}, sem_alteracao={skipped_count}"  # noqa: E501
             )
         )
         self.stdout.write(
@@ -212,6 +212,6 @@ class Command(BaseCommand):
                     )
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Escolas: criadas={escolas_criadas}, atualizadas={escolas_atualizadas}, sem_alteracao={escolas_sem_alteracao}"  # noqa: E501
+                f"Escolas: criadas={escolas_criadas}, atualizadas={escolas_atualizadas}, sem_alteracao={escolas_sem_alteracao}"  # noqa: E501
             )
         )

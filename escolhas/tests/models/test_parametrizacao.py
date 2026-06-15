@@ -8,7 +8,7 @@ from escolhas.models import Dre, Escola, Parametrizacao
 
 
 @pytest.mark.django_db
-def test_parametrizacao_str_true_and_false() -> None:
+def test_parametrizacao_str_true_and_false():
     """Verifica parametrizacao str true and false."""
     p_true = Parametrizacao.objects.create(tipo_ue="EMEF", usar=True)
     p_false = Parametrizacao.objects.create(tipo_ue="EMEI", usar=False)
@@ -16,9 +16,7 @@ def test_parametrizacao_str_true_and_false() -> None:
     assert str(p_false) == "EMEI (não usar)"
 
 
-def _criar_escola(
-    dre: Dre, codigo_eol: str, nome: str, tipo_ue: str
-) -> Escola:
+def _criar_escola(dre, codigo_eol, nome, tipo_ue):
     """Criar escola."""
     return Escola.objects.create(
         dre=dre,
@@ -39,7 +37,7 @@ def _criar_escola(
 
 
 @pytest.mark.django_db
-def test_sync_from_escolas_cria_parametrizacoes_que_faltam() -> None:
+def test_sync_from_escolas_cria_parametrizacoes_que_faltam():
     """Verifica sync from escolas cria parametrizacoes que faltam."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     _criar_escola(dre, "100001", "Escola 1", "EMEF")
@@ -54,7 +52,7 @@ def test_sync_from_escolas_cria_parametrizacoes_que_faltam() -> None:
 
 
 @pytest.mark.django_db
-def test_sync_from_escolas_ignora_vazios_e_respeita_existentes() -> None:
+def test_sync_from_escolas_ignora_vazios_e_respeita_existentes():
     """Verifica sync from escolas ignora vazios e respeita existentes."""
     dre = Dre.objects.create(codigo="02", nome="DRE 02", sigla="DRE-02")
     Parametrizacao.objects.create(tipo_ue="EMEF", usar=False)

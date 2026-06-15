@@ -16,7 +16,7 @@ from escolhas.serializers.escolhas_prodam import (
 class TestEscolhaProdamItemSerializer:
     """Testes para EscolhaProdamItemSerializer."""
 
-    def test_serializer_valido_com_todos_campos(self) -> None:
+    def test_serializer_valido_com_todos_campos(self):
         """Verifica serializer valido com todos campos."""
         data = {
             "cpf": "12345678901",
@@ -33,7 +33,7 @@ class TestEscolhaProdamItemSerializer:
         assert serializer.validated_data["tipo_vaga"] == "P"
         assert serializer.validated_data["situacao"] == "ESCOLHA"
 
-    def test_serializer_valido_apenas_campos_obrigatorios(self) -> None:
+    def test_serializer_valido_apenas_campos_obrigatorios(self):
         """Verifica serializer valido apenas campos obrigatorios."""
         data = {
             "cpf": "12345678901",
@@ -54,28 +54,28 @@ class TestEscolhaProdamItemSerializer:
             or serializer.validated_data.get("tipo_vaga") == ""
         )
 
-    def test_serializer_invalido_sem_cpf(self) -> None:
+    def test_serializer_invalido_sem_cpf(self):
         """Verifica serializer invalido sem cpf."""
         data = {"codigo_cargo": "123", "situacao": "ESCOLHA"}
         serializer = EscolhaProdamItemSerializer(data=data)
         assert not serializer.is_valid()
         assert "cpf" in serializer.errors
 
-    def test_serializer_invalido_sem_codigo_cargo(self) -> None:
+    def test_serializer_invalido_sem_codigo_cargo(self):
         """Verifica serializer invalido sem codigo cargo."""
         data = {"cpf": "12345678901", "situacao": "ESCOLHA"}
         serializer = EscolhaProdamItemSerializer(data=data)
         assert not serializer.is_valid()
         assert "codigo_cargo" in serializer.errors
 
-    def test_serializer_invalido_sem_situacao(self) -> None:
+    def test_serializer_invalido_sem_situacao(self):
         """Verifica serializer invalido sem situacao."""
         data = {"cpf": "12345678901", "codigo_cargo": "123"}
         serializer = EscolhaProdamItemSerializer(data=data)
         assert not serializer.is_valid()
         assert "situacao" in serializer.errors
 
-    def test_serializer_aceita_codigo_eol_vazio(self) -> None:
+    def test_serializer_aceita_codigo_eol_vazio(self):
         """Verifica serializer aceita codigo eol vazio."""
         data = {
             "cpf": "12345678901",
@@ -86,7 +86,7 @@ class TestEscolhaProdamItemSerializer:
         serializer = EscolhaProdamItemSerializer(data=data)
         assert serializer.is_valid()
 
-    def test_serializer_aceita_tipo_vaga_vazio(self) -> None:
+    def test_serializer_aceita_tipo_vaga_vazio(self):
         """Verifica serializer aceita tipo vaga vazio."""
         data = {
             "cpf": "12345678901",
@@ -97,7 +97,7 @@ class TestEscolhaProdamItemSerializer:
         serializer = EscolhaProdamItemSerializer(data=data)
         assert serializer.is_valid()
 
-    def test_serializer_aceita_codigo_eol_nulo(self) -> None:
+    def test_serializer_aceita_codigo_eol_nulo(self):
         """Verifica serializer aceita codigo eol nulo."""
         data = {
             "cpf": "12345678901",
@@ -108,7 +108,7 @@ class TestEscolhaProdamItemSerializer:
         serializer = EscolhaProdamItemSerializer(data=data)
         assert serializer.is_valid()
 
-    def test_serializer_aceita_tipo_vaga_nulo(self) -> None:
+    def test_serializer_aceita_tipo_vaga_nulo(self):
         """Verifica serializer aceita tipo vaga nulo."""
         data = {
             "cpf": "12345678901",
@@ -119,7 +119,7 @@ class TestEscolhaProdamItemSerializer:
         serializer = EscolhaProdamItemSerializer(data=data)
         assert serializer.is_valid()
 
-    def test_serializer_cpf_max_length(self) -> None:
+    def test_serializer_cpf_max_length(self):
         """Verifica serializer cpf max length."""
         data = {"cpf": "1" * 15, "codigo_cargo": "123", "situacao": "ESCOLHA"}
         serializer = EscolhaProdamItemSerializer(data=data)
@@ -130,7 +130,7 @@ class TestEscolhaProdamItemSerializer:
 class TestEscolhasProdamImportacaoSerializer:
     """Testes para EscolhasProdamImportacaoSerializer."""
 
-    def test_serializer_valido(self) -> None:
+    def test_serializer_valido(self):
         """Verifica serializer valido."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -158,7 +158,7 @@ class TestEscolhasProdamImportacaoSerializer:
         assert serializer.validated_data["processo_uuid"] == processo_uuid
         assert len(serializer.validated_data["escolhas"]) == 2
 
-    def test_serializer_invalido_sem_concurso_uuid(self) -> None:
+    def test_serializer_invalido_sem_concurso_uuid(self):
         """Verifica serializer invalido sem concurso uuid."""
         processo_uuid = uuid.uuid4()
         data = {
@@ -175,7 +175,7 @@ class TestEscolhasProdamImportacaoSerializer:
         assert not serializer.is_valid()
         assert "concurso_uuid" in serializer.errors
 
-    def test_serializer_invalido_sem_processo_uuid(self) -> None:
+    def test_serializer_invalido_sem_processo_uuid(self):
         """Verifica serializer invalido sem processo uuid."""
         concurso_uuid = uuid.uuid4()
         data = {
@@ -192,7 +192,7 @@ class TestEscolhasProdamImportacaoSerializer:
         assert not serializer.is_valid()
         assert "processo_uuid" in serializer.errors
 
-    def test_serializer_invalido_sem_escolhas(self) -> None:
+    def test_serializer_invalido_sem_escolhas(self):
         """Verifica serializer invalido sem escolhas."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -204,7 +204,7 @@ class TestEscolhasProdamImportacaoSerializer:
         assert not serializer.is_valid()
         assert "escolhas" in serializer.errors
 
-    def test_serializer_invalido_escolhas_vazia(self) -> None:
+    def test_serializer_invalido_escolhas_vazia(self):
         """Verifica serializer invalido escolhas vazia."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -217,7 +217,7 @@ class TestEscolhasProdamImportacaoSerializer:
         assert not serializer.is_valid()
         assert "escolhas" in serializer.errors
 
-    def test_serializer_invalido_escolha_sem_cpf(self) -> None:
+    def test_serializer_invalido_escolha_sem_cpf(self):
         """Verifica serializer invalido escolha sem cpf."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -232,7 +232,7 @@ class TestEscolhasProdamImportacaoSerializer:
             "cpf" in str(err).lower() for err in serializer.errors.values()
         )
 
-    def test_serializer_invalido_escolha_sem_codigo_cargo(self) -> None:
+    def test_serializer_invalido_escolha_sem_codigo_cargo(self):
         """Verifica serializer invalido escolha sem codigo cargo."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -248,7 +248,7 @@ class TestEscolhasProdamImportacaoSerializer:
             for err in serializer.errors.values()
         )
 
-    def test_serializer_invalido_escolha_sem_situacao(self) -> None:
+    def test_serializer_invalido_escolha_sem_situacao(self):
         """Verifica serializer invalido escolha sem situacao."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -264,7 +264,7 @@ class TestEscolhasProdamImportacaoSerializer:
             for err in serializer.errors.values()
         )
 
-    def test_validate_escolhas_cpf_obrigatorio(self) -> None:
+    def test_validate_escolhas_cpf_obrigatorio(self):
         """Verifica validate escolhas cpf obrigatorio."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -279,7 +279,7 @@ class TestEscolhasProdamImportacaoSerializer:
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_validate_escolhas_codigo_cargo_obrigatorio(self) -> None:
+    def test_validate_escolhas_codigo_cargo_obrigatorio(self):
         """Verifica validate escolhas codigo cargo obrigatorio."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -298,7 +298,7 @@ class TestEscolhasProdamImportacaoSerializer:
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_validate_escolhas_situacao_obrigatoria(self) -> None:
+    def test_validate_escolhas_situacao_obrigatoria(self):
         """Verifica validate escolhas situacao obrigatoria."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()
@@ -313,7 +313,7 @@ class TestEscolhasProdamImportacaoSerializer:
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_serializer_multiplas_escolhas(self) -> None:
+    def test_serializer_multiplas_escolhas(self):
         """Verifica serializer multiplas escolhas."""
         concurso_uuid = uuid.uuid4()
         processo_uuid = uuid.uuid4()

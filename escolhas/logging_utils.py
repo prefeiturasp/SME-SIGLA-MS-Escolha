@@ -15,13 +15,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def add_fields(
         self, log_record: Any, record: Any, message_dict: Any
     ) -> None:
-        """Add fields.
-
-        Args:
-            log_record: Log record.
-            record: Record.
-            message_dict: Message dict.
-        """
+        """Add fields."""
         super().add_fields(log_record, record, message_dict)
         cid = get_correlation_id()
         if cid:

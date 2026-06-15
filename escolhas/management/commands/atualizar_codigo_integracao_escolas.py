@@ -93,6 +93,6 @@ class Command(BaseCommand):
                         )
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Concluído: atualizadas={atualizadas}, não encontradas={nao_encontradas}, erros_dre={erros}"  # noqa: E501
+                f"Concluído: atualizadas={atualizadas}, não encontradas={nao_encontradas}, erros_dre={erros}"  # noqa: E501
             )
         )

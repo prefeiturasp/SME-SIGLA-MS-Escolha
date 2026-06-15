@@ -46,11 +46,7 @@ class VagasEscolasViewSet(ModelViewSet):
     ]
 
     def get_queryset(self) -> Any:
-        """Retorna queryset.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Retorna queryset."""
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get("processo_uuid")
         if processo_uuid:
@@ -65,16 +61,7 @@ class VagasEscolasViewSet(ModelViewSet):
         return qs
 
     def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """List.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados serializados.
-        """
+        """List."""
         logger.info(
             "Listando vagas das escolas",
             extra={
@@ -131,16 +118,7 @@ class VagasEscolasViewSet(ModelViewSet):
         )
 
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Cria vagas das escolas em lote.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados serializados.
-        """
+        """Cria vagas das escolas em lote."""
         logger.info(
             "Criando vagas das escolas em lote",
             extra={
@@ -176,16 +154,7 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=["patch"], url_path="utilizadas")
     def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Utilizadas.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Utilizadas."""
         logger.info(
             "Atualizando vagas utilizadas",
             extra={
@@ -209,16 +178,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def atualizar_vagas_lote(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Atualiza vagas lote.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Atualiza vagas lote."""
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(
             request.data
         )
@@ -228,16 +188,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def por_cargo_e_escolas(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Por cargo e escolas.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Por cargo e escolas."""
         logger.info(
             "Buscando vagas por cargo e escolas",
             extra={
@@ -264,14 +215,7 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=["delete"], url_path="por-processo")
     def excluir_por_processo(self, request: Any) -> Any:
-        """Remove lotes de vagas (e vagas em cascata) do processo informado.
-
-        Args:
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Remove lotes de vagas (e vagas em cascata) do processo informado."""
         processo_uuid = request.query_params.get("processo_uuid")
         if not processo_uuid:
             return Response(
