@@ -1,6 +1,8 @@
-"""
-Serializers para importação de escolhas da Prodam.
-"""
+"""Serializers para importação de escolhas da Prodam."""
+
+from __future__ import annotations
+
+from typing import Any
 
 from rest_framework import serializers
 
@@ -28,8 +30,8 @@ class EscolhasProdamImportacaoSerializer(serializers.Serializer):
         child=EscolhaProdamItemSerializer(), required=True, allow_empty=False
     )
 
-    def validate_escolhas(self, value):
-        """Valida que cada escolha tem os campos obrigatórios."""
+    def validate_escolhas(self, value: Any) -> Any:
+        """Garante CPF, codigo_cargo e situacao em cada item."""
         for escolha in value:
             if not escolha.get("cpf"):
                 raise serializers.ValidationError(

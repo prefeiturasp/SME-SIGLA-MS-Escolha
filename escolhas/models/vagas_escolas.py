@@ -1,3 +1,9 @@
+"""Módulo models/vagas_escolas."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from auditlog.registry import auditlog
 from django.db import models
 
@@ -7,13 +13,14 @@ from .vagas_lote import VagasEscolasLote
 
 
 class VagasEscolas(BaseModel):
+    """Vagas definitivas e precárias de um cargo em escola/lote."""
+
     STATUS_CHOICES = [
         ("1", "Ativo"),
         ("0", "Inativo"),
         ("2", "Suspenso"),
         ("3", "Cancelado"),
     ]
-
     lote = models.ForeignKey(
         VagasEscolasLote,
         on_delete=models.CASCADE,
@@ -67,12 +74,15 @@ class VagasEscolas(BaseModel):
     )
 
     class Meta:
+        """Representa Meta."""
+
         db_table = "vagas_escolas"
         verbose_name = "Vagas da Escola"
         verbose_name_plural = "Vagas das Escolas"
         ordering = ["-data_fechamento_modulo", "escola__nome_oficial"]
 
-    def __str__(self):
+    def __str__(self) -> Any:
+        """Retorna representação textual do registro."""
         return f"{self.escola.nome_oficial} - {self.cargo_descricao}"
 
 

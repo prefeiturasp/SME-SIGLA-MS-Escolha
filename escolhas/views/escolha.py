@@ -1,4 +1,9 @@
+"""Módulo views/escolha."""
+
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class EscolhaViewSet(viewsets.ModelViewSet):
+    """CRUD e ações de busca, reconvocação e importação Prodam."""
+
     queryset = Escolha.objects.all()
     serializer_class = EscolhaSerializer
     permission_classes = [AllowAny]
@@ -42,7 +49,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     ordering = ["-criado_em"]
     pagination_class = CustomPagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
+        """Carrega escolhas com vaga, escola, DRE e histórico."""
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
             qs = qs.select_related(
@@ -52,7 +60,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             ).prefetch_related("historico")
         return qs
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Any:
+        """Escolhe serializer conforme a action da requisição."""
         if self.action in ["list", "busca"]:
             return EscolhaListSerializer
         if self.action == "select":
@@ -61,14 +70,14 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             return EscolhaReconvocacaoSerializer
         return super().get_serializer_class()
 
-    def paginate_queryset(self, queryset):
-        # Verifica se o parâmetro 'no_page' está na URL
+    def paginate_queryset(self, queryset: Any) -> Any:
+        """Desativa paginação quando no_page estiver na query."""
         if "no_page" in self.request.query_params:
             return None
-        # Caso contrário, segue com a paginação padrão
         return super().paginate_queryset(queryset)
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
+        """Instancia serializer com filtro opcional de campos."""
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get("fields")
         if fields:
@@ -76,7 +85,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return serializer_class(*args, **kwargs)
 
     @action(methods=["post"], detail=False, url_path="busca")
-    def busca(self, request):
+    def busca(self, request: Any) -> Any:
+        """Filtra escolhas por lista de candidato_uuid e concurso."""
         logger.info(
             "Buscando escolhas por candidato_uuid",
             extra={
@@ -94,7 +104,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 {"detail": "candidato_uuid deve ser uma lista de UUIDs."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         queryset = (
             self.get_queryset()
             .select_related(
@@ -104,20 +113,15 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             )
             .filter(candidato_uuid__in=candidato_ids)
         )
-
         concurso_uuid = request.data.get("concurso_uuid")
         if concurso_uuid:
             queryset = queryset.filter(concurso_uuid=concurso_uuid)
-
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(methods=["get"], detail=False, url_path="reconvocacao")
-    def reconvocacao(self, request):
-        """
-        Endpoint para buscar escolhas com situação de reconvocação.
-        Retorna apenas uuid e candidato_uuid.
-        """
+    def reconvocacao(self, request: Any) -> Any:
+        """Lista escolhas com situação de reconvocação."""
         logger.info(
             "Buscando escolhas com situação de reconvocação",
             extra={
@@ -135,13 +139,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=["get"], detail=False, url_path="buscar-candidatos")
-    def buscar_candidatos(self, request):
-        """
-        Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro
-        funcional.
-        Query params: nome, cpf, rg, registro_funcional (pelo menos um
-        obrigatório).
-        """
+    def buscar_candidatos(self, request: Any) -> Any:
+        """Consulta MS-Candidatos e enriquece com nomes de cargo."""
         logger.info(
             "Buscando candidatos",
             extra={
@@ -158,11 +157,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         registro_funcional = request.query_params.get(
             "registro_funcional", ""
         ).strip()
-
         if not any([nome, cpf, rg, registro_funcional]):
             return Response(
                 {
-                    "detail": "Informe pelo menos um parâmetro: nome, cpf, rg ou registro_funcional."  # noqa: E501
+                    "detail": (
+                        "Informe pelo menos um parâmetro: nome, cpf, rg "
+                        "ou registro_funcional."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -177,7 +178,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 {"detail": "Erro ao consultar serviço de candidatos."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # Enriquecer descricao_cargo com o nome do Cargo (model Cargo do MS-Concursos) quando houver codigo_cargo  # noqa: E501
         codigos_cargo = set()
         for item in candidatos:
             for cc in item.get("concursos") or []:
@@ -209,11 +209,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return Response(candidatos)
 
     @action(methods=["get"], detail=False, url_path="agrupar-por-cargo")
-    def agrupar_por_cargo(self, request):
-        """
-        Agrupa todas as escolhas por vaga_escola__cargo_codigo e retorna a soma
-        de escolhas por cargo.
-        """
+    def agrupar_por_cargo(self, request: Any) -> Any:
+        """Agrupa escolhas por cargo e retorna totais por vaga."""
         logger.info(
             "Agrupando escolhas por cargo",
             extra={
@@ -247,23 +244,14 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     @action(methods=["post"], detail=False, url_path="importacao-prodam")
-    def importacao_prodam(self, request):
-        """
-        Endpoint para receber dados de escolhas.
+    def importacao_prodam(self, request: Any) -> Any:
+        """Importa escolhas da Prodam e cria registros locais.
 
-        Payload esperado:
-        {
-            "processo_uuid": "uuid-do-processo",
-            "escolhas": [
-                {
-                    "cpf": "12345678901",
-                    "codigo_cargo": "123",
-                    "codigo_eol": "456789",
-                    "tipo_vaga": "PRECARIA",
-                    "situacao": "escolha"
-                }
-            ]
-        }
+        Args:
+            request: Requisição HTTP recebida.
+
+        Returns:
+            Resposta HTTP com escolhas criadas e eventuais erros.
         """
         logger.info(
             "Iniciando importação de escolhas da Prodam",
@@ -275,14 +263,12 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 "user": request.user,
             },
         )
-        # 1. Validar dados de entrada
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         cpfs = [
             escolha["cpf"] for escolha in serializer.validated_data["escolhas"]
         ]
         processo_uuid = serializer.validated_data["processo_uuid"]
-
         candidatos = CandidatoAPIService().buscar_candidatos_por_cpfs(
             cpfs, processo_uuid
         )
@@ -306,17 +292,16 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 ]
             )
         )
-
-        # Criar dict para mapear CPF -> UUID do candidato
         candidatos_dict = {}
         if candidatos:
             for candidato in candidatos:
-                cpf_candidato = candidato.get("cpf")
+                cpf_candidato = candidato.get(
+                    "cpf"  # type: ignore[attr-defined]
+                )
                 if cpf_candidato:
-                    # Normalizar CPF para comparação (remover máscara)
-                    candidatos_dict[cpf_candidato] = candidato.get("uuid")
-
-        # Buscar todas as vagas_escolas de uma vez usando a lista de códigos EOL e códigos de cargo  # noqa: E501
+                    candidatos_dict[cpf_candidato] = candidato.get(
+                        "uuid"  # type: ignore[attr-defined]
+                    )
         vagas_escolas_dict = {}
         if codigos_eol and codigos_cargo:
             try:
@@ -324,30 +309,25 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     escola__codigo_eol__in=codigos_eol,
                     cargo_codigo__in=codigos_cargo,
                 ).select_related("escola")
-
-                # Criar dict onde chave é (codigo_eol, codigo_cargo) e valor é o objeto VagasEscolas  # noqa: E501
                 for vaga_escola in vagas_escolas:
                     codigo_eol = vaga_escola.escola.codigo_eol
                     codigo_cargo = str(vaga_escola.cargo_codigo)
                     chave = (codigo_eol, codigo_cargo)
                     vagas_escolas_dict[chave] = vaga_escola
-
                 logger.info(
-                    f"Vagas encontradas: {len(vagas_escolas_dict)} de {len(codigos_eol)} códigos EOL e {len(codigos_cargo)} códigos de cargo"  # noqa: E501
+                    "Vagas encontradas: %s (EOL=%s, cargos=%s)",
+                    len(vagas_escolas_dict),
+                    len(codigos_eol),
+                    len(codigos_cargo),
                 )
             except Exception as exc:
                 logger.error(f"Erro ao buscar vagas_escolas: {exc}")
-
-        # Iterar sobre escolhas e criar registros
         escolhas_criadas = []
         erros = []
-
         for idx, escolha_data in enumerate(escolhas):
             try:
-                # Buscar candidato_uuid pelo CPF
                 cpf_escolha = escolha_data.get("cpf")
                 candidato_uuid = candidatos_dict.get(cpf_escolha)
-
                 if not candidato_uuid:
                     erros.append(
                         {
@@ -357,30 +337,26 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         }
                     )
                     continue
-
-                # Buscar vaga_escola pelo codigo_eol e codigo_cargo
                 codigo_eol = escolha_data.get("codigo_eol")
                 codigo_cargo = escolha_data.get("codigo_cargo")
-                vaga_escola = None
+                vaga_escola = None  # type: ignore[assignment]
                 if codigo_eol and codigo_cargo:
                     codigo_eol_normalizado = str(codigo_eol).zfill(6)
                     codigo_cargo_str = str(codigo_cargo)
                     chave = (codigo_eol_normalizado, codigo_cargo_str)
-                    vaga_escola = vagas_escolas_dict.get(chave)
-
-                # Mapear situacao
+                    vaga_escola = vagas_escolas_dict.get(
+                        chave  # type: ignore[assignment]
+                    )
                 situacao_map = {
                     "ESCOLHA": SituacaoChoices.ESCOLHA,
                     "NAO-ESCOLHA": SituacaoChoices.NAO_ESCOLHA,
                     "RECONVOCACAO": SituacaoChoices.RECONVOCACAO,
-                    "PENDENTE": SituacaoChoices.NAO_ESCOLHA,  # PENDENTE vira NAO_ESCOLHA  # noqa: E501
+                    "PENDENTE": SituacaoChoices.NAO_ESCOLHA,
                 }
                 situacao = situacao_map.get(
                     escolha_data.get("situacao", "").upper(),
                     SituacaoChoices.NAO_ESCOLHA,
                 )
-
-                # Mapear tipo_vaga
                 tipo_vaga = None
                 tipo_vaga_raw = escolha_data.get("tipo_vaga")
                 if tipo_vaga_raw:
@@ -389,22 +365,17 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         "D": TipoVagaChoices.DEFINITIVA,
                     }
                     tipo_vaga = tipo_vaga_map.get(str(tipo_vaga_raw).upper())
-
-                # Validar duplicação: verificar se já existe escolha para o mesmo candidato no mesmo concurso  # noqa: E501
                 escolha_existente = Escolha.objects.filter(
                     candidato_uuid=candidato_uuid, concurso_uuid=concurso_uuid
                 ).first()
-
                 if escolha_existente:
                     logger.warning(
-                        f"Escolha duplicada detectada na importação (índice {idx}): "  # noqa: E501
-                        f"CPF={cpf_escolha}, candidato_uuid={candidato_uuid}, "
-                        f"concurso_uuid={concurso_uuid}. "
-                        f"Escolha existente UUID: {escolha_existente.uuid}"
+                        "Escolha duplicada na importação (idx=%s, cpf=%s): %s",
+                        idx,
+                        cpf_escolha,
+                        escolha_existente.uuid,
                     )
                     continue
-
-                # Criar registro de Escolha (mesmo que já exista, criar novo registro)  # noqa: E501
                 nova_escolha = Escolha.objects.create(
                     candidato_uuid=candidato_uuid,
                     concurso_uuid=concurso_uuid,
@@ -412,7 +383,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     tipo_vaga=tipo_vaga,
                     vaga_escola=vaga_escola,
                 )
-
                 escolhas_criadas.append(
                     {
                         "uuid": str(nova_escolha.uuid),
@@ -420,7 +390,6 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         "situacao": nova_escolha.situacao,
                     }
                 )
-
             except Exception as exc:
                 logger.error(
                     f"Erro ao criar escolha {idx}: {exc}", exc_info=True
@@ -432,24 +401,17 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         "erro": str(exc),
                     }
                 )
-
-        # Retornar resposta
         response_data = {
             "escolhas_criadas": len(escolhas_criadas),
             "escolhas": escolhas_criadas,
         }
-
         if erros:
             logger.info(
                 "Erros ao criar escolhas",
-                extra={
-                    "correlation_id": get_correlation_id(),
-                    "erros": erros,
-                },
+                extra={"correlation_id": get_correlation_id(), "erros": erros},
             )
             response_data["erros"] = erros
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
         logger.info(
             "Escolhas criadas",
             extra={

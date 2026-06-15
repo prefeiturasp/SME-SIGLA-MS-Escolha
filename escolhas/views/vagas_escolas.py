@@ -1,4 +1,9 @@
+"""Módulo views/vagas_escolas."""
+
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 from django.db import models
 from django.db.models import Sum
@@ -26,9 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class VagasEscolasViewSet(ModelViewSet):
-    """
-    ViewSet para gerenciar vagas das escolas.
-    """
+    """Gerencia vagas por processo, cargo e escola."""
 
     queryset = VagasEscolas.objects.select_related(
         "escola", "escola__dre", "lote"
@@ -42,7 +45,8 @@ class VagasEscolasViewSet(ModelViewSet):
         "cargo_codigo",
     ]
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
+        """Restringe vagas ao lote mais recente do processo_uuid."""
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get("processo_uuid")
         if processo_uuid:
@@ -56,7 +60,8 @@ class VagasEscolasViewSet(ModelViewSet):
             qs = qs.filter(lote=lote)
         return qs
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+        """Lista vagas checadas com totais agregados e DREs."""
         logger.info(
             "Listando vagas das escolas",
             extra={
@@ -68,11 +73,7 @@ class VagasEscolasViewSet(ModelViewSet):
             },
         )
         qs = self.filter_queryset(self.get_queryset())
-        # Filtro aplicado internamente (sem parâmetro de URL)
         qs = qs.filter(esta_checada=True)
-
-        # Se houver qualquer valor informado nas colunas de utilizadas, somar utilizadas;  # noqa: E501
-        # caso contrário, somar as colunas de vagas normais.
         ha_utilizadas = qs.filter(
             models.Q(vagas_precarias_utilizadas__isnull=False)
             | models.Q(vagas_definitivas_utilizadas__isnull=False)
@@ -102,7 +103,6 @@ class VagasEscolasViewSet(ModelViewSet):
             }
             for d in dres
         ]
-
         data = VagasEscolasSerializer(qs, many=True).data
         return Response(
             {
@@ -117,27 +117,8 @@ class VagasEscolasViewSet(ModelViewSet):
             }
         )
 
-    def create(self, request, *args, **kwargs):
-        """
-        Cria vagas das escolas em lote.
-
-        Payload esperado:
-        {
-            "processo_uuid": "123e4567-e89b-12d3-a456-426614174000",
-            "processo_nome": "Concurso de Professor de Matemática",
-            "vagas": [
-                {
-                    "data_fechamento_modulo": "2025-09-10",
-                    "cargo_codigo": 123,
-                    "cargo_descricao": "Professor de Matemática",
-                    "codigo_eol": "123456",
-                    "vagas_precarias": 2,
-                    "vagas_definitivas": 3,
-                    "status": "ativo"
-                }
-            ]
-        }
-        """
+    def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+        """Cria vagas das escolas em lote."""
         logger.info(
             "Criando vagas das escolas em lote",
             extra={
@@ -172,7 +153,8 @@ class VagasEscolasViewSet(ModelViewSet):
             )
 
     @action(detail=False, methods=["patch"], url_path="utilizadas")
-    def utilizadas(self, request, *args, **kwargs):
+    def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
+        """Atualiza vagas utilizadas e flags de checagem em lote."""
         logger.info(
             "Atualizando vagas utilizadas",
             extra={
@@ -189,25 +171,24 @@ class VagasEscolasViewSet(ModelViewSet):
         )
         payload.is_valid(raise_exception=True)
         vagas = payload.validated_data
-
         result = atualizar_vagas_utilizadas_por_processo(vagas)
         return Response(result)
 
     @action(detail=False, methods=["post"], url_path="inclusao")
-    def atualizar_vagas_lote(self, request, *args, **kwargs):
-        """
-        Recebe um payload equivalente ao do create (processo_uuid,
-        processo_nome opcional, vagas=[...])
-        e cria novas vagas em um lote já existente, identificado por
-        processo_uuid.
-        """
+    def atualizar_vagas_lote(
+        self, request: Any, *args: Any, **kwargs: Any
+    ) -> Any:
+        """Adiciona novas vagas ao lote do processo informado."""
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(
             request.data
         )
         return Response(response_data, status=status_code)
 
     @action(detail=False, methods=["get"], url_path="por-cargo-e-escolas")
-    def por_cargo_e_escolas(self, request, *args, **kwargs):
+    def por_cargo_e_escolas(
+        self, request: Any, *args: Any, **kwargs: Any
+    ) -> Any:
+        """Filtra vagas por cargo_codigo e/ou códigos EOL."""
         logger.info(
             "Buscando vagas por cargo e escolas",
             extra={
@@ -233,11 +214,8 @@ class VagasEscolasViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["delete"], url_path="por-processo")
-    def excluir_por_processo(self, request):
-        """
-        Remove lotes de vagas (e vagas em cascata) do processo informado.
-        Query: processo_uuid=<uuid>
-        """
+    def excluir_por_processo(self, request: Any) -> Any:
+        """Remove lotes de vagas (e vagas em cascata) do processo informado."""
         processo_uuid = request.query_params.get("processo_uuid")
         if not processo_uuid:
             return Response(
@@ -245,7 +223,7 @@ class VagasEscolasViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         deleted, _ = VagasEscolasLote.objects.filter(
-            processo_uuid=processo_uuid,
+            processo_uuid=processo_uuid
         ).delete()
         logger.info(
             "Lotes de vagas excluídos por processo",

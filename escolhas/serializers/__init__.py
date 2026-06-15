@@ -1,3 +1,5 @@
+"""Módulo serializers/__init__."""
+
 from .dre import DreSerializer
 from .escola import (
     EscolaListSerializer,

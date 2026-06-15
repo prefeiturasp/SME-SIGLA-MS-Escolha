@@ -1,10 +1,20 @@
+"""Módulo serializers/vagas_escolas."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from rest_framework import serializers
 
 from ..models import Dre, Escola, VagasEscolas
 
 
 class DreSimpleSerializer(serializers.ModelSerializer):
+    """Campos básicos da DRE (uuid, código, nome, sigla)."""
+
     class Meta:
+        """Representa Meta."""
+
         model = Dre
         fields = ["uuid", "codigo", "nome", "sigla"]
 
@@ -15,6 +25,8 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
     dre = DreSimpleSerializer(read_only=True)
 
     class Meta:
+        """Representa Meta."""
+
         model = Escola
         fields = [
             "codigo_eol",
@@ -26,10 +38,14 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
+    """Vaga com escola, lote e contadores restantes."""
+
     escola = EscolaSimpleSerializer(read_only=True)
     lote_uuid = serializers.UUIDField(source="lote.uuid", read_only=True)
 
     class Meta:
+        """Representa Meta."""
+
         model = VagasEscolas
         fields = [
             "uuid",
@@ -72,13 +88,12 @@ class VagasEscolasInclusaoSerializer(serializers.Serializer):
         child=serializers.DictField(), write_only=True
     )
 
-    def validate_vagas(self, value):
-        """Valida a lista de vagas e converte status descritivos."""
+    def validate_vagas(self, value: Any) -> Any:
+        """Exige lista não vazia com campos obrigatórios por vaga."""
         if not value:
             raise serializers.ValidationError(
                 "A lista de vagas não pode estar vazia."
             )
-
         for i, vaga in enumerate(value):
             required_fields = [
                 "data_fechamento_modulo",
@@ -89,13 +104,11 @@ class VagasEscolasInclusaoSerializer(serializers.Serializer):
                 "vagas_definitivas",
                 "status",
             ]
-
             for field in required_fields:
                 if field not in vaga:
                     raise serializers.ValidationError(
-                        f"Campo '{field}' é obrigatório na vaga {i+1}."
+                        f"Campo '{field}' é obrigatório na vaga {i + 1}."
                     )
-
         return value
 
 
@@ -115,7 +128,11 @@ class VagasEscolasCreateSerializer(VagasEscolasInclusaoSerializer):
 
 
 class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
+    """Atualiza vagas utilizadas e flags de checagem."""
+
     class Meta:
+        """Representa Meta."""
+
         model = VagasEscolas
         fields = [
             "vagas_precarias_utilizadas",
@@ -126,6 +143,8 @@ class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
 
 
 class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
+    """Valida item de atualização de vagas (uuid e contadores)."""
+
     uuid = serializers.UUIDField()
     foi_utilizada = serializers.BooleanField(required=True)
     vagas_precarias_utilizadas = serializers.IntegerField(required=False)
@@ -133,6 +152,6 @@ class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasBulkSerializer(serializers.Serializer):
-    # Agora recebemos diretamente uma lista de itens (sem processo_uuid e sem chave 'vagas')  # noqa: E501
-    # Este serializer pode ser usado para validação de cada item individualmente quando necessário  # noqa: E501
+    """Reservado para atualização em massa de vagas utilizadas."""
+
     pass

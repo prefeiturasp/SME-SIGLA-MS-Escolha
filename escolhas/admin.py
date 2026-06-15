@@ -1,6 +1,4 @@
-"""
-Django admin configuration for the concursos module.
-"""
+"""Django admin configuration for the concursos module."""
 
 from django.contrib import admin
 
@@ -9,9 +7,7 @@ from .models import Dre, Escola, Escolha, VagasEscolas, VagasEscolasLote
 
 @admin.register(Escolha)
 class EscolhaAdmin(admin.ModelAdmin):
-    """
-    Admin para o modelo Escolha.
-    """
+    """Admin para o modelo Escolha."""
 
     list_display = [
         "candidato_uuid",
@@ -53,6 +49,8 @@ class EscolhaAdmin(admin.ModelAdmin):
 
 @admin.register(Dre)
 class DreAdmin(admin.ModelAdmin):
+    """Configuração do admin para Dre."""
+
     list_display = [
         "sigla",
         "codigo",
@@ -69,6 +67,8 @@ class DreAdmin(admin.ModelAdmin):
 
 @admin.register(Escola)
 class EscolaAdmin(admin.ModelAdmin):
+    """Configuração do admin para Escola."""
+
     list_display = [
         "nome_oficial",
         "codigo_eol",
@@ -100,6 +100,8 @@ class EscolaAdmin(admin.ModelAdmin):
 
 @admin.register(VagasEscolasLote)
 class VagasEscolasLoteAdmin(admin.ModelAdmin):
+    """Configuração do admin para VagasEscolasLote."""
+
     list_display = ["processo_nome", "processo_uuid", "criado_em"]
     search_fields = ["processo_nome", "processo_uuid", "criado_em"]
     list_filter = ["criado_em"]
@@ -109,6 +111,8 @@ class VagasEscolasLoteAdmin(admin.ModelAdmin):
 
 @admin.register(VagasEscolas)
 class VagasEscolasAdmin(admin.ModelAdmin):
+    """Configuração do admin para VagasEscolas."""
+
     list_display = [
         "escola",
         "criado_em",
