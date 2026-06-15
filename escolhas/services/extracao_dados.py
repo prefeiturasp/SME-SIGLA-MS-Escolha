@@ -13,22 +13,16 @@ def montar_extracao_dados(
     concurso_uuid: UUID | str | None = None,
     filtros: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """
-    Monta o dicionário de indicadores de escolhas.
+    """Monta o dicionário de indicadores de escolhas.
 
-    - Com ``filtros``: para cada ``ano`` (de ``filtros``), conta as escolhas do
-      ``concurso_uuid`` por ``situacao`` (escolha / reconvocacao /
-      nao-escolha), filtrando pelo ano de criação (``criado_em``), e monta o
-      array ``dres`` com escolhas e vagas por DRE (vagas dos
-      ``processo_uuids`` do ano).
-    - Sem ``filtros`` (None ou lista vazia): retorna o agregado direto na raiz
-      (chaves ``escolha`` / ``reconvocacao`` / ``nao-escolha``), agregando as
-      escolhas (de ``concurso_uuid`` se informado, senão de todos os concursos)
-      e, em ``dres``, todas as ``VagasEscolas`` por DRE.
+    Args:
+        concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+        filtros: Lista de ``{ano, processo_uuids}``; ausente (ou vazia) →
+            agregado direto na raiz, sem quebra por ano.
 
-    Filtramos por ``Escolha.concurso_uuid`` (sempre preenchido) e NÃO pela
-    vaga, porque escolhas ``nao-escolha`` / ``reconvocacao`` normalmente não
-    têm ``vaga_escola`` vinculada — filtrar pela vaga as excluiria.
+    Returns:
+        Dicionário com as contagens por situação, o array ``dres`` por DRE
+        e ``dres_concursos`` detalhado por concurso.
     """
     resultado: dict[str, Any] = {}
     if filtros:
@@ -58,6 +52,16 @@ def contar_escolhas(
     concurso_uuid: UUID | str | None = None,
     ano: int | None = None,
 ) -> dict[str, int]:
+    """Conta escolhas por situação.
+
+    Args:
+        concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+        ano: Ano de criação a filtrar; ausente → todos os anos.
+
+    Returns:
+        Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /
+        ``nao-escolha``.
+    """
     qs = Escolha.objects.all()
     if concurso_uuid:
         qs = qs.filter(concurso_uuid=concurso_uuid)
@@ -79,16 +83,16 @@ def _montar_dres(
     ano: int | None = None,
     processo_uuids: list[UUID | str] | None = None,
 ) -> list[dict[str, Any]]:
-    """
-    Une, por DRE, as escolhas realizadas (situacao=escolha, com vaga) e as
-    vagas ofertadas (definitivas + precarias).
+    """Une, por DRE, as escolhas realizadas e as vagas ofertadas.
 
-    - ``concurso_uuid`` / ``ano`` filtram as escolhas quando informados.
-    - ``processo_uuids`` filtra as vagas quando informado; sem ele (modo
-      agregado), soma todas as ``VagasEscolas``.
+    Args:
+        concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+        ano: Ano de criação a filtrar; ausente → todos os anos.
+        processo_uuids: Processos a filtrar as vagas; ausente → todas as
+            vagas.
 
-    DRE só com escolha -> vagas=0; DRE só com vaga -> escolhas=0.
-    Nome da DRE = ``Dre.nome``.
+    Returns:
+        Lista de DREs com ``nome``, ``escolhas`` e ``vagas``.
     """
     # escolhas por DRE: somente situacao=escolha (têm vaga_escola)
     escolhas_qs = Escolha.objects.filter(
@@ -136,20 +140,16 @@ def _montar_dres_concursos(
     anos: list[int] | None = None,
     processo_uuids: list[UUID | str] | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
-    """
-    Detalha, por concurso, as escolhas e vagas por DRE + cargo.
+    """Detalha, por concurso, as escolhas e vagas por DRE e cargo.
 
-    - Chaves do dict = ``concurso_uuid``. União dos concursos presentes nas
-      escolhas E nas vagas (``VagasEscolasLote.concurso_uuid``): um concurso só
-      com vagas (sem escolha) também aparece.
-    - Linha = ``(DRE, codigo_cargo)`` com ``nome`` (Dre.nome), ``escolhas``,
-      ``vagas``, ``codigo_cargo``, ``cargo_descricao``.
-    - Escolhas: somente ``situacao=escolha`` com vaga (cargo vem da vaga);
-      ``anos`` (se informado) filtra por ``criado_em__year``.
-    - Vagas: atribuídas direto ao concurso via
-      ``VagasEscolas.lote.concurso_uuid`` (não vazam entre concursos). Vagas
-      cujo ``lote.concurso_uuid`` é nulo (lotes legados) são ignoradas.
-      Combinação DRE+cargo só com vaga aparece com ``escolhas=0``.
+    Args:
+        concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+        anos: Anos de criação a filtrar; ausente → todos os anos.
+        processo_uuids: Processos a filtrar as vagas; ausente → todas as
+            vagas.
+
+    Returns:
+        Dicionário por ``concurso_uuid`` com as linhas de DRE e cargo.
     """
     escolhas_qs = Escolha.objects.filter(
         situacao=SituacaoChoices.ESCOLHA,
