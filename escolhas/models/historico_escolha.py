@@ -13,7 +13,7 @@ from .base import BaseModel
 
 
 class HistoricoEscolha(BaseModel):
-    """Model para histórico de mudanças de situação das escolhas."""
+    """Registra cada mudança de situação de uma escolha."""
 
     escolha = models.ForeignKey(
         "Escolha",

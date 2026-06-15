@@ -6,7 +6,7 @@ from django.apps import AppConfig
 
 
 class EscolhasConfig(AppConfig):
-    """Representa EscolhasConfig."""
+    """Registra a app Escolhas e carrega os signals na inicialização."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "escolhas"

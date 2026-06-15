@@ -11,7 +11,7 @@ from .base import BaseModel
 
 
 class Dre(BaseModel):
-    """Model para armazenar dados da DRE."""
+    """Persiste código, nome e sigla da Diretoria Regional de Ensino."""
 
     codigo = models.CharField(max_length=20, verbose_name="Código da DRE")
     nome = models.CharField(max_length=255, verbose_name="Nome da DRE")

@@ -12,20 +12,24 @@ DEFAULT_PAGE_SIZE = 10
 
 
 class CustomPagination(PageNumberPagination):
-    """Representa CustomPagination."""
+    """Pagina resultados com links, totais e tamanho customizado."""
 
     page = DEFAULT_PAGE  # type: ignore[assignment]
     page_size = DEFAULT_PAGE_SIZE
     page_size_query_param = "page_size"
 
     def get_paginated_response(self, data: Any) -> Any:
-        """Retorna paginated response."""
+        """Monta resposta JSON com count, page, links e results."""
         try:
-            page = int(self.request.GET.get("page", DEFAULT_PAGE))  # type: ignore[union-attr]
+            page = int(  # type: ignore[union-attr]
+                self.request.GET.get("page", DEFAULT_PAGE)
+            )
         except (ValueError, TypeError):
             page = DEFAULT_PAGE
         try:
-            page_size = int(self.request.GET.get("page_size", self.page_size))  # type: ignore[union-attr]
+            page_size = int(  # type: ignore[union-attr]
+                self.request.GET.get("page_size", self.page_size)
+            )
         except (ValueError, TypeError):
             page_size = self.page_size
         return Response(

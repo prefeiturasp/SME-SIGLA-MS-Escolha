@@ -6,7 +6,7 @@ from ..models import Dre
 
 
 class DreSerializer(serializers.ModelSerializer):
-    """Serializer para o modelo Dre."""
+    """DRE com uuid, código, nome e sigla."""
 
     class Meta:
         """Representa Meta."""

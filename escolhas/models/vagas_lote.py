@@ -11,7 +11,7 @@ from .base import BaseModel
 
 
 class VagasEscolasLote(BaseModel):
-    """Representa VagasEscolasLote."""
+    """Agrupa vagas de escolas de um processo de convocação."""
 
     processo_uuid = models.UUIDField(verbose_name="UUID do Processo")
     processo_nome = models.CharField(

@@ -13,7 +13,7 @@ from .vagas_lote import VagasEscolasLote
 
 
 class VagasEscolas(BaseModel):
-    """Representa VagasEscolas."""
+    """Vagas definitivas e precárias de um cargo em escola/lote."""
 
     STATUS_CHOICES = [
         ("1", "Ativo"),

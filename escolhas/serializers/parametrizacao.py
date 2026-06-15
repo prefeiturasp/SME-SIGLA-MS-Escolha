@@ -6,7 +6,7 @@ from ..models import Parametrizacao
 
 
 class ParametrizacaoSerializer(serializers.ModelSerializer):
-    """Serializer do modelo Parametrizacao."""
+    """Tipo de UE e flag usar de cada parametrização."""
 
     class Meta:
         """Representa Meta."""
@@ -17,7 +17,7 @@ class ParametrizacaoSerializer(serializers.ModelSerializer):
 
 
 class ParametrizacaoBulkItemSerializer(serializers.Serializer):
-    """Valida itens de atualização em massa para Parametrizacao."""
+    """Valida uuid e flag usar para atualização em massa."""
 
     uuid = serializers.UUIDField()
     usar = serializers.BooleanField()

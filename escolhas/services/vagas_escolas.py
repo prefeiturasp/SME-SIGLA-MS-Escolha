@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 def criar_vagas_em_lote(
     vagas_data: list[dict[str, Any]], lote: VagasEscolasLote
 ) -> tuple[list[VagasEscolas], list[dict[str, Any]]]:
-    """Cria vagas em lote.
+    """Persiste vagas em um lote, reportando erros por item.
 
     Args:
-        vagas_data: Vagas data.
-        lote: Lote.
+        vagas_data: Lista de dicionários com dados de cada vaga.
+        lote: Lote do processo ao qual as vagas serão vinculadas.
 
     Returns:
-        Tupla com os objetos criados ou atualizados.
+        Tupla com vagas criadas e lista de erros por índice.
     """
     errors = []
     created_vagas = []
@@ -35,7 +35,10 @@ def criar_vagas_em_lote(
             try:
                 escola = Escola.objects.get(codigo_eol=codigo_eol)
             except Escola.DoesNotExist:
-                error_msg = f"Escola com código EOL '{codigo_eol}' não encontrada na vaga {i+1}"  # noqa: E501
+                error_msg = (
+                    f"Escola com código EOL '{codigo_eol}' "
+                    f"não encontrada na vaga {i+1}"
+                )
                 logger.error(error_msg)
                 errors.append(
                     {
@@ -67,13 +70,7 @@ def criar_vagas_em_lote(
 def processar_criacao_vagas_lote(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Processa criacao vagas lote.
-
-    Args:
-        request_data: Request data.
-
-    Returns:
-        Tupla com os objetos criados ou atualizados.
+    """Valida payload, cria lote e vagas do processo informado.
 
     Raises:
         TipoUEDesabilitadoException: Quando o tipo de UE informado está
@@ -87,7 +84,6 @@ def processar_criacao_vagas_lote(
     processo_nome = serializer.validated_data.get("processo_nome", "")
     vagas_data = serializer.validated_data["vagas"]
 
-    # Validação: impedir criação de vagas para escolas cujo tipo_ue está desabilitado em Parametrizacao (usar=False)  # noqa: E501
     tipos_bloqueados = set(
         Parametrizacao.objects.filter(usar=False).values_list(
             "tipo_ue", flat=True
@@ -97,7 +93,6 @@ def processar_criacao_vagas_lote(
         for item in vagas_data:
             codigo_eol = str(item.get("codigo_eol", "")).zfill(6)
             if not codigo_eol:
-                # Será tratado posteriormente; aqui só validamos tipos bloqueados  # noqa: E501
                 continue
             try:
                 escola = Escola.objects.only("tipo_ue").get(
@@ -108,7 +103,8 @@ def processar_criacao_vagas_lote(
                 continue
             if escola.tipo_ue in tipos_bloqueados:
                 raise TipoUEDesabilitadoException(
-                    f"Tipo de unidade '{escola.tipo_ue}' da escola EOL {codigo_eol} está desabilitado."  # noqa: E501
+                    f"Tipo de unidade '{escola.tipo_ue}' da escola EOL "
+                    f"{codigo_eol} está desabilitado."
                 )
 
     with transaction.atomic():
@@ -142,13 +138,13 @@ def processar_criacao_vagas_lote(
 def atualizar_vagas_utilizadas_por_processo(
     vagas: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Atualiza vagas utilizadas por processo.
+    """Atualiza contadores de vagas utilizadas por UUID.
 
     Args:
-        vagas: Vagas.
+        vagas: Lista de itens com uuid e contadores a atualizar.
 
     Returns:
-        Dicionário com os dados processados.
+        Dicionário com UUIDs atualizados, não encontrados e total.
     """
     from ..models import VagasEscolas  # import local para evitar ciclos
 
@@ -166,21 +162,23 @@ def atualizar_vagas_utilizadas_por_processo(
         if "foi_utilizada" in item:  # type: ignore[operator]
             vaga.foi_utilizada = item["foi_utilizada"]  # type: ignore[index]
             vaga.esta_checada = bool(vaga.foi_utilizada)
-            updates["foi_utilizada"] = item["foi_utilizada"]  # type: ignore[index]
+            updates["foi_utilizada"] = item[  # type: ignore[index]
+                "foi_utilizada"
+            ]
             updates["esta_checada"] = bool(vaga.foi_utilizada)
         if "vagas_precarias_utilizadas" in item:  # type: ignore[operator]
             vaga.vagas_precarias_utilizadas = item[  # type: ignore[index]
                 "vagas_precarias_utilizadas"
             ]
-            updates["vagas_precarias_utilizadas"] = item[  # type: ignore[index]
-                "vagas_precarias_utilizadas"
+            updates["vagas_precarias_utilizadas"] = item[
+                "vagas_precarias_utilizadas"  # type: ignore[index]
             ]
         if "vagas_definitivas_utilizadas" in item:  # type: ignore[operator]
             vaga.vagas_definitivas_utilizadas = item[  # type: ignore[index]
                 "vagas_definitivas_utilizadas"
             ]
-            updates["vagas_definitivas_utilizadas"] = item[  # type: ignore[index]
-                "vagas_definitivas_utilizadas"
+            updates["vagas_definitivas_utilizadas"] = item[
+                "vagas_definitivas_utilizadas"  # type: ignore[index]
             ]
         if updates:
             vaga.save(update_fields=list(updates.keys()))
@@ -198,14 +196,7 @@ def atualizar_vagas_utilizadas_por_processo(
 def adicionar_vagas_ao_lote_por_processo(
     request_data: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
-    """Adiciona vagas a um lote existente pelo processo_uuid.
-
-    Args:
-        request_data: Request data.
-
-    Returns:
-        Tupla com os objetos criados ou atualizados.
-    """
+    """Inclui novas vagas no lote mais recente do processo."""
     serializer = VagasEscolasCreateSerializer(data=request_data)
     if not serializer.is_valid():
         return {"errors": serializer.errors}, status.HTTP_400_BAD_REQUEST

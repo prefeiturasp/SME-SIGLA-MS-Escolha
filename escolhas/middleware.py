@@ -14,7 +14,7 @@ logger = logging.getLogger("django.request_logger")
 
 
 def get_correlation_id() -> Any:
-    """Retorna correlation id."""
+    """Obtém o ID de correlação da requisição atual."""
     return getattr(_thread_locals, "correlation_id", None)
 
 
@@ -22,10 +22,10 @@ logger = logging.getLogger("django.request_logger")
 
 
 class CorrelationIdMiddleware:
-    """Representa CorrelationIdMiddleware."""
+    """Propaga correlation ID e registra requisições HTTP."""
 
     def __init__(self, get_response: Any) -> None:
-        """Inicializa a instância com os parâmetros informados."""
+        """Armazena o callable get_response do Django."""
         self.get_response = get_response
 
     def __call__(self, request: Any) -> Any:

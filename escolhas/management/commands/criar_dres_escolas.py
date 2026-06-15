@@ -16,9 +16,12 @@ from escolhas.services.sme_integration import (
 
 
 class Command(BaseCommand):
-    """Representa Command."""
+    """Sincroniza DREs e escolas a partir da API SME Integração."""
 
-    help = "Busca DREs na SME Integracao (/api/DREs) e cria/atualiza registros locais"  # noqa: E501
+    help = (
+        "Busca DREs na SME Integracao (/api/DREs) e cria/atualiza "
+        "registros locais"
+    )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Roda a lógica principal do comando."""
@@ -69,7 +72,9 @@ class Command(BaseCommand):
                     )
         self.stdout.write(
             self.style.SUCCESS(
-                f"Concluído: criadas={created_count}, atualizadas={updated_count}, sem_alteracao={skipped_count}"  # noqa: E501
+                f"Concluído: criadas={created_count}, "
+                f"atualizadas={updated_count}, "
+                f"sem_alteracao={skipped_count}"
             )
         )
         self.stdout.write(
@@ -179,7 +184,8 @@ class Command(BaseCommand):
                 if created:
                     escolas_criadas += 1
                     self.stdout.write(
-                        f"    ✓ Criada escola: {escola.nome_oficial} ({escola.codigo_eol})"  # noqa: E501
+                        f"    ✓ Criada escola: {escola.nome_oficial} "
+                        f"({escola.codigo_eol})"
                     )
                     continue
                 changed = False
@@ -203,15 +209,19 @@ class Command(BaseCommand):
                     )
                     escolas_atualizadas += 1
                     self.stdout.write(
-                        f"    ↻ Atualizada escola: {escola.nome_oficial} ({escola.codigo_eol})"  # noqa: E501
+                        f"    ↻ Atualizada escola: {escola.nome_oficial} "
+                        f"({escola.codigo_eol})"
                     )
                 else:
                     escolas_sem_alteracao += 1
                     self.stdout.write(
-                        f"    - Sem alterações: {escola.nome_oficial} ({escola.codigo_eol})"  # noqa: E501
+                        f"    - Sem alterações: {escola.nome_oficial} "
+                        f"({escola.codigo_eol})"
                     )
         self.stdout.write(
             self.style.SUCCESS(
-                f"Escolas: criadas={escolas_criadas}, atualizadas={escolas_atualizadas}, sem_alteracao={escolas_sem_alteracao}"  # noqa: E501
+                f"Escolas: criadas={escolas_criadas}, "
+                f"atualizadas={escolas_atualizadas}, "
+                f"sem_alteracao={escolas_sem_alteracao}"
             )
         )

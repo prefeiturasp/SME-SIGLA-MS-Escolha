@@ -10,7 +10,7 @@ from ..models import Dre, Escola, VagasEscolas
 
 
 class DreSimpleSerializer(serializers.ModelSerializer):
-    """Serializer do modelo DreSimple."""
+    """Campos básicos da DRE (uuid, código, nome, sigla)."""
 
     class Meta:
         """Representa Meta."""
@@ -38,7 +38,7 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
-    """Serializer do modelo VagasEscolas."""
+    """Vaga com escola, lote e contadores restantes."""
 
     escola = EscolaSimpleSerializer(read_only=True)
     lote_uuid = serializers.UUIDField(source="lote.uuid", read_only=True)
@@ -85,7 +85,7 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
     )
 
     def validate_vagas(self, value: Any) -> Any:
-        """Valida vagas."""
+        """Exige lista não vazia com campos obrigatórios por vaga."""
         if not value:
             raise serializers.ValidationError(
                 "A lista de vagas não pode estar vazia."
@@ -109,7 +109,7 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
-    """Serializer do modelo VagasEscolasUtilizadasUpdate."""
+    """Atualiza vagas utilizadas e flags de checagem."""
 
     class Meta:
         """Representa Meta."""
@@ -124,7 +124,7 @@ class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
 
 
 class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
-    """Serializer do modelo VagaEscolaUtilizadaItem."""
+    """Valida item de atualização de vagas (uuid e contadores)."""
 
     uuid = serializers.UUIDField()
     foi_utilizada = serializers.BooleanField(required=True)
@@ -133,6 +133,6 @@ class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasBulkSerializer(serializers.Serializer):
-    """Serializer do modelo VagasEscolasUtilizadasBulk."""
+    """Reservado para atualização em massa de vagas utilizadas."""
 
     pass

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class EscolhaViewSet(viewsets.ModelViewSet):
-    """ViewSet para o recurso Escolha."""
+    """CRUD e ações de busca, reconvocação e importação Prodam."""
 
     queryset = Escolha.objects.all()
     serializer_class = EscolhaSerializer
@@ -50,7 +50,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Retorna queryset."""
+        """Carrega escolhas com vaga, escola, DRE e histórico."""
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
             qs = qs.select_related(
@@ -61,7 +61,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_serializer_class(self) -> Any:
-        """Retorna serializer class."""
+        """Escolhe serializer conforme a action da requisição."""
         if self.action in ["list", "busca"]:
             return EscolhaListSerializer
         if self.action == "select":
@@ -71,13 +71,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def paginate_queryset(self, queryset: Any) -> Any:
-        """Paginate queryset."""
+        """Desativa paginação quando no_page estiver na query."""
         if "no_page" in self.request.query_params:
             return None
         return super().paginate_queryset(queryset)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
-        """Retorna serializer."""
+        """Instancia serializer com filtro opcional de campos."""
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get("fields")
         if fields:
@@ -86,7 +86,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=False, url_path="busca")
     def busca(self, request: Any) -> Any:
-        """Busca."""
+        """Filtra escolhas por lista de candidato_uuid e concurso."""
         logger.info(
             "Buscando escolhas por candidato_uuid",
             extra={
@@ -121,7 +121,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="reconvocacao")
     def reconvocacao(self, request: Any) -> Any:
-        """Endpoint para buscar escolhas com situação de reconvocação."""
+        """Lista escolhas com situação de reconvocação."""
         logger.info(
             "Buscando escolhas com situação de reconvocação",
             extra={
@@ -140,7 +140,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="buscar-candidatos")
     def buscar_candidatos(self, request: Any) -> Any:
-        """Busca candidatos."""
+        """Consulta MS-Candidatos e enriquece com nomes de cargo."""
         logger.info(
             "Buscando candidatos",
             extra={
@@ -245,13 +245,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=False, url_path="importacao-prodam")
     def importacao_prodam(self, request: Any) -> Any:
-        """Endpoint para receber dados de escolhas.
+        """Importa escolhas da Prodam e cria registros locais.
 
         Args:
             request: Requisição HTTP recebida.
 
         Returns:
-            Resposta HTTP com os dados solicitados.
+            Resposta HTTP com escolhas criadas e eventuais erros.
         """
         logger.info(
             "Iniciando importação de escolhas da Prodam",
@@ -295,9 +295,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         candidatos_dict = {}
         if candidatos:
             for candidato in candidatos:
-                cpf_candidato = candidato.get("cpf")  # type: ignore[attr-defined]
+                cpf_candidato = candidato.get(
+                    "cpf"  # type: ignore[attr-defined]
+                )
                 if cpf_candidato:
-                    candidatos_dict[cpf_candidato] = candidato.get("uuid")  # type: ignore[attr-defined]
+                    candidatos_dict[cpf_candidato] = candidato.get(
+                        "uuid"  # type: ignore[attr-defined]
+                    )
         vagas_escolas_dict = {}
         if codigos_eol and codigos_cargo:
             try:
@@ -340,7 +344,9 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     codigo_eol_normalizado = str(codigo_eol).zfill(6)
                     codigo_cargo_str = str(codigo_cargo)
                     chave = (codigo_eol_normalizado, codigo_cargo_str)
-                    vaga_escola = vagas_escolas_dict.get(chave)  # type: ignore[assignment]
+                    vaga_escola = vagas_escolas_dict.get(
+                        chave  # type: ignore[assignment]
+                    )
                 situacao_map = {
                     "ESCOLHA": SituacaoChoices.ESCOLHA,
                     "NAO-ESCOLHA": SituacaoChoices.NAO_ESCOLHA,

@@ -12,10 +12,10 @@ from .vagas_escolas import VagasEscolasSerializer
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer):
-    """Serializer do modelo DynamicFields."""
+    """Serializa modelos com restrição opcional de campos."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Inicializa a instância com os parâmetros informados."""
+        """Remove campos não listados em fields, se informado."""
         fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
         if fields is not None:
@@ -26,7 +26,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
 
 
 class HistoricoEscolhaSerializer(serializers.ModelSerializer):
-    """Serializer para o modelo HistoricoEscolha (histórico de mudanças de."""
+    """Serializa transições de situação no histórico."""
 
     class Meta:
         """Representa Meta."""
@@ -37,7 +37,7 @@ class HistoricoEscolhaSerializer(serializers.ModelSerializer):
 
 
 class EscolhaSerializer(DynamicFieldsSerializer):
-    """Serializer para o modelo Escolha."""
+    """Valida escolhas convertendo vaga_escola_uuid em FK."""
 
     vaga_escola_uuid = serializers.UUIDField(
         write_only=True,
@@ -141,7 +141,7 @@ class EscolhaSelectSerializer(serializers.ModelSerializer):
 
 
 class EscolhaListSerializer(DynamicFieldsSerializer):
-    """Serializer para listagem de escolhas."""
+    """Listagem de escolhas com vaga, histórico e campos dinâmicos."""
 
     vaga_escola_uuid = serializers.SerializerMethodField()
     vaga_escola = VagasEscolasSerializer(read_only=True)
@@ -165,7 +165,7 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
         ]
 
     def get_vaga_escola_uuid(self, obj: Any) -> Any:
-        """Retorna vaga escola uuid."""
+        """Expõe UUID da vaga_escola na listagem, ou None se ausente."""
         return str(obj.vaga_escola.uuid) if obj.vaga_escola else None
 
 

@@ -15,7 +15,7 @@ from ..utils import CustomPagination
 
 
 class EscolaViewSet(viewsets.ModelViewSet):
-    """ViewSet para o recurso Escola."""
+    """Lista escolas ativas conforme parametrização de tipo_ue."""
 
     queryset = Escola.objects.select_related("dre").all()
     serializer_class = EscolaSerializer
@@ -28,7 +28,7 @@ class EscolaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Retorna queryset."""
+        """Filtra por tipos de UE habilitados e busca por nome."""
         qs = super().get_queryset()
         tipos_ativos = list(
             Parametrizacao.objects.filter(usar=True).values_list(

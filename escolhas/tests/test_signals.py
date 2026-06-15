@@ -63,7 +63,34 @@ def test_signal_decrementa_vaga_definitiva_ao_criar_escolha(
     vaga_escola_com_vagas,
 ):
     """Verifica signal decrementa vaga definitiva ao criar escolha."""
-    "\n    vagas_definitivas_inicial = (\n        vaga_escola_com_vagas.vagas_definitivas_restantes\n    )\n    vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes\n\n    Escolha.objects.create(\n        candidato_uuid=uuid.uuid4(),\n        concurso_uuid=uuid.uuid4(),\n        situacao=SituacaoChoices.ESCOLHA,\n        tipo_vaga=TipoVagaChoices.DEFINITIVA,\n        e_retardatario=False,\n        vaga_escola=vaga_escola_com_vagas,\n    )\n\n    vaga_escola_com_vagas.refresh_from_db()\n    assert (\n        vaga_escola_com_vagas.vagas_definitivas_restantes\n        == vagas_definitivas_inicial - 1\n    )\n    assert (\n        vaga_escola_com_vagas.vagas_precarias_restantes\n        == vagas_precarias_inicial\n    )\n\n\n@pytest.mark.django_db\ndef test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):\n    \n    "
+    vagas_definitivas_inicial = (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+    )
+    vagas_precarias_inicial = vaga_escola_com_vagas.vagas_precarias_restantes
+
+    Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        concurso_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.ESCOLHA,
+        tipo_vaga=TipoVagaChoices.DEFINITIVA,
+        e_retardatario=False,
+        vaga_escola=vaga_escola_com_vagas,
+    )
+
+    vaga_escola_com_vagas.refresh_from_db()
+    assert (
+        vaga_escola_com_vagas.vagas_definitivas_restantes
+        == vagas_definitivas_inicial - 1
+    )
+    assert (
+        vaga_escola_com_vagas.vagas_precarias_restantes
+        == vagas_precarias_inicial
+    )
+
+
+@pytest.mark.django_db
+def test_signal_decrementa_vaga_precaria_ao_criar_escolha(escola, lote):
+    """Verifica signal decrementa vaga precaria ao criar escolha."""
     vaga_escola = VagasEscolas.objects.create(
         escola=escola,
         lote=lote,

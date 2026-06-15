@@ -11,14 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def _cargos_list_from_response(data: Any) -> list[dict]:
-    """Extrai lista de cargos da resposta da API (lista direta ou paginada).
-
-    Args:
-        data: Data.
-
-    Returns:
-        Lista com os registros obtidos.
-    """
+    """Extrai lista de cargos da resposta da API (lista direta ou paginada)."""
     if isinstance(data, list):
         return data
     if isinstance(data, dict) and "results" in data:
@@ -27,24 +20,18 @@ def _cargos_list_from_response(data: Any) -> list[dict]:
 
 
 class ConcursoAPIService:
-    """Service para integração com MS-Concursos."""
+    """Consulta cargos e concursos no microserviço MS-Concursos."""
 
     @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
-        """Retorna cargos por codigos.
-
-        Args:
-            codigos: Codigos.
-
-        Returns:
-            Dicionário com os dados processados.
-        """
+        """Busca nomes de cargos no MS-Concursos pelos códigos informados."""
         if not codigos:
             return {}
         base_url = getattr(settings, "CONCURSOS_API_URL", "").rstrip("/")
         if not base_url:
             logger.warning(
-                "CONCURSOS_API_URL não configurado; não é possível obter nomes dos cargos."  # noqa: E501
+                "CONCURSOS_API_URL não configurado; "
+                "não é possível obter nomes dos cargos."
             )
             return {}
         codigos_set = set(str(c) for c in codigos)
@@ -60,7 +47,6 @@ class ConcursoAPIService:
             },
         )
         try:
-            # Busca por código (filtro no MS-Concursos) para não depender de paginação  # noqa: E501
             for cod in codigos_set:
                 response = http_client.get(
                     url, params={"codigo": cod}, timeout=30
@@ -75,19 +61,21 @@ class ConcursoAPIService:
             return result
         except Exception as exc:
             logger.warning(
-                "Erro ao buscar cargos no MS-Concursos: %s", exc, exc_info=True
+                "Erro ao buscar cargos no MS-Concursos: %s",
+                exc,
+                exc_info=True,
             )
             return {}
 
     @staticmethod
     def buscar_concurso_uuid(concurso_uuid: str) -> str | None:
-        """Busca concurso uuid.
+        """Consulta o MS-Concursos e devolve o UUID do concurso.
 
         Args:
             concurso_uuid: UUID do concurso relacionado.
 
         Returns:
-            Conteúdo textual gerado.
+            UUID confirmado pelo serviço, ou None se a consulta falhar.
         """
         try:
             base_url = settings.CONCURSOS_API_URL
@@ -98,7 +86,8 @@ class ConcursoAPIService:
 
         except Exception as exc:
             logger.error(
-                f"Erro ao buscar concurso_uuid para concurso {concurso_uuid}: {exc}",  # noqa: E501
+                f"Erro ao buscar concurso_uuid para concurso "
+                f"{concurso_uuid}: {exc}",
                 exc_info=True,
             )
             return None

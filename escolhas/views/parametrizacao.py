@@ -32,16 +32,7 @@ class ParametrizacaoViewSet(
     pagination_class = None
 
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Create.
-
-        Args:
-            request: Requisição HTTP recebida.
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados serializados.
-        """
+        """Rejeita POST com 405 — criação não permitida neste endpoint."""
         return Response(
             {"detail": 'Method "POST" not allowed.'},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -54,13 +45,13 @@ class ParametrizacaoViewSet(
         permission_classes=[AllowAny],
     )
     def sync(self, request: Any) -> Any:
-        """Opcional: sincroniza registros a partir dos tipo_ue distintos em.
+        """Cria parametrizações faltantes a partir dos tipo_ue das escolas.
 
         Args:
             request: Requisição HTTP recebida.
 
         Returns:
-            Resposta HTTP com os dados solicitados.
+            Resposta HTTP com a quantidade de registros criados.
         """
         created = Parametrizacao.sync_from_escolas()
         return Response({"created": created})
@@ -73,13 +64,13 @@ class ParametrizacaoViewSet(
         permission_classes=[AllowAny],
     )
     def bulk_update(self, request: Any) -> Any:
-        """Atualiza em lote apenas o campo usar dos registros.
+        """Atualiza em lote o campo usar dos registros informados.
 
         Args:
-            request: Requisição HTTP recebida.
+            request: Requisição HTTP com lista de {uuid, usar}.
 
         Returns:
-            Resposta HTTP com os dados solicitados.
+            Resposta HTTP com a quantidade de registros atualizados.
         """
         serializer = ParametrizacaoBulkItemSerializer(
             data=request.data, many=True

@@ -12,7 +12,7 @@ from .dre import Dre
 
 
 class Escola(BaseModel):
-    """Representa Escola."""
+    """Armazena dados cadastrais da unidade escolar e vínculo com DRE."""
 
     dre = models.ForeignKey(Dre, on_delete=models.CASCADE, verbose_name="DRE")
     codigo_eol = models.CharField(max_length=20, verbose_name="Código EOL")

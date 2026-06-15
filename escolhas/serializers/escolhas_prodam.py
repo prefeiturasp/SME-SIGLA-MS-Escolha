@@ -31,7 +31,7 @@ class EscolhasProdamImportacaoSerializer(serializers.Serializer):
     )
 
     def validate_escolhas(self, value: Any) -> Any:
-        """Valida escolhas."""
+        """Garante CPF, codigo_cargo e situacao em cada item."""
         for escolha in value:
             if not escolha.get("cpf"):
                 raise serializers.ValidationError(

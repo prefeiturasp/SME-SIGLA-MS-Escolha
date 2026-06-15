@@ -7,7 +7,7 @@ from .dre import DreSerializer
 
 
 class EscolaSerializer(serializers.ModelSerializer):
-    """Serializer para o modelo Escola."""
+    """Escola completa com dados da DRE aninhada."""
 
     dre = DreSerializer(read_only=True)
 
@@ -51,7 +51,7 @@ class EscolaSerializer(serializers.ModelSerializer):
 
 
 class EscolaSelectSerializer(serializers.ModelSerializer):
-    """Serializer do modelo EscolaSelect."""
+    """Formata escola como par value/label para selects."""
 
     value = serializers.UUIDField(source="uuid")
     label = serializers.CharField(source="nome_oficial")  # type: ignore[assignment]
@@ -64,7 +64,7 @@ class EscolaSelectSerializer(serializers.ModelSerializer):
 
 
 class EscolaListSerializer(serializers.ModelSerializer):
-    """Serializer do modelo EscolaList."""
+    """Listagem resumida (uuid, EOL, nome e status)."""
 
     class Meta:
         """Representa Meta."""

@@ -22,7 +22,7 @@ from escolhas.services.sme_integration import (
 
 
 class Command(BaseCommand):
-    """Representa Command."""
+    """Atualiza codigo_integracao das escolas via SME Integração."""
 
     help = (
         "Atualiza codigo_integracao das escolas: busca DREs na SME, "
@@ -51,7 +51,8 @@ class Command(BaseCommand):
                 sigla_dre = item.get("sigla", "")
                 self.stdout.write(
                     self.style.HTTP_INFO(
-                        f"Consultando unidades da DRE {sigla_dre} ({codigo_dre})..."  # noqa: E501
+                        f"Consultando unidades da DRE {sigla_dre} "
+                        f"({codigo_dre})..."
                     )
                 )
                 try:
@@ -61,7 +62,8 @@ class Command(BaseCommand):
                 except Exception as exc:
                     self.stderr.write(
                         self.style.ERROR(
-                            f"  Falha ao buscar unidades da DRE {codigo_dre}: {exc}"  # noqa: E501
+                            f"  Falha ao buscar unidades da DRE "
+                            f"{codigo_dre}: {exc}"
                         )
                     )
                     erros += 1
@@ -76,7 +78,8 @@ class Command(BaseCommand):
                         nao_encontradas += 1
                         self.stdout.write(
                             self.style.WARNING(
-                                f"  Escola não encontrada no BD: codigo_eol={codigo_ue}"  # noqa: E501
+                                f"  Escola não encontrada no BD: "
+                                f"codigo_eol={codigo_ue}"
                             )
                         )
                         continue
@@ -89,10 +92,13 @@ class Command(BaseCommand):
                         escola.save(update_fields=["codigo_integracao"])
                         atualizadas += 1
                         self.stdout.write(
-                            f"  ↻ Atualizada: {escola.nome_oficial} ({codigo_ue}) -> {codigo_integracao}"  # noqa: E501
+                            f"  ↻ Atualizada: {escola.nome_oficial} "
+                            f"({codigo_ue}) -> {codigo_integracao}"
                         )
         self.stdout.write(
             self.style.SUCCESS(
-                f"Concluído: atualizadas={atualizadas}, não encontradas={nao_encontradas}, erros_dre={erros}"  # noqa: E501
+                f"Concluído: atualizadas={atualizadas}, "
+                f"não encontradas={nao_encontradas}, "
+                f"erros_dre={erros}"
             )
         )

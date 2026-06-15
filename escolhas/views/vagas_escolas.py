@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class VagasEscolasViewSet(ModelViewSet):
-    """ViewSet para gerenciar vagas das escolas."""
+    """Gerencia vagas por processo, cargo e escola."""
 
     queryset = VagasEscolas.objects.select_related(
         "escola", "escola__dre", "lote"
@@ -46,7 +46,7 @@ class VagasEscolasViewSet(ModelViewSet):
     ]
 
     def get_queryset(self) -> Any:
-        """Retorna queryset."""
+        """Restringe vagas ao lote mais recente do processo_uuid."""
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get("processo_uuid")
         if processo_uuid:
@@ -61,7 +61,7 @@ class VagasEscolasViewSet(ModelViewSet):
         return qs
 
     def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """List."""
+        """Lista vagas checadas com totais agregados e DREs."""
         logger.info(
             "Listando vagas das escolas",
             extra={
@@ -154,7 +154,7 @@ class VagasEscolasViewSet(ModelViewSet):
 
     @action(detail=False, methods=["patch"], url_path="utilizadas")
     def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
-        """Utilizadas."""
+        """Atualiza vagas utilizadas e flags de checagem em lote."""
         logger.info(
             "Atualizando vagas utilizadas",
             extra={
@@ -178,7 +178,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def atualizar_vagas_lote(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Atualiza vagas lote."""
+        """Adiciona novas vagas ao lote do processo informado."""
         response_data, status_code = adicionar_vagas_ao_lote_por_processo(
             request.data
         )
@@ -188,7 +188,7 @@ class VagasEscolasViewSet(ModelViewSet):
     def por_cargo_e_escolas(
         self, request: Any, *args: Any, **kwargs: Any
     ) -> Any:
-        """Por cargo e escolas."""
+        """Filtra vagas por cargo_codigo e/ou códigos EOL."""
         logger.info(
             "Buscando vagas por cargo e escolas",
             extra={

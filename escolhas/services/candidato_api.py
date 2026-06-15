@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 class CandidatoAPIService:
-    """Service para integração com MS-Candidatos."""
+    """Consulta candidatos habilitados no microserviço MS-Candidatos."""
 
     def __init__(
         self, base_url: str | None = None, timeout_seconds: int = 30
     ) -> None:
-        """Inicializa a instância com os parâmetros informados.
+        """Configura URL base e timeout da API de candidatos.
 
         Args:
             base_url: URL base do serviço remoto.
@@ -35,14 +35,14 @@ class CandidatoAPIService:
     def buscar_candidatos_por_cpfs(
         self, cpfs: list[str], processo_uuid: str
     ) -> str | None:
-        """Busca candidatos por cpfs.
+        """Localiza habilitados por CPFs e processo no MS-Candidatos.
 
         Args:
-            cpfs: Cpfs.
+            cpfs: Lista de CPFs dos candidatos.
             processo_uuid: UUID do processo de convocação.
 
         Returns:
-            Conteúdo textual gerado.
+            Dados dos candidatos encontrados, ou None em caso de erro.
         """
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
         payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
@@ -94,16 +94,16 @@ class CandidatoAPIService:
         rg: str | None = None,
         registro_funcional: str | None = None,
     ) -> list[dict] | None:
-        """Busca candidatos.
+        """Pesquisa candidatos por nome, CPF, RG ou registro funcional.
 
         Args:
-            nome: Nome.
-            cpf: Cpf.
-            rg: Rg.
+            nome: Nome ou parte do nome do candidato.
+            cpf: CPF do candidato.
+            rg: RG do candidato.
             registro_funcional: Registro funcional do servidor.
 
         Returns:
-            Lista com os registros obtidos.
+            Lista de candidatos encontrados, ou None em caso de erro.
         """
         if not any(
             s and str(s).strip() for s in (nome, cpf, rg, registro_funcional)
@@ -141,7 +141,11 @@ class CandidatoAPIService:
             )
             response.raise_for_status()
         except Exception as exc:
-            logger.error("Erro ao buscar candidatos: %s", exc, exc_info=True)
+            logger.error(
+                "Erro ao buscar candidatos: %s",
+                exc,
+                exc_info=True,
+            )
             return None
         logger.info(
             "Candidatos encontrados",

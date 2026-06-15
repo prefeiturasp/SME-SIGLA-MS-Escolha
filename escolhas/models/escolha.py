@@ -14,7 +14,7 @@ from .base import BaseModel
 
 
 class Escolha(BaseModel):
-    """Model para escolhas."""
+    """Registra escolha de vaga de candidato em concurso/processo."""
 
     history = AuditlogHistoryField()
     candidato_uuid = models.UUIDField(

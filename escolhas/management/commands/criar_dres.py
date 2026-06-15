@@ -10,7 +10,7 @@ from escolhas.models import Dre
 
 
 class Command(BaseCommand):
-    """Representa Command."""
+    """Cria DREs fictícias para desenvolvimento local."""
 
     help = "Cria DREs de exemplo para desenvolvimento"
 
@@ -47,6 +47,4 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"  - DRE já existe: {dre.sigla} - {dre.nome}"
                 )
-        self.stdout.write(
-            self.style.SUCCESS(f"{len(criadas)} DREs criadas!")
-        )
+        self.stdout.write(self.style.SUCCESS(f"{len(criadas)} DREs criadas!"))

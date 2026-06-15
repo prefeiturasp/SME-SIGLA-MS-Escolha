@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 
+import escolhas.signals  # noqa: F401
 import pytest
 from rest_framework.test import APIClient
 
@@ -15,6 +16,16 @@ from escolhas.models import (
     VagasEscolas,
     VagasEscolasLote,
 )
+
+
+@pytest.fixture(autouse=True)
+def _sem_sigla_sdk_middleware(settings):
+    """Remove middlewares do sigla_sdk ausentes no pacote de testes."""
+    settings.MIDDLEWARE = [
+        middleware
+        for middleware in settings.MIDDLEWARE
+        if not middleware.startswith("sigla_sdk.middlewares.")
+    ]
 
 
 @pytest.fixture

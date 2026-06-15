@@ -11,7 +11,7 @@ from escolhas.models import Dre, Escola
 
 
 class Command(BaseCommand):
-    """Representa Command."""
+    """Cria escolas fictícias vinculadas a DREs existentes."""
 
     help = "Cria escolas de exemplo para desenvolvimento"
 
@@ -73,7 +73,7 @@ class Command(BaseCommand):
             )
             criadas.append(item)
             self.stdout.write(
-                f"  ✓ Criada escola: {item.nome_oficial} ({item.codigo_eol})"
+                f"Escola criada: {item.nome_oficial} ({item.codigo_eol})"
             )
         self.stdout.write(
             self.style.SUCCESS(f"{len(criadas)} escolas criadas!")

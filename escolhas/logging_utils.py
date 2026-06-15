@@ -10,12 +10,12 @@ from escolhas.middleware import get_correlation_id
 
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    """Representa CustomJsonFormatter."""
+    """Formata logs em JSON com correlation_id e campos HTTP."""
 
     def add_fields(
         self, log_record: Any, record: Any, message_dict: Any
     ) -> None:
-        """Add fields."""
+        """Enriquece o log com correlation_id e normaliza acesso HTTP."""
         super().add_fields(log_record, record, message_dict)
         cid = get_correlation_id()
         if cid:
