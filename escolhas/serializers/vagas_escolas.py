@@ -69,8 +69,12 @@ class VagasEscolasSerializer(serializers.ModelSerializer):
         read_only_fields = ["uuid", "criado_em", "atualizado_em"]
 
 
-class VagasEscolasCreateSerializer(serializers.Serializer):
-    """Serializer para criação de vagas em lote."""
+class VagasEscolasInclusaoSerializer(serializers.Serializer):
+    """Serializer para inclusão de vagas em um lote já existente.
+
+    Diferente da criação, não exige ``concurso_uuid`` pois o lote (e seu
+    concurso) já existe; aqui apenas adicionamos novas vagas a ele.
+    """
 
     processo_uuid = serializers.UUIDField(
         error_messages={
@@ -106,6 +110,21 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
                         f"Campo '{field}' é obrigatório na vaga {i + 1}."
                     )
         return value
+
+
+class VagasEscolasCreateSerializer(VagasEscolasInclusaoSerializer):
+    """Serializer para criação de vagas em lote.
+
+    Exige ``concurso_uuid`` pois cria um novo lote vinculado ao concurso.
+    """
+
+    concurso_uuid = serializers.UUIDField(
+        error_messages={
+            "invalid": "Deve ser um UUID válido.",
+            "required": "Este campo é obrigatório.",
+            "null": "Este campo não pode ser nulo.",
+        }
+    )
 
 
 class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):

@@ -146,6 +146,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -173,6 +174,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -209,6 +211,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {"data_fechamento_modulo": "2025-09-10", "cargo_codigo": 123}
             ],
@@ -227,6 +230,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(uuid4()),
             "processo_nome": "Proc",
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -248,6 +252,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(uuid4()),
             "processo_nome": "Proc",
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -273,6 +278,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "outros_dados": "valor",
         }
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -286,6 +292,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": "uuid-invalido",
             "processo_nome": "Proc",
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -315,11 +322,13 @@ class TestProcessarCriacaoVagasLote:
         req1 = {
             "processo_uuid": str(proc_uuid),
             "processo_nome": "P1",
+            "concurso_uuid": str(uuid4()),
             "vagas": vagas_data_multiplas,
         }
         req2 = {
             "processo_uuid": str(proc_uuid),
             "processo_nome": "P2",
+            "concurso_uuid": str(uuid4()),
             "vagas": [vagas_data_multiplas[0]],
         }
         r1, s1 = processar_criacao_vagas_lote(req1)
@@ -345,6 +354,7 @@ class TestProcessarCriacaoVagasLote:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [{**vagas_data_multiplas[0], "codigo_eol": "123"}],
         }
         response_data, status_code = processar_criacao_vagas_lote(request_data)
@@ -365,6 +375,7 @@ class TestIntegracaoVagasEscolas:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
@@ -483,6 +494,7 @@ class TestAtualizarVagasUtilizadasPorProcesso:
         request_data = {
             "processo_uuid": str(lote.processo_uuid),
             "processo_nome": lote.processo_nome,
+            "concurso_uuid": str(uuid4()),
             "vagas": [
                 {
                     "data_fechamento_modulo": "2025-09-10",
