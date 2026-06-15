@@ -28,11 +28,7 @@ class EscolaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Retorna queryset.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Retorna queryset."""
         qs = super().get_queryset()
         tipos_ativos = list(
             Parametrizacao.objects.filter(usar=True).values_list(

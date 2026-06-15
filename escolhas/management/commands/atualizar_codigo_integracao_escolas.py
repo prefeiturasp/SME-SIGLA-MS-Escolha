@@ -24,7 +24,11 @@ from escolhas.services.sme_integration import (
 class Command(BaseCommand):
     """Representa Command."""
 
-    help = "Atualiza codigo_integracao das escolas: busca DREs na SME, para cada DRE obtém unidades (codigo-integracao) e atualiza as escolas pelo codigo_eol."  # noqa: E501
+    help = (
+        "Atualiza codigo_integracao das escolas: busca DREs na SME, "
+        "para cada DRE obtém unidades (codigo-integracao) e atualiza "
+        "as escolas pelo codigo_eol."
+    )
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Roda a lógica principal do comando."""

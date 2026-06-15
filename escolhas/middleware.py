@@ -14,11 +14,7 @@ logger = logging.getLogger("django.request_logger")
 
 
 def get_correlation_id() -> Any:
-    """Retorna correlation id.
-
-    Returns:
-        Valor do campo serializado.
-    """
+    """Retorna correlation id."""
     return getattr(_thread_locals, "correlation_id", None)
 
 
@@ -29,11 +25,7 @@ class CorrelationIdMiddleware:
     """Representa CorrelationIdMiddleware."""
 
     def __init__(self, get_response: Any) -> None:
-        """Inicializa a instância com os parâmetros informados.
-
-        Args:
-            get_response: Get response.
-        """
+        """Inicializa a instância com os parâmetros informados."""
         self.get_response = get_response
 
     def __call__(self, request: Any) -> Any:

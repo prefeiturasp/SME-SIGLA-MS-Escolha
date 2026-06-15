@@ -44,7 +44,10 @@ class HistoricoEscolha(BaseModel):
 
     def __str__(self) -> Any:
         """Retorna representação textual do registro."""
-        return f"{self.escolha.uuid} - {self.situacao_anterior} -> {self.situacao_nova}"  # noqa: E501
+        return (
+            f"{self.escolha.uuid} - "
+            f"{self.situacao_anterior} -> {self.situacao_nova}"
+        )
 
 
 auditlog.register(HistoricoEscolha)

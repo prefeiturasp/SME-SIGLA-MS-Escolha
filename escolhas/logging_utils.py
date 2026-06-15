@@ -21,9 +21,6 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
             log_record: Log record.
             record: Record.
             message_dict: Message dict.
-
-        Returns:
-            Nenhum valor.
         """
         super().add_fields(log_record, record, message_dict)
         cid = get_correlation_id()

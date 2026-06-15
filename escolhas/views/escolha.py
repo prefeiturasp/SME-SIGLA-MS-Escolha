@@ -50,11 +50,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self) -> Any:
-        """Retorna queryset.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Retorna queryset."""
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
             qs = qs.select_related(
@@ -65,11 +61,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_serializer_class(self) -> Any:
-        """Retorna serializer class.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Retorna serializer class."""
         if self.action in ["list", "busca"]:
             return EscolhaListSerializer
         if self.action == "select":
@@ -79,28 +71,13 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def paginate_queryset(self, queryset: Any) -> Any:
-        """Paginate queryset.
-
-        Args:
-            queryset: Queryset.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Paginate queryset."""
         if "no_page" in self.request.query_params:
             return None
         return super().paginate_queryset(queryset)
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
-        """Retorna serializer.
-
-        Args:
-            *args: Argumentos posicionais repassados ao comando.
-            **kwargs: Argumentos nomeados repassados ao comando.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Retorna serializer."""
         serializer_class = self.get_serializer_class()
         fields = self.request.query_params.get("fields")
         if fields:
@@ -109,14 +86,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=False, url_path="busca")
     def busca(self, request: Any) -> Any:
-        """Busca.
-
-        Args:
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Busca."""
         logger.info(
             "Buscando escolhas por candidato_uuid",
             extra={
@@ -151,14 +121,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="reconvocacao")
     def reconvocacao(self, request: Any) -> Any:
-        """Endpoint para buscar escolhas com situação de reconvocação.
-
-        Args:
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Endpoint para buscar escolhas com situação de reconvocação."""
         logger.info(
             "Buscando escolhas com situação de reconvocação",
             extra={
@@ -177,14 +140,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="buscar-candidatos")
     def buscar_candidatos(self, request: Any) -> Any:
-        """Busca candidatos.
-
-        Args:
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Busca candidatos."""
         logger.info(
             "Buscando candidatos",
             extra={
@@ -254,14 +210,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["get"], detail=False, url_path="agrupar-por-cargo")
     def agrupar_por_cargo(self, request: Any) -> Any:
-        """Agrupa escolhas por cargo e retorna totais por vaga.
-
-        Args:
-            request: Requisição HTTP recebida.
-
-        Returns:
-            Resposta HTTP com os dados solicitados.
-        """
+        """Agrupa escolhas por cargo e retorna totais por vaga."""
         logger.info(
             "Agrupando escolhas por cargo",
             extra={

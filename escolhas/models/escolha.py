@@ -58,7 +58,8 @@ class Escolha(BaseModel):
 
     def __str__(self) -> Any:
         """Retorna representação textual do registro."""
-        return f'{self.candidato_uuid} - {(self.vaga_escola.uuid if self.vaga_escola else 'N/A')}'  # noqa: E501
+        vaga_uuid = self.vaga_escola.uuid if self.vaga_escola else "N/A"
+        return f"{self.candidato_uuid} - {vaga_uuid}"
 
 
 auditlog.register(Escolha)

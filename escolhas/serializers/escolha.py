@@ -165,14 +165,7 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
         ]
 
     def get_vaga_escola_uuid(self, obj: Any) -> Any:
-        """Retorna vaga escola uuid.
-
-        Args:
-            obj: Instância do modelo sendo serializada.
-
-        Returns:
-            Valor do campo serializado.
-        """
+        """Retorna vaga escola uuid."""
         return str(obj.vaga_escola.uuid) if obj.vaga_escola else None
 
 
