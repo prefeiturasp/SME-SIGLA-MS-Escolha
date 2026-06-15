@@ -9,13 +9,7 @@ from ..services import montar_extracao_dados
 
 
 class ExtracaoDadosViewSet(viewsets.ViewSet):
-    """
-    Indicadores de escolhas para extração de dados.
-
-    POST /extracao-dados/
-    Body: {concurso_uuid?, filtros?: [{ano, processo_uuids?}]}
-    Sem `filtros`: retorna a chave "total" agregando todas as escolhas.
-    """
+    """Indicadores de escolhas para extração de dados."""
 
     permission_classes = [AllowAny]
 
