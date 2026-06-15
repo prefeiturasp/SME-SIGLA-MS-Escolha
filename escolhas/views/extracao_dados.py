@@ -9,7 +9,7 @@ from ..services import montar_extracao_dados
 
 
 class ExtracaoDadosViewSet(viewsets.ViewSet):
-    """Indicadores de escolhas para extração de dados."""
+    """ViewSet de escolhas para extração de dados."""
 
     permission_classes = [AllowAny]
 
