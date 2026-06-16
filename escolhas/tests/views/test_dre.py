@@ -1,3 +1,7 @@
+"""Módulo tests/views/test_dre."""
+
+from __future__ import annotations
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -7,6 +11,7 @@ from escolhas.models import Dre
 
 @pytest.fixture
 def dres_criadas():
+    """Dres criadas."""
     return [
         Dre.objects.create(
             codigo="108100",
@@ -28,10 +33,12 @@ def dres_criadas():
 
 @pytest.mark.django_db
 class TestDreViewSet:
+    """ViewSet para o recurso TestDre."""
+
     def test_list_vazio(self, api_client):
+        """Verifica list vazio."""
         url = reverse("dre-list")
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
         assert len(response.data["results"]) == 0
@@ -39,21 +46,20 @@ class TestDreViewSet:
         assert "results" in response.data
 
     def test_list_com_dados(self, api_client, dres_criadas):
+        """Verifica list com dados."""
         url = reverse("dre-list")
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 3
         assert len(response.data["results"]) == 3
-
         item = response.data["results"][0]
         assert {"uuid", "codigo", "nome", "sigla"} <= set(item.keys())
 
     def test_retrieve(self, api_client, dres_criadas):
+        """Verifica retrieve."""
         dre = dres_criadas[0]
         url = reverse("dre-detail", kwargs={"pk": dre.uuid})
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["uuid"] == str(dre.uuid)
         assert response.data["codigo"] == dre.codigo
@@ -61,6 +67,7 @@ class TestDreViewSet:
         assert response.data["sigla"] == dre.sigla
 
     def test_search(self, api_client, dres_criadas):
+        """Verifica search."""
         url = reverse("dre-list")
         response = api_client.get(url, {"search": "PENHA"})
         assert response.status_code == status.HTTP_200_OK
@@ -68,6 +75,7 @@ class TestDreViewSet:
         assert response.data["results"][0]["sigla"] == "DRE - PE"
 
     def test_ordering(self, api_client, dres_criadas):
+        """Verifica ordering."""
         url = reverse("dre-list")
         response = api_client.get(url, {"ordering": "nome"})
         assert response.status_code == status.HTTP_200_OK
@@ -75,22 +83,20 @@ class TestDreViewSet:
         assert nomes == sorted(nomes)
 
     def test_pagination(self, api_client):
+        """Verifica pagination."""
         for i in range(1, 12):
             Dre.objects.create(
                 codigo=f"108{i:02d}00",
                 nome=f"DRE {i:02d}",
                 sigla=f"DRE - {i:02d}",
             )
-
         url = reverse("dre-list")
         response = api_client.get(url, {"page_size": 5})
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
         assert len(response.data["results"]) == 5
         assert response.data["page"] == 1
         assert response.data["page_size"] == 5
-
         response = api_client.get(url, {"page_size": 5, "page": 2})
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 5

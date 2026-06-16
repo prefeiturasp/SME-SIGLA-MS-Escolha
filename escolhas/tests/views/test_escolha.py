@@ -1,3 +1,7 @@
+"""Módulo tests/views/test_escolha."""
+
+from __future__ import annotations
+
 import uuid
 
 import pytest
@@ -16,9 +20,9 @@ from escolhas.models import (
 
 @pytest.mark.django_db
 def test_list_escolhas_vazio(api_client):
+    """Verifica list escolhas vazio."""
     url = reverse("escolha-list")
     response = api_client.get(url)
-
     assert response.status_code == status.HTTP_200_OK
     assert response.data["count"] == 0
     assert response.data["results"] == []
@@ -28,9 +32,9 @@ def test_list_escolhas_vazio(api_client):
 def test_list_escolhas_com_dados(
     api_client, escolha_matematica, escolha_portugues
 ):
+    """Verifica list escolhas com dados."""
     url = reverse("escolha-list")
     response = api_client.get(url)
-
     assert response.status_code == status.HTTP_200_OK
     assert response.data["count"] == 2
     candidatos = {item["candidato_uuid"] for item in response.data["results"]}
@@ -40,7 +44,7 @@ def test_list_escolhas_com_dados(
 
 @pytest.mark.django_db
 def test_filter_candidato_uuid(api_client):
-    # Criar DRE, Escola e VagaEscola para os testes
+    """Verifica filter candidato uuid."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -75,7 +79,6 @@ def test_filter_candidato_uuid(api_client):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
     selecionada = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
@@ -90,12 +93,10 @@ def test_filter_candidato_uuid(api_client):
         e_retardatario=False,
         vaga_escola=vaga_escola_2,
     )
-
     url = reverse("escolha-list")
     response = api_client.get(
         url, {"candidato_uuid": str(selecionada.candidato_uuid)}
     )
-
     assert response.status_code == status.HTTP_200_OK
     assert response.data["count"] == 1
     resultado = response.data["results"][0]
@@ -104,9 +105,9 @@ def test_filter_candidato_uuid(api_client):
 
 @pytest.mark.django_db
 def test_create_escolha(api_client, escolha_data):
+    """Verifica create escolha."""
     url = reverse("escolha-list")
     response = api_client.post(url, escolha_data)
-
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["candidato_uuid"] == escolha_data["candidato_uuid"]
     assert Escolha.objects.filter(
@@ -116,27 +117,26 @@ def test_create_escolha(api_client, escolha_data):
 
 @pytest.mark.django_db
 def test_create_escolha_dados_invalidos(api_client, escolha_data_invalid):
+    """Verifica create escolha dados invalidos."""
     url = reverse("escolha-list")
-    # Remove campos None e converte para strings vazias para permitir serialização  # noqa: E501
     payload = {
         k: v if v is not None else "" for k, v in escolha_data_invalid.items()
     }
     response = api_client.post(url, payload, format="json")
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert (
         "candidato_uuid" in response.data
         or "situacao" in response.data
         or "tipo_vaga" in response.data
-        or "vaga_escola_uuid" in response.data
+        or ("vaga_escola_uuid" in response.data)
     )
 
 
 @pytest.mark.django_db
 def test_update_escolha(api_client, escolha_matematica, escolha_data_updated):
+    """Verifica update escolha."""
     url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
     response = api_client.put(url, escolha_data_updated)
-
     assert response.status_code == status.HTTP_200_OK
     assert response.data["situacao"] == escolha_data_updated["situacao"]
     escolha_atualizada = Escolha.objects.get(uuid=escolha_matematica.uuid)
@@ -150,10 +150,10 @@ def test_update_escolha(api_client, escolha_matematica, escolha_data_updated):
 
 @pytest.mark.django_db
 def test_partial_update_escolha(api_client, escolha_matematica):
+    """Verifica partial update escolha."""
     url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
     payload = {"e_retardatario": True}
     response = api_client.patch(url, payload)
-
     assert response.status_code == status.HTTP_200_OK
     assert response.data["e_retardatario"] is True
     escolha_atualizada = Escolha.objects.get(uuid=escolha_matematica.uuid)
@@ -162,16 +162,16 @@ def test_partial_update_escolha(api_client, escolha_matematica):
 
 @pytest.mark.django_db
 def test_delete_escolha(api_client, escolha_matematica):
+    """Verifica delete escolha."""
     url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
     response = api_client.delete(url)
-
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not Escolha.objects.filter(uuid=escolha_matematica.uuid).exists()
 
 
 @pytest.mark.django_db
 def test_busca_por_candidatos(api_client):
-    # Criar DRE, Escola e VagaEscola para os testes
+    """Verifica busca por candidatos."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -218,7 +218,6 @@ def test_busca_por_candidatos(api_client):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
     escolha_1 = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
@@ -240,7 +239,6 @@ def test_busca_por_candidatos(api_client):
         e_retardatario=False,
         vaga_escola=vaga_escola_3,
     )
-
     url = reverse("escolha-busca")
     payload = {
         "candidato_uuid": [
@@ -249,9 +247,7 @@ def test_busca_por_candidatos(api_client):
         ]
     }
     response = api_client.post(url, payload, format="json")
-
     assert response.status_code == status.HTTP_200_OK
-    # O endpoint retorna uma lista diretamente, não um objeto com 'results'
     assert isinstance(response.data, list)
     assert len(response.data) == 2
     retornados = {item["candidato_uuid"] for item in response.data}
@@ -261,9 +257,9 @@ def test_busca_por_candidatos(api_client):
 
 @pytest.mark.django_db
 def test_busca_payload_invalido(api_client):
+    """Verifica busca payload invalido."""
     url = reverse("escolha-busca")
     response = api_client.post(url, {"candidato_uuid": "nao-e-lista"})
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "candidato_uuid" not in response.data
     assert response.data["detail"]
@@ -271,11 +267,7 @@ def test_busca_payload_invalido(api_client):
 
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_definitiva(api_client):
-    """
-    Testa se a criação de uma escolha com vaga definitiva decrementa
-    vagas_definitivas_restantes.
-    """
-    # Cria DRE, Escola e VagaEscola
+    """Verifica create escolha decrementa vaga definitiva."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -298,12 +290,8 @@ def test_create_escolha_decrementa_vaga_definitiva(api_client):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
-    # Valor inicial
     vaga_escola.refresh_from_db()
     vagas_definitivas_inicial = vaga_escola.vagas_definitivas_restantes
-
-    # Cria escolha via POST
     url = reverse("escolha-list")
     payload = {
         "candidato_uuid": str(uuid.uuid4()),
@@ -314,27 +302,18 @@ def test_create_escolha_decrementa_vaga_definitiva(api_client):
         "vaga_escola_uuid": str(vaga_escola.uuid),
     }
     response = api_client.post(url, payload)
-
-    # Verifica que a escolha foi criada
     assert response.status_code == status.HTTP_201_CREATED
-
-    # Verifica que a vaga foi decrementada
     vaga_escola.refresh_from_db()
     assert (
         vaga_escola.vagas_definitivas_restantes
         == vagas_definitivas_inicial - 1
     )
-    # Verifica que vagas precárias não foram alteradas
     assert vaga_escola.vagas_precarias_restantes == 2
 
 
 @pytest.mark.django_db
 def test_create_escolha_decrementa_vaga_precaria(api_client):
-    """
-    Testa se a criação de uma escolha com vaga precária decrementa
-    vagas_precarias_restantes.
-    """
-    # Cria DRE, Escola e VagaEscola
+    """Verifica create escolha decrementa vaga precaria."""
     dre = Dre.objects.create(codigo="02", nome="DRE 02", sigla="DRE-02")
     escola = Escola.objects.create(
         codigo_eol="000002",
@@ -357,12 +336,8 @@ def test_create_escolha_decrementa_vaga_precaria(api_client):
         vagas_definitivas_restantes=4,
         status="1",
     )
-
-    # Valor inicial
     vaga_escola.refresh_from_db()
     vagas_precarias_inicial = vaga_escola.vagas_precarias_restantes
-
-    # Cria escolha via POST
     url = reverse("escolha-list")
     payload = {
         "candidato_uuid": str(uuid.uuid4()),
@@ -373,24 +348,15 @@ def test_create_escolha_decrementa_vaga_precaria(api_client):
         "vaga_escola_uuid": str(vaga_escola.uuid),
     }
     response = api_client.post(url, payload)
-
-    # Verifica que a escolha foi criada
     assert response.status_code == status.HTTP_201_CREATED
-
-    # Verifica que a vaga foi decrementada
     vaga_escola.refresh_from_db()
     assert vaga_escola.vagas_precarias_restantes == vagas_precarias_inicial - 1
-    # Verifica que vagas definitivas não foram alteradas
     assert vaga_escola.vagas_definitivas_restantes == 4
 
 
 @pytest.mark.django_db
 def test_create_escolha_nao_escolha_nao_decrementa(api_client):
-    """
-    Testa que escolhas com situação diferente de 'escolha' não decrementam
-    vagas.
-    """
-    # Cria DRE, Escola e VagaEscola
+    """Verifica create escolha nao escolha nao decrementa."""
     dre = Dre.objects.create(codigo="03", nome="DRE 03", sigla="DRE-03")
     escola = Escola.objects.create(
         codigo_eol="000003",
@@ -413,13 +379,9 @@ def test_create_escolha_nao_escolha_nao_decrementa(api_client):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
-    # Valor inicial
     vaga_escola.refresh_from_db()
     vagas_definitivas_inicial = vaga_escola.vagas_definitivas_restantes
     vagas_precarias_inicial = vaga_escola.vagas_precarias_restantes
-
-    # Cria escolha com situação 'nao-escolha'
     url = reverse("escolha-list")
     payload = {
         "candidato_uuid": str(uuid.uuid4()),
@@ -430,11 +392,7 @@ def test_create_escolha_nao_escolha_nao_decrementa(api_client):
         "vaga_escola_uuid": str(vaga_escola.uuid),
     }
     response = api_client.post(url, payload)
-
-    # Verifica que a escolha foi criada
     assert response.status_code == status.HTTP_201_CREATED
-
-    # Verifica que as vagas NÃO foram decrementadas
     vaga_escola.refresh_from_db()
     assert vaga_escola.vagas_definitivas_restantes == vagas_definitivas_inicial
     assert vaga_escola.vagas_precarias_restantes == vagas_precarias_inicial
@@ -442,7 +400,7 @@ def test_create_escolha_nao_escolha_nao_decrementa(api_client):
 
 @pytest.mark.django_db
 def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
-    # Monta DRE/Escola/Lote e duas vagas com cargos distintos
+    """Verifica agrupar por cargo retorna dict so com situacao escolha."""
     dre = Dre.objects.create(codigo="10", nome="DRE 10", sigla="DRE-10")
     escola = Escola.objects.create(
         codigo_eol="000010", nome_oficial="Escola 10", dre=dre, cep="04001-000"
@@ -474,8 +432,6 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
         vagas_definitivas_restantes=10,
         status="1",
     )
-
-    # Cria escolhas: 2 para cargo 100 com situacao ESCOLHA; 1 NAO_ESCOLHA (ignorada)  # noqa: E501
     Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
@@ -497,7 +453,6 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
         e_retardatario=False,
         vaga_escola=vaga_cargo_100,
     )
-    # 1 escolha válida para cargo 101
     Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.ESCOLHA,
@@ -505,11 +460,9 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
         e_retardatario=False,
         vaga_escola=vaga_cargo_101,
     )
-
     url = reverse("escolha-agrupar-por-cargo")
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_200_OK
-    # Deve retornar um dict { "100": 2, "101": 1 } (apenas situacao=ESCOLHA)
     assert isinstance(resp.data, dict)
     assert resp.data.get("100") == 2
     assert resp.data.get("101") == 1
@@ -517,8 +470,7 @@ def test_agrupar_por_cargo_retorna_dict_so_com_situacao_escolha(api_client):
 
 @pytest.mark.django_db
 def test_reconvocacao_endpoint(api_client):
-    """Testa endpoint de reconvocação."""
-    # Criar DRE, Escola e VagaEscola
+    """Verifica reconvocacao endpoint."""
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="000001",
@@ -541,8 +493,6 @@ def test_reconvocacao_endpoint(api_client):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
-    # Criar escolhas com diferentes situações
     escolha_reconvocacao = Escolha.objects.create(
         candidato_uuid=uuid.uuid4(),
         situacao=SituacaoChoices.RECONVOCACAO,
@@ -557,10 +507,8 @@ def test_reconvocacao_endpoint(api_client):
         e_retardatario=False,
         vaga_escola=vaga_escola,
     )
-
     url = reverse("escolha-reconvocacao")
     response = api_client.get(url)
-
     assert response.status_code == status.HTTP_200_OK
     assert isinstance(response.data, list)
     assert len(response.data) == 1
@@ -572,13 +520,10 @@ def test_reconvocacao_endpoint(api_client):
 
 @pytest.mark.django_db
 def test_importacao_prodam_sucesso(api_client, settings):
-    """Testa importação Prodam com sucesso."""
+    """Verifica importacao prodam sucesso."""
     from unittest.mock import Mock, patch
 
-    # Configurar settings
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
-    # Criar DRE, Escola e VagaEscola
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="123456",
@@ -601,12 +546,9 @@ def test_importacao_prodam_sucesso(api_client, settings):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid = uuid.uuid4()
-
-    # Mock do CandidatoAPIService
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid),
@@ -614,7 +556,6 @@ def test_importacao_prodam_sucesso(api_client, settings):
             "nome": "Candidato Teste",
         }
     ]
-
     payload = {
         "concurso_uuid": str(concurso_uuid),
         "processo_uuid": str(processo_uuid),
@@ -628,17 +569,14 @@ def test_importacao_prodam_sucesso(api_client, settings):
             }
         ],
     }
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos_por_cpfs.return_value = mock_candidatos
         mock_service_class.return_value = mock_service
-
         url = reverse("escolha-importacao-prodam")
         response = api_client.post(url, payload, format="json")
-
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["escolhas_criadas"] == 1
         assert len(response.data["escolhas"]) == 1
@@ -648,21 +586,17 @@ def test_importacao_prodam_sucesso(api_client, settings):
         assert (
             response.data["escolhas"][0]["situacao"] == SituacaoChoices.ESCOLHA
         )
-
-        # Verificar que escolha foi criada
         assert Escolha.objects.filter(candidato_uuid=candidato_uuid).exists()
 
 
 @pytest.mark.django_db
 def test_importacao_prodam_candidato_nao_encontrado(api_client, settings):
-    """Testa importação Prodam quando candidato não é encontrado."""
+    """Verifica importacao prodam candidato nao encontrado."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
-
     payload = {
         "concurso_uuid": str(concurso_uuid),
         "processo_uuid": str(processo_uuid),
@@ -676,17 +610,14 @@ def test_importacao_prodam_candidato_nao_encontrado(api_client, settings):
             }
         ],
     }
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
-        mock_service.buscar_candidatos_por_cpfs.return_value = []  # Nenhum candidato encontrado  # noqa: E501
+        mock_service.buscar_candidatos_por_cpfs.return_value = []
         mock_service_class.return_value = mock_service
-
         url = reverse("escolha-importacao-prodam")
         response = api_client.post(url, payload, format="json")
-
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["escolhas_criadas"] == 0
         assert "erros" in response.data
@@ -696,12 +627,10 @@ def test_importacao_prodam_candidato_nao_encontrado(api_client, settings):
 
 @pytest.mark.django_db
 def test_importacao_prodam_multiplas_escolhas(api_client, settings):
-    """Testa importação Prodam com múltiplas escolhas."""
+    """Verifica importacao prodam multiplas escolhas."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
-    # Criar DRE, Escola e VagaEscola
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="123456",
@@ -724,12 +653,10 @@ def test_importacao_prodam_multiplas_escolhas(api_client, settings):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid_1 = uuid.uuid4()
     candidato_uuid_2 = uuid.uuid4()
-
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid_1),
@@ -742,7 +669,6 @@ def test_importacao_prodam_multiplas_escolhas(api_client, settings):
             "nome": "Candidato 2",
         },
     ]
-
     payload = {
         "concurso_uuid": str(concurso_uuid),
         "processo_uuid": str(processo_uuid),
@@ -763,17 +689,14 @@ def test_importacao_prodam_multiplas_escolhas(api_client, settings):
             },
         ],
     }
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos_por_cpfs.return_value = mock_candidatos
         mock_service_class.return_value = mock_service
-
         url = reverse("escolha-importacao-prodam")
         response = api_client.post(url, payload, format="json")
-
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["escolhas_criadas"] == 2
         assert len(response.data["escolhas"]) == 2
@@ -781,15 +704,13 @@ def test_importacao_prodam_multiplas_escolhas(api_client, settings):
 
 @pytest.mark.django_db
 def test_importacao_prodam_mapeamento_situacao(api_client, settings):
-    """Testa mapeamento de situações na importação Prodam."""
+    """Verifica importacao prodam mapeamento situacao."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid = uuid.uuid4()
-
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid),
@@ -797,19 +718,13 @@ def test_importacao_prodam_mapeamento_situacao(api_client, settings):
             "nome": "Candidato Teste",
         }
     ]
-
-    # Testar diferentes situações
     situacoes_teste = [
         ("ESCOLHA", SituacaoChoices.ESCOLHA),
         ("NAO-ESCOLHA", SituacaoChoices.NAO_ESCOLHA),
         ("RECONVOCACAO", SituacaoChoices.RECONVOCACAO),
-        ("PENDENTE", SituacaoChoices.NAO_ESCOLHA),  # PENDENTE vira NAO_ESCOLHA
-        (
-            "INVALIDO",
-            SituacaoChoices.NAO_ESCOLHA,
-        ),  # Valor inválido vira NAO_ESCOLHA
+        ("PENDENTE", SituacaoChoices.NAO_ESCOLHA),
+        ("INVALIDO", SituacaoChoices.NAO_ESCOLHA),
     ]
-
     for situacao_input, situacao_esperada in situacoes_teste:
         payload = {
             "concurso_uuid": str(concurso_uuid),
@@ -818,12 +733,11 @@ def test_importacao_prodam_mapeamento_situacao(api_client, settings):
                 {
                     "cpf": "12345678901",
                     "codigo_cargo": "100",
-                    "codigo_eol": "",  # Campo opcional, mas precisa estar presente  # noqa: E501
+                    "codigo_eol": "",
                     "situacao": situacao_input,
                 }
             ],
         }
-
         with patch(
             "escolhas.views.escolha.CandidatoAPIService"
         ) as mock_service_class:
@@ -832,30 +746,24 @@ def test_importacao_prodam_mapeamento_situacao(api_client, settings):
                 mock_candidatos
             )
             mock_service_class.return_value = mock_service
-
             url = reverse("escolha-importacao-prodam")
             response = api_client.post(url, payload, format="json")
-
             assert response.status_code == status.HTTP_201_CREATED
             assert (
                 response.data["escolhas"][0]["situacao"] == situacao_esperada
             )
-
-            # Limpar escolhas criadas para próximo teste
             Escolha.objects.filter(candidato_uuid=candidato_uuid).delete()
 
 
 @pytest.mark.django_db
 def test_importacao_prodam_mapeamento_tipo_vaga(api_client, settings):
-    """Testa mapeamento de tipo_vaga na importação Prodam."""
+    """Verifica importacao prodam mapeamento tipo vaga."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid = uuid.uuid4()
-
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid),
@@ -863,16 +771,13 @@ def test_importacao_prodam_mapeamento_tipo_vaga(api_client, settings):
             "nome": "Candidato Teste",
         }
     ]
-
-    # Testar diferentes tipos de vaga
     tipos_teste = [
         ("P", TipoVagaChoices.PRECARIA),
         ("D", TipoVagaChoices.DEFINITIVA),
-        ("p", TipoVagaChoices.PRECARIA),  # Minúsculo
-        ("d", TipoVagaChoices.DEFINITIVA),  # Minúsculo
-        ("X", None),  # Inválido
+        ("p", TipoVagaChoices.PRECARIA),
+        ("d", TipoVagaChoices.DEFINITIVA),
+        ("X", None),
     ]
-
     for tipo_input, tipo_esperado in tipos_teste:
         payload = {
             "concurso_uuid": str(concurso_uuid),
@@ -881,13 +786,12 @@ def test_importacao_prodam_mapeamento_tipo_vaga(api_client, settings):
                 {
                     "cpf": "12345678901",
                     "codigo_cargo": "100",
-                    "codigo_eol": "",  # Campo opcional, mas precisa estar presente  # noqa: E501
+                    "codigo_eol": "",
                     "tipo_vaga": tipo_input,
                     "situacao": "ESCOLHA",
                 }
             ],
         }
-
         with patch(
             "escolhas.views.escolha.CandidatoAPIService"
         ) as mock_service_class:
@@ -896,30 +800,22 @@ def test_importacao_prodam_mapeamento_tipo_vaga(api_client, settings):
                 mock_candidatos
             )
             mock_service_class.return_value = mock_service
-
             url = reverse("escolha-importacao-prodam")
             response = api_client.post(url, payload, format="json")
-
             assert response.status_code == status.HTTP_201_CREATED
-
-            # Verificar tipo_vaga na escolha criada
             escolha = Escolha.objects.filter(
                 candidato_uuid=candidato_uuid
             ).first()
             assert escolha.tipo_vaga == tipo_esperado
-
-            # Limpar escolhas criadas para próximo teste
             Escolha.objects.filter(candidato_uuid=candidato_uuid).delete()
 
 
 @pytest.mark.django_db
 def test_importacao_prodam_codigo_eol_normalizado(api_client, settings):
-    """Testa normalização de código EOL na importação Prodam."""
+    """Verifica importacao prodam codigo eol normalizado."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
-    # Criar DRE, Escola e VagaEscola
     dre = Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
     escola = Escola.objects.create(
         codigo_eol="123456",
@@ -942,11 +838,9 @@ def test_importacao_prodam_codigo_eol_normalizado(api_client, settings):
         vagas_definitivas_restantes=5,
         status="1",
     )
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid = uuid.uuid4()
-
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid),
@@ -954,8 +848,6 @@ def test_importacao_prodam_codigo_eol_normalizado(api_client, settings):
             "nome": "Candidato Teste",
         }
     ]
-
-    # Testar com código EOL sem zeros à esquerda
     payload = {
         "concurso_uuid": str(concurso_uuid),
         "processo_uuid": str(processo_uuid),
@@ -963,23 +855,20 @@ def test_importacao_prodam_codigo_eol_normalizado(api_client, settings):
             {
                 "cpf": "12345678901",
                 "codigo_cargo": "100",
-                "codigo_eol": "123456",  # Já está normalizado
+                "codigo_eol": "123456",
                 "tipo_vaga": "D",
                 "situacao": "ESCOLHA",
             }
         ],
     }
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos_por_cpfs.return_value = mock_candidatos
         mock_service_class.return_value = mock_service
-
         url = reverse("escolha-importacao-prodam")
         response = api_client.post(url, payload, format="json")
-
         assert response.status_code == status.HTTP_201_CREATED
         escolha = Escolha.objects.filter(candidato_uuid=candidato_uuid).first()
         assert escolha.vaga_escola == vaga_escola
@@ -987,26 +876,22 @@ def test_importacao_prodam_codigo_eol_normalizado(api_client, settings):
 
 @pytest.mark.django_db
 def test_importacao_prodam_payload_invalido(api_client):
-    """Testa importação Prodam com payload inválido."""
+    """Verifica importacao prodam payload invalido."""
     payload = {"concurso_uuid": "invalid-uuid", "escolhas": []}
-
     url = reverse("escolha-importacao-prodam")
     response = api_client.post(url, payload, format="json")
-
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
 def test_importacao_prodam_escolha_sem_codigo_eol(api_client, settings):
-    """Testa importação Prodam com escolha sem código EOL."""
+    """Verifica importacao prodam escolha sem codigo eol."""
     from unittest.mock import Mock, patch
 
     settings.CANDIDATOS_API_URL = "http://test-api.com"
-
     processo_uuid = uuid.uuid4()
     concurso_uuid = uuid.uuid4()
     candidato_uuid = uuid.uuid4()
-
     mock_candidatos = [
         {
             "uuid": str(candidato_uuid),
@@ -1014,7 +899,6 @@ def test_importacao_prodam_escolha_sem_codigo_eol(api_client, settings):
             "nome": "Candidato Teste",
         }
     ]
-
     payload = {
         "concurso_uuid": str(concurso_uuid),
         "processo_uuid": str(processo_uuid),
@@ -1022,38 +906,27 @@ def test_importacao_prodam_escolha_sem_codigo_eol(api_client, settings):
             {
                 "cpf": "12345678901",
                 "codigo_cargo": "100",
-                "codigo_eol": "",  # Campo opcional vazio
+                "codigo_eol": "",
                 "situacao": "NAO-ESCOLHA",
             }
         ],
     }
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos_por_cpfs.return_value = mock_candidatos
         mock_service_class.return_value = mock_service
-
         url = reverse("escolha-importacao-prodam")
         response = api_client.post(url, payload, format="json")
-
         assert response.status_code == status.HTTP_201_CREATED
         escolha = Escolha.objects.filter(candidato_uuid=candidato_uuid).first()
-        assert (
-            escolha.vaga_escola is None
-        )  # Não deve ter vaga_escola quando não há codigo_eol
-
-
-# --- Testes da action buscar_candidatos e list com historico (feature/143715-consulta-concursado) ---  # noqa: E501
+        assert escolha.vaga_escola is None
 
 
 @pytest.mark.django_db
 def test_buscar_candidatos_sem_parametros_retorna_400(api_client):
-    """
-    GET buscar-candidatos sem nome, cpf, rg ou registro_funcional deve retornar
-    400.
-    """
+    """Verifica buscar candidatos sem parametros retorna 400."""
     url = reverse("escolha-buscar-candidatos")
     response = api_client.get(url)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -1065,26 +938,20 @@ def test_buscar_candidatos_sem_parametros_retorna_400(api_client):
 
 @pytest.mark.django_db
 def test_buscar_candidatos_com_parametro_retorna_200(api_client):
-    """
-    GET buscar-candidatos com parâmetro deve delegar ao serviço e retornar 200
-    com lista.
-    """
+    """Verifica buscar candidatos com parametro retorna 200."""
     from unittest.mock import Mock, patch
 
     url = reverse("escolha-buscar-candidatos")
     mock_candidatos = [
         {"nome": "João Silva", "cpf": "12345678901", "concursos": []}
     ]
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos.return_value = mock_candidatos
         mock_service_class.return_value = mock_service
-
         response = api_client.get(url, {"nome": "João"})
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data == mock_candidatos
         mock_service.buscar_candidatos.assert_called_once_with(
@@ -1094,20 +961,17 @@ def test_buscar_candidatos_com_parametro_retorna_200(api_client):
 
 @pytest.mark.django_db
 def test_buscar_candidatos_servico_retorna_none_retorna_400(api_client):
-    """Quando o serviço retorna None (erro), deve retornar 502."""
+    """Verifica buscar candidatos servico retorna none retorna 400."""
     from unittest.mock import Mock, patch
 
     url = reverse("escolha-buscar-candidatos")
-
     with patch(
         "escolhas.views.escolha.CandidatoAPIService"
     ) as mock_service_class:
         mock_service = Mock()
         mock_service.buscar_candidatos.return_value = None
         mock_service_class.return_value = mock_service
-
         response = api_client.get(url, {"cpf": "12345678901"})
-
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert (
             response.data["detail"]
@@ -1117,7 +981,7 @@ def test_buscar_candidatos_servico_retorna_none_retorna_400(api_client):
 
 @pytest.mark.django_db
 def test_list_escolhas_inclui_campo_historico(api_client, escolha_matematica):
-    """Listagem inclui campo historico (lista) em cada item."""
+    """Verifica list escolhas inclui campo historico."""
     from escolhas.models import HistoricoEscolha
 
     HistoricoEscolha.objects.create(

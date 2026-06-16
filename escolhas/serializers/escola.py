@@ -1,3 +1,5 @@
+"""Módulo serializers/escola."""
+
 from rest_framework import serializers
 
 from ..models import Escola
@@ -5,11 +7,13 @@ from .dre import DreSerializer
 
 
 class EscolaSerializer(serializers.ModelSerializer):
-    """Serializer para o modelo Escola."""
+    """Escola completa com dados da DRE aninhada."""
 
     dre = DreSerializer(read_only=True)
 
     class Meta:
+        """Representa Meta."""
+
         model = Escola
         fields = [
             "uuid",
@@ -47,15 +51,23 @@ class EscolaSerializer(serializers.ModelSerializer):
 
 
 class EscolaSelectSerializer(serializers.ModelSerializer):
+    """Formata escola como par value/label para selects."""
+
     value = serializers.UUIDField(source="uuid")
-    label = serializers.CharField(source="nome_oficial")
+    label = serializers.CharField(source="nome_oficial")  # type: ignore[assignment]
 
     class Meta:
+        """Representa Meta."""
+
         model = Escola
         fields = ["value", "label"]
 
 
 class EscolaListSerializer(serializers.ModelSerializer):
+    """Listagem resumida (uuid, EOL, nome e status)."""
+
     class Meta:
+        """Representa Meta."""
+
         model = Escola
         fields = ["uuid", "codigo_eol", "nome_oficial", "status"]

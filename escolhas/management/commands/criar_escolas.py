@@ -1,8 +1,9 @@
-"""
-Django management command to create sample Escolas.
-"""
+"""Django management command to create sample Escolas."""
+
+from __future__ import annotations
 
 import random
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -10,9 +11,12 @@ from escolhas.models import Dre, Escola
 
 
 class Command(BaseCommand):
+    """Cria escolas fictícias vinculadas a DREs existentes."""
+
     help = "Cria escolas de exemplo para desenvolvimento"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: Any) -> None:
+        """Registra os argumentos da linha de comando."""
         parser.add_argument(
             "--count",
             type=int,
@@ -20,12 +24,10 @@ class Command(BaseCommand):
             help="Número de escolas a serem criadas (padrão: 5)",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
+        """Roda a lógica principal do comando."""
         count = options["count"]
-
         self.stdout.write(self.style.SUCCESS(f"Criando {count} escolas..."))
-
-        # Garantir que exista ao menos uma DRE
         dre, _ = Dre.objects.get_or_create(
             codigo="108100",
             defaults={
@@ -33,20 +35,18 @@ class Command(BaseCommand):
                 "sigla": "DRE - BT",
             },
         )
-
         bairros = ["JARDIM TABOÃO", "VILA SONIA", "BUTANTA", "IPIRANGA"]
         tipos_ue = [
             "ESCOLA MUNICIPAL DE EDUCACAO INFANTIL",
             "ESCOLA MUNICIPAL DE ENSINO FUNDAMENTAL",
         ]
-
         criadas = []
         for i in range(count):
             item = Escola.objects.create(
                 dre=dre,
                 codigo_eol=f"{random.randint(100000, 999999)}",
-                nome_oficial=f"ESCOLA MUNICIPAL {i+1}",
-                nome_nao_oficial=f"EM {i+1}",
+                nome_oficial=f"ESCOLA MUNICIPAL {i + 1}",
+                nome_nao_oficial=f"EM {i + 1}",
                 tipo_unidade_admin="DIRETORIA REGIONAL DE EDUCACAO",
                 tipo_ue=random.choice(tipos_ue),
                 logradouro="Rua Exemplo",
@@ -56,7 +56,7 @@ class Command(BaseCommand):
                 distrito="DISTRITO EXEMPLO",
                 sub_prefeitura="BUTANTA",
                 nome_dre=dre.nome,
-                email=f"escola{i+1}@sme.prefeitura.sp.gov.br",
+                email=f"escola{i + 1}@sme.prefeitura.sp.gov.br",
                 telefone1="(11) 0000-0000",
                 telefone2="(11) 0000-0001",
                 ano_construcao=1980 + i,
@@ -73,9 +73,8 @@ class Command(BaseCommand):
             )
             criadas.append(item)
             self.stdout.write(
-                f"  ✓ Criada escola: {item.nome_oficial} ({item.codigo_eol})"
+                f"Escola criada: {item.nome_oficial} ({item.codigo_eol})"
             )
-
         self.stdout.write(
-            self.style.SUCCESS(f"✅ {len(criadas)} escolas criadas!")
+            self.style.SUCCESS(f"{len(criadas)} escolas criadas!")
         )

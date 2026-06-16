@@ -1,3 +1,7 @@
+"""Módulo services/candidato_api."""
+
+from __future__ import annotations
+
 import logging
 
 from django.conf import settings
@@ -8,20 +12,19 @@ logger = logging.getLogger(__name__)
 
 
 class CandidatoAPIService:
-    """Service para integração com MS-Candidatos."""
+    """Consulta candidatos habilitados no microserviço MS-Candidatos."""
 
-    def __init__(self, base_url: str | None = None, timeout_seconds: int = 30):
-        """
-        Inicializa o serviço de candidatos.
+    def __init__(
+        self, base_url: str | None = None, timeout_seconds: int = 30
+    ) -> None:
+        """Configura URL base e timeout da API de candidatos.
 
         Args:
-            base_url: URL base da API de candidatos. Se não fornecido, usa
-            CANDIDATOS_API_URL do settings.
-            timeout_seconds: Timeout em segundos para as requisições
+            base_url: URL base do serviço remoto.
+            timeout_seconds: Tempo máximo de espera, em segundos.
         """
         if base_url is None:
             base_url = settings.CANDIDATOS_API_URL
-
         self.base_url = base_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
         self._default_headers = {
@@ -32,20 +35,17 @@ class CandidatoAPIService:
     def buscar_candidatos_por_cpfs(
         self, cpfs: list[str], processo_uuid: str
     ) -> str | None:
-        """
-        Busca candidatos por CPFs.
+        """Localiza habilitados por CPFs e processo no MS-Candidatos.
 
         Args:
-            cpfs: List[str] de CPFs dos candidatos
-            processo_uuid: UUID do processo de convocação
+            cpfs: Lista de CPFs dos candidatos.
+            processo_uuid: UUID do processo de convocação.
+
         Returns:
-            List[Dict[str, Any]] de candidatos encontrados
+            Dados dos candidatos encontrados, ou None em caso de erro.
         """
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
-        payload = {
-            "processo_uuid": str(processo_uuid),
-            "cpfs": cpfs,
-        }
+        payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
         logger.info(
             "Buscando candidatos por CPFs",
             extra={
@@ -67,16 +67,13 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                f"Erro HTTP ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}"  # noqa: E501
-            )
-            return None
-        except Exception as exc:  # noqa: B025
-            logger.error(
-                f"Erro ao buscar candidatos por CPFs {cpfs} no processo {processo_uuid}: {exc}",  # noqa: E501
+                "Erro ao buscar candidatos por CPFs %s no processo %s: %s",
+                cpfs,
+                processo_uuid,
+                exc,
                 exc_info=True,
             )
             return None
-
         data = response.json()
         logger.info(
             "Candidatos encontrados",
@@ -88,7 +85,7 @@ class CandidatoAPIService:
                 "cpfs": cpfs,
             },
         )
-        return data
+        return data  # type: ignore[no-any-return]
 
     def buscar_candidatos(
         self,
@@ -97,19 +94,16 @@ class CandidatoAPIService:
         rg: str | None = None,
         registro_funcional: str | None = None,
     ) -> list[dict] | None:
-        """
-        Busca candidatos no MS-Candidatos por nome, CPF, RG ou registro
-        funcional.
-        Pelo menos um dos parâmetros deve ser informado.
+        """Pesquisa candidatos por nome, CPF, RG ou registro funcional.
 
         Args:
-            nome: Nome (busca por contém).
-            cpf: CPF (busca por contém).
-            rg: RG (busca por contém).
-            registro_funcional: Registro funcional (busca por contém).
+            nome: Nome ou parte do nome do candidato.
+            cpf: CPF do candidato.
+            rg: RG do candidato.
+            registro_funcional: Registro funcional do servidor.
 
         Returns:
-            Lista de candidatos retornados pela API ou None em caso de erro.
+            Lista de candidatos encontrados, ou None em caso de erro.
         """
         if not any(
             s and str(s).strip() for s in (nome, cpf, rg, registro_funcional)
@@ -138,7 +132,6 @@ class CandidatoAPIService:
             params["rg"] = str(rg).strip()
         if registro_funcional and str(registro_funcional).strip():
             params["registro_funcional"] = str(registro_funcional).strip()
-
         try:
             response = http_client.get(
                 url,
@@ -148,9 +141,12 @@ class CandidatoAPIService:
             )
             response.raise_for_status()
         except Exception as exc:
-            logger.error("Erro ao buscar candidatos: %s", exc, exc_info=True)
+            logger.error(
+                "Erro ao buscar candidatos: %s",
+                exc,
+                exc_info=True,
+            )
             return None
-
         logger.info(
             "Candidatos encontrados",
             extra={
@@ -166,4 +162,4 @@ class CandidatoAPIService:
                 "response": str(response.json())[:100],
             },
         )
-        return response.json()
+        return response.json()  # type: ignore[no-any-return]

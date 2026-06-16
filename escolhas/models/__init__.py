@@ -1,3 +1,5 @@
+"""Módulo models/__init__."""
+
 from .base import BaseModel
 from .dre import Dre
 from .escola import Escola

@@ -1,3 +1,9 @@
+"""Módulo models/historico_escolha."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from auditlog.registry import auditlog
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -7,9 +13,7 @@ from .base import BaseModel
 
 
 class HistoricoEscolha(BaseModel):
-    """
-    Model para histórico de mudanças de situação das escolhas.
-    """
+    """Registra cada mudança de situação de uma escolha."""
 
     escolha = models.ForeignKey(
         "Escolha",
@@ -31,13 +35,19 @@ class HistoricoEscolha(BaseModel):
     )
 
     class Meta:
+        """Representa Meta."""
+
         db_table = "historico_escolhas"
         verbose_name = "Histórico de Escolha"
         verbose_name_plural = "Históricos de Escolhas"
         ordering = ["-criado_em"]
 
-    def __str__(self):
-        return f"{self.escolha.uuid} - {self.situacao_anterior} -> {self.situacao_nova}"  # noqa: E501
+    def __str__(self) -> Any:
+        """Retorna representação textual do registro."""
+        return (
+            f"{self.escolha.uuid} - "
+            f"{self.situacao_anterior} -> {self.situacao_nova}"
+        )
 
 
 auditlog.register(HistoricoEscolha)

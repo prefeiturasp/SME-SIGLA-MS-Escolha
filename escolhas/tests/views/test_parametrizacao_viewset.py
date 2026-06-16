@@ -1,3 +1,7 @@
+"""Módulo tests/views/test_parametrizacao_viewset."""
+
+from __future__ import annotations
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -35,9 +39,10 @@ MAPPING_FIXTURE = [
 
 @pytest.fixture
 def parametrizacoes_db():
+    """Parametrizacoes db."""
     objs = [
         Parametrizacao(tipo_ue=nome, usar=False)
-        for (nome, slug) in MAPPING_FIXTURE
+        for nome, slug in MAPPING_FIXTURE
     ]
     Parametrizacao.objects.bulk_create(objs)
     return list(Parametrizacao.objects.all())
@@ -45,6 +50,7 @@ def parametrizacoes_db():
 
 @pytest.mark.django_db
 def test_list_parametrizacoes(api_client, parametrizacoes_db):
+    """Verifica list parametrizacoes."""
     url = reverse("parametrizacao-list")
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
@@ -55,11 +61,10 @@ def test_list_parametrizacoes(api_client, parametrizacoes_db):
 
 @pytest.mark.django_db
 def test_bulk_update_usar_updates_multiple(api_client, parametrizacoes_db):
-    # pega dois registros para atualizar
+    """Verifica bulk update usar updates multiple."""
     p1 = Parametrizacao.objects.get(tipo_ue="EMEF")
     p2 = Parametrizacao.objects.get(tipo_ue="EMEI")
     assert p1.usar is False and p2.usar is False
-
     url = reverse("parametrizacao-bulk")
     payload = [
         {"uuid": str(p1.uuid), "usar": True},
@@ -68,7 +73,6 @@ def test_bulk_update_usar_updates_multiple(api_client, parametrizacoes_db):
     resp = api_client.patch(url, payload, format="json")
     assert resp.status_code == status.HTTP_200_OK
     assert "updated" in resp.data and resp.data["updated"] == 2
-
     p1.refresh_from_db()
     p2.refresh_from_db()
     assert p1.usar is True

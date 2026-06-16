@@ -1,3 +1,7 @@
+"""Módulo tests/views/conftest."""
+
+from __future__ import annotations
+
 import pytest
 
 from escolhas.models import Dre, Escola
@@ -7,11 +11,13 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def dre_teste():
+    """Dre teste."""
     return Dre.objects.create(codigo="123456", nome="DRE Teste", sigla="DRE-T")
 
 
 @pytest.fixture
 def escola_1(dre_teste):
+    """Escola 1."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="123456",
@@ -32,6 +38,7 @@ def escola_1(dre_teste):
 
 @pytest.fixture
 def escola_2(dre_teste):
+    """Escola 2."""
     return Escola.objects.create(
         dre=dre_teste,
         codigo_eol="789012",

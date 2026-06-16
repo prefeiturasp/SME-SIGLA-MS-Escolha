@@ -1,3 +1,9 @@
+"""Módulo models/escola."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from auditlog.registry import auditlog
 from django.db import models
 
@@ -6,6 +12,8 @@ from .dre import Dre
 
 
 class Escola(BaseModel):
+    """Armazena dados cadastrais da unidade escolar e vínculo com DRE."""
+
     dre = models.ForeignKey(Dre, on_delete=models.CASCADE, verbose_name="DRE")
     codigo_eol = models.CharField(max_length=20, verbose_name="Código EOL")
     nome_oficial = models.CharField(
@@ -66,19 +74,19 @@ class Escola(BaseModel):
     )
     status = models.CharField(max_length=30, verbose_name="Status")
     codigo_integracao = models.CharField(
-        max_length=50,
-        verbose_name="Código Integração",
-        blank=True,
-        null=True,
+        max_length=50, verbose_name="Código Integração", blank=True, null=True
     )
 
     class Meta:
+        """Representa Meta."""
+
         db_table = "escolas"
         verbose_name = "Escola"
         verbose_name_plural = "Escolas"
         ordering = ["nome_oficial"]
 
-    def __str__(self):
+    def __str__(self) -> Any:
+        """Retorna representação textual do registro."""
         return self.nome_oficial
 
 

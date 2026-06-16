@@ -1,3 +1,7 @@
+"""Módulo tests/views/test_escola."""
+
+from __future__ import annotations
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
@@ -7,6 +11,7 @@ from escolhas.models import Dre, Escola, Parametrizacao
 
 @pytest.fixture
 def dre_bt():
+    """Dre bt."""
     return Dre.objects.create(
         codigo="108100",
         nome="DIRETORIA REGIONAL DE EDUCACAO BUTANTA",
@@ -16,6 +21,7 @@ def dre_bt():
 
 @pytest.fixture
 def dre_ip():
+    """Dre ip."""
     return Dre.objects.create(
         codigo="108200",
         nome="DIRETORIA REGIONAL DE EDUCACAO IPIRANGA",
@@ -25,11 +31,12 @@ def dre_ip():
 
 @pytest.fixture
 def param_ativo_emef():
-    # Habilita o tipo_ue usado nas escolas deste teste
+    """Param ativo emef."""
     return Parametrizacao.objects.create(tipo_ue="EMEF", usar=True)
 
 
-def criar_escola(dre: Dre, idx: int = 1) -> Escola:
+def criar_escola(dre, idx=1):
+    """Criar escola."""
     return Escola.objects.create(
         dre=dre,
         codigo_eol=f"{400000 + idx}",
@@ -63,10 +70,12 @@ def criar_escola(dre: Dre, idx: int = 1) -> Escola:
 
 @pytest.mark.django_db
 class TestEscolaViewSet:
+    """ViewSet para o recurso TestEscola."""
+
     def test_list_escolas_vazio(self, api_client, param_ativo_emef):
+        """Verifica list escolas vazio."""
         url = reverse("escola-list")
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
         assert len(response.data["results"]) == 0
@@ -76,28 +85,24 @@ class TestEscolaViewSet:
     def test_list_escolas_com_dados(
         self, api_client, dre_bt, param_ativo_emef
     ):
+        """Verifica list escolas com dados."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)
-
         url = reverse("escola-list")
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 2
         assert len(response.data["results"]) == 2
-
-        # Verifica dados essenciais e DRE aninhada
         item = response.data["results"][0]
         assert "uuid" in item
         assert "dre" in item
         assert set(item["dre"].keys()) == {"uuid", "codigo", "nome", "sigla"}
 
     def test_retrieve_escola(self, api_client, dre_bt, param_ativo_emef):
+        """Verifica retrieve escola."""
         escola = criar_escola(dre_bt, 3)
-
         url = reverse("escola-detail", kwargs={"pk": escola.uuid})
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["uuid"] == str(escola.uuid)
         assert response.data["codigo_eol"] == escola.codigo_eol
@@ -106,24 +111,19 @@ class TestEscolaViewSet:
         assert response.data["dre"]["sigla"] == dre_bt.sigla
 
     def test_search_escolas(self, api_client, dre_bt, param_ativo_emef):
+        """Verifica search escolas."""
         criar_escola(dre_bt, 1)
         e2 = criar_escola(dre_bt, 2)
         e2.bairro = "VILA SONIA"
         e2.save(update_fields=["bairro"])
-
         url = reverse("escola-list")
-        # Busca por bairro
         response = api_client.get(url, {"search": "VILA SONIA"})
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         assert response.data["results"][0]["bairro"] == "VILA SONIA"
-
-        # Busca por nome_oficial
         response = api_client.get(url, {"search": "ESCOLA TESTE 1"})
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
-
-        # Busca por codigo_eol
         response = api_client.get(url, {"search": e2.codigo_eol})
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
@@ -131,14 +131,12 @@ class TestEscolaViewSet:
     def test_list_escolas_sem_parametrizacao_ativa_retorna_vazio(
         self, api_client, dre_bt
     ):
-        # Cria escolas, mas nenhuma parametrização ativa (usar=True)
+        """Verifica list escolas sem parametrizacao ativa retorna vazio."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)
         Parametrizacao.objects.create(tipo_ue="EMEF", usar=False)
-
         url = reverse("escola-list")
         response = api_client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
         assert len(response.data["results"]) == 0
@@ -146,6 +144,7 @@ class TestEscolaViewSet:
     def test_list_escolas_filtra_por_nome_param(
         self, api_client, dre_bt, param_ativo_emef
     ):
+        """Verifica list escolas filtra por nome param."""
         criar_escola(dre_bt, 1)
         criar_escola(dre_bt, 2)
         url = reverse("escola-list")

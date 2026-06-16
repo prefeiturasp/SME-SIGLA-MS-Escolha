@@ -1,3 +1,9 @@
+"""Módulo utils."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -6,21 +12,26 @@ DEFAULT_PAGE_SIZE = 10
 
 
 class CustomPagination(PageNumberPagination):
-    page = DEFAULT_PAGE
+    """Pagina resultados com links, totais e tamanho customizado."""
+
+    page = DEFAULT_PAGE  # type: ignore[assignment]
     page_size = DEFAULT_PAGE_SIZE
     page_size_query_param = "page_size"
 
-    def get_paginated_response(self, data):
+    def get_paginated_response(self, data: Any) -> Any:
+        """Monta resposta JSON com count, page, links e results."""
         try:
-            page = int(self.request.GET.get("page", DEFAULT_PAGE))
+            page = int(  # type: ignore[union-attr]
+                self.request.GET.get("page", DEFAULT_PAGE)
+            )
         except (ValueError, TypeError):
             page = DEFAULT_PAGE
-
         try:
-            page_size = int(self.request.GET.get("page_size", self.page_size))
+            page_size = int(  # type: ignore[union-attr]
+                self.request.GET.get("page_size", self.page_size)
+            )
         except (ValueError, TypeError):
             page_size = self.page_size
-
         return Response(
             {
                 "links": {
@@ -32,4 +43,4 @@ class CustomPagination(PageNumberPagination):
                 "page_size": page_size,
                 "results": data,
             }
-        )
+        )  # type: ignore[has-type]

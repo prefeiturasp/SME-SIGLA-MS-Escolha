@@ -1,3 +1,5 @@
+"""Módulo services/sme_integration."""
+
 from typing import Any
 
 import requests
@@ -5,6 +7,14 @@ from django.conf import settings
 
 
 def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
+    """Monta URL base e headers de autenticação da SME Integração.
+
+    Returns:
+        Tupla com URL base e headers da SME Integração.
+
+    Raises:
+        ValueError: Se os dados informados forem inválidos.
+    """
     base_url = getattr(settings, "SMEINTEGRACAO_API_URL", None)
     token = getattr(settings, "SMEINTEGRACAO_API_TOKEN", None)
 
@@ -21,6 +31,14 @@ def _get_base_url_and_headers() -> tuple[str, dict[str, str]]:
 
 
 def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
+    """Lista DREs (código, nome e sigla) na API SME Integração.
+
+    Returns:
+        Lista de DREs com código, nome e sigla.
+
+    Raises:
+        ValueError: Se os dados informados forem inválidos.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + "/api/DREs"
 
@@ -53,6 +71,17 @@ def buscar_dres_de_smeintegracao() -> list[dict[str, Any]]:
 
 
 def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
+    """Lista códigos EOL das UEs vinculadas à DRE informada.
+
+    Args:
+        codigo_dre: Código da DRE na SME Integração.
+
+    Returns:
+        Lista de códigos EOL das unidades escolares.
+
+    Raises:
+        ValueError: Se os dados informados forem inválidos.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/ues"
 
@@ -69,6 +98,17 @@ def buscar_ues_codigos_por_dre(codigo_dre: str) -> list[str]:
 
 
 def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
+    """Obtém cadastro completo da escola pelo código EOL.
+
+    Args:
+        codigo_eol: Código EOL da unidade escolar.
+
+    Returns:
+        Dicionário com os dados cadastrais da escola.
+
+    Raises:
+        ValueError: Se os dados informados forem inválidos.
+    """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/escolas/dados/{codigo_eol}"
 
@@ -87,9 +127,16 @@ def buscar_dados_escola_por_eol(codigo_eol: str) -> dict[str, Any]:
 def buscar_unidades_codigo_integracao_por_dre(
     codigo_dre: str,
 ) -> list[dict[str, Any]]:
-    """
-    GET /api/DREs/{dreCodigo}/unidades/codigo-integracao
-    Retorna lista com codigoUe, nomeUe, codigoIntegracao.
+    """Lista unidades com código de integração da DRE informada.
+
+    Args:
+        codigo_dre: Código da DRE na SME Integração.
+
+    Returns:
+        Lista de unidades com codigoUe e codigoIntegracao.
+
+    Raises:
+        ValueError: Se os dados informados forem inválidos.
     """
     base_url, headers = _get_base_url_and_headers()
     url = base_url + f"/api/DREs/{codigo_dre}/unidades/codigo-integracao"
@@ -100,7 +147,8 @@ def buscar_unidades_codigo_integracao_por_dre(
     result = response.json()
     if not isinstance(result, list):
         raise ValueError(
-            "Formato de resposta inesperado ao buscar unidades/codigo-integracao"  # noqa: E501
+            "Formato de resposta inesperado ao buscar "
+            "unidades/codigo-integracao"
         )
 
     return result

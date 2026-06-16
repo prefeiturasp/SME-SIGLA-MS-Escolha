@@ -1,10 +1,20 @@
+"""Módulo serializers/vagas_escolas."""
+
+from __future__ import annotations
+
+from typing import Any
+
 from rest_framework import serializers
 
 from ..models import Dre, Escola, VagasEscolas
 
 
 class DreSimpleSerializer(serializers.ModelSerializer):
+    """Campos básicos da DRE (uuid, código, nome, sigla)."""
+
     class Meta:
+        """Representa Meta."""
+
         model = Dre
         fields = ["uuid", "codigo", "nome", "sigla"]
 
@@ -15,6 +25,8 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
     dre = DreSimpleSerializer(read_only=True)
 
     class Meta:
+        """Representa Meta."""
+
         model = Escola
         fields = [
             "codigo_eol",
@@ -26,10 +38,14 @@ class EscolaSimpleSerializer(serializers.ModelSerializer):
 
 
 class VagasEscolasSerializer(serializers.ModelSerializer):
+    """Vaga com escola, lote e contadores restantes."""
+
     escola = EscolaSimpleSerializer(read_only=True)
     lote_uuid = serializers.UUIDField(source="lote.uuid", read_only=True)
 
     class Meta:
+        """Representa Meta."""
+
         model = VagasEscolas
         fields = [
             "uuid",
@@ -53,8 +69,12 @@ class VagasEscolasSerializer(serializers.ModelSerializer):
         read_only_fields = ["uuid", "criado_em", "atualizado_em"]
 
 
-class VagasEscolasCreateSerializer(serializers.Serializer):
-    """Serializer para criação de vagas em lote."""
+class VagasEscolasInclusaoSerializer(serializers.Serializer):
+    """Serializer para inclusão de vagas em um lote já existente.
+
+    Diferente da criação, não exige ``concurso_uuid`` pois o lote (e seu
+    concurso) já existe; aqui apenas adicionamos novas vagas a ele.
+    """
 
     processo_uuid = serializers.UUIDField(
         error_messages={
@@ -68,13 +88,12 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
         child=serializers.DictField(), write_only=True
     )
 
-    def validate_vagas(self, value):
-        """Valida a lista de vagas e converte status descritivos."""
+    def validate_vagas(self, value: Any) -> Any:
+        """Exige lista não vazia com campos obrigatórios por vaga."""
         if not value:
             raise serializers.ValidationError(
                 "A lista de vagas não pode estar vazia."
             )
-
         for i, vaga in enumerate(value):
             required_fields = [
                 "data_fechamento_modulo",
@@ -85,18 +104,35 @@ class VagasEscolasCreateSerializer(serializers.Serializer):
                 "vagas_definitivas",
                 "status",
             ]
-
             for field in required_fields:
                 if field not in vaga:
                     raise serializers.ValidationError(
-                        f"Campo '{field}' é obrigatório na vaga {i+1}."
+                        f"Campo '{field}' é obrigatório na vaga {i + 1}."
                     )
-
         return value
 
 
+class VagasEscolasCreateSerializer(VagasEscolasInclusaoSerializer):
+    """Serializer para criação de vagas em lote.
+
+    Exige ``concurso_uuid`` pois cria um novo lote vinculado ao concurso.
+    """
+
+    concurso_uuid = serializers.UUIDField(
+        error_messages={
+            "invalid": "Deve ser um UUID válido.",
+            "required": "Este campo é obrigatório.",
+            "null": "Este campo não pode ser nulo.",
+        }
+    )
+
+
 class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
+    """Atualiza vagas utilizadas e flags de checagem."""
+
     class Meta:
+        """Representa Meta."""
+
         model = VagasEscolas
         fields = [
             "vagas_precarias_utilizadas",
@@ -107,6 +143,8 @@ class VagasEscolasUtilizadasUpdateSerializer(serializers.ModelSerializer):
 
 
 class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
+    """Valida item de atualização de vagas (uuid e contadores)."""
+
     uuid = serializers.UUIDField()
     foi_utilizada = serializers.BooleanField(required=True)
     vagas_precarias_utilizadas = serializers.IntegerField(required=False)
@@ -114,6 +152,6 @@ class VagaEscolaUtilizadaItemSerializer(serializers.Serializer):
 
 
 class VagasEscolasUtilizadasBulkSerializer(serializers.Serializer):
-    # Agora recebemos diretamente uma lista de itens (sem processo_uuid e sem chave 'vagas')  # noqa: E501
-    # Este serializer pode ser usado para validação de cada item individualmente quando necessário  # noqa: E501
+    """Reservado para atualização em massa de vagas utilizadas."""
+
     pass
