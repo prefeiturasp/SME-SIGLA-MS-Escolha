@@ -59,12 +59,22 @@ def _filtrar_escolhas_por_escopo(
     candidatos e vagas): escolhas com vaga pelo processo do lote; sem vaga,
     mantém ``criado_em`` no ano do filtro.
     """
-    if concurso_uuid and ano:
-        qs = qs.filter(concurso_uuid=concurso_uuid, criado_em__year=ano)
     if processo_uuids:
-        filtro = Q(vaga_escola__lote__processo_uuid__in=processo_uuids)
-        filtro |= Q(vaga_escola__isnull=True)
-        qs = qs.filter(filtro)
+        filtro_com_vaga = Q(
+            vaga_escola__lote__processo_uuid__in=processo_uuids
+        )
+        filtro_sem_vaga = Q(vaga_escola__isnull=True)
+        if concurso_uuid:
+            filtro_com_vaga &= Q(concurso_uuid=concurso_uuid)
+            filtro_sem_vaga &= Q(concurso_uuid=concurso_uuid)
+        if ano:
+            filtro_sem_vaga &= Q(criado_em__year=ano)
+        qs = qs.filter(filtro_com_vaga | filtro_sem_vaga)
+    else:
+        if concurso_uuid:
+            qs = qs.filter(concurso_uuid=concurso_uuid)
+        if ano:
+            qs = qs.filter(criado_em__year=ano)
 
     return qs
 
