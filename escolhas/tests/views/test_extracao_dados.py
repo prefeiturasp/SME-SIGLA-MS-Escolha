@@ -22,11 +22,14 @@ def api_client():
     return APIClient()
 
 
+def _set_criado_em(escolha, quando):
+    """criado_em é auto_now_add; sobrescreve via update()."""
+    Escolha.objects.filter(pk=escolha.pk).update(criado_em=quando)
+
+
 def _set_ano(escolha, ano):
     """criado_em é auto_now_add; sobrescreve via update() para o ano dado."""
-    Escolha.objects.filter(pk=escolha.pk).update(
-        criado_em=datetime(ano, 6, 1, tzinfo=UTC)
-    )
+    _set_criado_em(escolha, datetime(ano, 6, 1, tzinfo=UTC))
 
 
 def criar_escolha(concurso_uuid, situacao, ano, vaga_escola=None):
@@ -108,6 +111,12 @@ def test_extracao_dados_conta_situacoes_por_ano(api_client):
     assert resp.status_code == 200, resp.content
     data = resp.json()
 
+    assert data["concurso_uuid"] == str(concurso_uuid)
+    assert data["filtros"] == [
+        {"ano": 2025, "processo_uuids": []},
+        {"ano": 2026, "processo_uuids": []},
+    ]
+
     # sem processo_uuids e sem escolhas com vaga -> dres vazio
     assert data["2026"] == {
         "escolha": 2,
@@ -156,9 +165,15 @@ def test_extracao_dados_dres_uniao_escolhas_e_vagas(api_client):
     resp = api_client.post(url, payload, format="json")
 
     assert resp.status_code == 200, resp.content
-    ano = resp.json()["2026"]
+    data = resp.json()
 
-    assert ano["escolha"] == 3
+    assert data["concurso_uuid"] == str(concurso_uuid)
+    assert data["filtros"] == [
+        {"ano": 2026, "processo_uuids": [str(processo)]},
+    ]
+    ano = data["2026"]
+
+    assert ano["escolha"] == 2
     assert ano["reconvocacao"] == 1
     assert ano["nao-escolha"] == 1
 
@@ -166,9 +181,49 @@ def test_extracao_dados_dres_uniao_escolhas_e_vagas(api_client):
     assert dres["DRE-A"] == {"nome": "DRE-A", "escolhas": 2, "vagas": 120}
     # DRE-B: so vaga
     assert dres["DRE-B"] == {"nome": "DRE-B", "escolhas": 0, "vagas": 100}
-    # DRE-C: so escolha (vaga em outro processo -> vagas 0)
-    assert dres["DRE-C"] == {"nome": "DRE-C", "escolhas": 1, "vagas": 0}
-    assert set(dres.keys()) == {"DRE-A", "DRE-B", "DRE-C"}
+    # DRE-C: escolha em outro processo -> nao entra no filtro por processo
+    assert set(dres.keys()) == {"DRE-A", "DRE-B"}
+
+
+def test_extracao_dados_escolhas_por_processo_independente_criado_em(api_client):
+    """Processo de 2025 com escolhas registradas em outro ano contam pelo processo."""
+    url = reverse("extracao-dados-list")
+    concurso_uuid = uuid.uuid4()
+    processo = uuid.uuid4()
+    dre = criar_dre("DRE-A")
+
+    vaga = criar_vaga(
+        processo,
+        dre,
+        definitivas=50,
+        precarias=50,
+        concurso_uuid=concurso_uuid,
+    )
+
+    for _ in range(5):
+        escolha = Escolha.objects.create(
+            candidato_uuid=uuid.uuid4(),
+            concurso_uuid=concurso_uuid,
+            situacao=SituacaoChoices.ESCOLHA,
+            e_retardatario=False,
+            vaga_escola=vaga,
+        )
+        _set_ano(escolha, 2026)
+
+    payload = {
+        "concurso_uuid": str(concurso_uuid),
+        "filtros": [{"ano": 2025, "processo_uuids": [str(processo)]}],
+    }
+
+    resp = api_client.post(url, payload, format="json")
+
+    assert resp.status_code == 200, resp.content
+    data = resp.json()["2025"]
+
+    assert data["escolha"] == 5
+    assert data["dres"] == [
+        {"nome": "DRE-A", "escolhas": 5, "vagas": 100},
+    ]
 
 
 def test_extracao_dados_sem_filtros_retorna_total(api_client):
@@ -203,6 +258,7 @@ def test_extracao_dados_sem_filtros_retorna_total(api_client):
         "nao-escolha",
         "dres",
         "dres_concursos",
+        "ultima_escolha_em",
     }
     assert data["escolha"] == 2
     assert data["reconvocacao"] == 1
@@ -233,9 +289,36 @@ def test_extracao_dados_body_vazio_agrega_tudo(api_client):
         "nao-escolha",
         "dres",
         "dres_concursos",
+        "ultima_escolha_em",
     }
     assert data["escolha"] == 1
     assert data["nao-escolha"] == 1
+
+
+def test_extracao_dados_rejeita_mais_de_dois_filtros(api_client):
+    url = reverse("extracao-dados-list")
+    payload = {
+        "concurso_uuid": str(uuid.uuid4()),
+        "filtros": [{"ano": 2024}, {"ano": 2025}, {"ano": 2026}],
+    }
+
+    resp = api_client.post(url, payload, format="json")
+
+    assert resp.status_code == 400
+    assert "filtros" in resp.json()
+
+
+def test_extracao_dados_rejeita_ano_invalido(api_client):
+    url = reverse("extracao-dados-list")
+    payload = {
+        "concurso_uuid": str(uuid.uuid4()),
+        "filtros": [{"ano": 26}],
+    }
+
+    resp = api_client.post(url, payload, format="json")
+
+    assert resp.status_code == 400
+    assert "filtros" in resp.json()
 
 
 def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
@@ -293,13 +376,19 @@ def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
     resp = api_client.post(url, payload, format="json")
 
     assert resp.status_code == 200, resp.content
-    dres_concursos = resp.json()["dres_concursos"]
+    data = resp.json()
+    assert data["concurso_uuid"] == str(concurso_uuid)
+    assert data["filtros"] == [
+        {"ano": 2026, "processo_uuids": [str(processo)]},
+    ]
+    dres_concursos = data["dres_concursos"]
 
     # so o concurso informado
     assert set(dres_concursos.keys()) == {str(concurso_uuid)}
     linhas = dres_concursos[str(concurso_uuid)]
     por_chave = {(d["nome"], d["codigo_cargo"]): d for d in linhas}
 
+    assert por_chave[("DRE-A", 1001)]["ultima_escolha_em"] is not None
     # DRE-A + Backend: 2 escolhas, vaga contada 1x (120)
     assert por_chave[("DRE-A", 1001)] == {
         "nome": "DRE-A",
@@ -307,6 +396,7 @@ def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
         "vagas": 120,
         "codigo_cargo": 1001,
         "cargo_descricao": "Backend",
+        "ultima_escolha_em": por_chave[("DRE-A", 1001)]["ultima_escolha_em"],
     }
     # DRE-B + Frontend: 1 escolha, 100 vagas
     assert por_chave[("DRE-B", 1002)] == {
@@ -315,6 +405,7 @@ def test_dres_concursos_por_concurso_dre_e_cargo(api_client):
         "vagas": 100,
         "codigo_cargo": 1002,
         "cargo_descricao": "Frontend",
+        "ultima_escolha_em": por_chave[("DRE-B", 1002)]["ultima_escolha_em"],
     }
     # DRE-A + Mobile (1003): so vaga (escolhas=0), vinda dos processos
     assert por_chave[("DRE-A", 1003)] == {
@@ -501,3 +592,67 @@ def test_dres_concursos_concurso_so_com_vaga_aparece(api_client):
     assert linha["escolhas"] == 0
     assert linha["vagas"] == 50
     assert linha["codigo_cargo"] == 1008
+
+
+def test_ultima_escolha_em_retorna_a_mais_recente_entre_dois_anos(api_client):
+    url = reverse("extracao-dados-list")
+    concurso_uuid = uuid.uuid4()
+    processo_2025 = uuid.uuid4()
+    processo_2026 = uuid.uuid4()
+    dre = criar_dre("DRE-A")
+
+    vaga_2025 = criar_vaga(
+        processo_2025,
+        dre,
+        10,
+        0,
+        cargo_codigo=1001,
+        cargo_descricao="Professor",
+        concurso_uuid=concurso_uuid,
+    )
+    vaga_2026 = criar_vaga(
+        processo_2026,
+        dre,
+        10,
+        0,
+        cargo_codigo=1001,
+        cargo_descricao="Professor",
+        concurso_uuid=concurso_uuid,
+    )
+
+    escolha_2025 = Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        concurso_uuid=concurso_uuid,
+        situacao=SituacaoChoices.ESCOLHA,
+        e_retardatario=False,
+        vaga_escola=vaga_2025,
+    )
+    _set_criado_em(escolha_2025, datetime(2025, 8, 25, 14, 30, tzinfo=UTC))
+
+    escolha_2026 = Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        concurso_uuid=concurso_uuid,
+        situacao=SituacaoChoices.ESCOLHA,
+        e_retardatario=False,
+        vaga_escola=vaga_2026,
+    )
+    _set_criado_em(escolha_2026, datetime(2026, 3, 10, 9, 15, tzinfo=UTC))
+
+    payload = {
+        "concurso_uuid": str(concurso_uuid),
+        "filtros": [
+            {"ano": 2025, "processo_uuids": [str(processo_2025)]},
+            {"ano": 2026, "processo_uuids": [str(processo_2026)]},
+        ],
+    }
+
+    resp = api_client.post(url, payload, format="json")
+
+    assert resp.status_code == 200, resp.content
+    data = resp.json()
+
+    assert data["ultima_escolha_em"].startswith("2026-03-10T09:15:00")
+
+    linhas = data["dres_concursos"][str(concurso_uuid)]
+    linha = next(item for item in linhas if item["codigo_cargo"] == 1001)
+    assert linha["ultima_escolha_em"].startswith("2026-03-10T09:15:00")
