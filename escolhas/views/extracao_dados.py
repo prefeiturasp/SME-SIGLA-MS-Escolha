@@ -9,7 +9,13 @@ from ..services import montar_extracao_dados
 
 
 class ExtracaoDadosViewSet(viewsets.ViewSet):
-    """ViewSet de escolhas para extração de dados."""
+    """ViewSet de escolhas para extração de dados.
+
+    POST /extracao-dados/
+    Body: {concurso_uuid?, filtros?: [{ano, processo_uuids?}]}
+    Com ``filtros``: dados por ano e metadados ``concurso_uuid``/``filtros``.
+    Sem ``filtros``: agregado na raiz.
+    """
 
     permission_classes = [AllowAny]
 
