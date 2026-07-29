@@ -9,13 +9,9 @@ from django.urls import reverse
 from rest_framework import status
 
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
-from escolhas.models import (
-    Dre,
-    Escola,
-    Escolha,
-    VagasEscolas,
-    VagasEscolasLote,
-)
+from escola.models import Dre, Escola
+from escolhas.models import Escolha
+from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 
 
 @pytest.mark.django_db

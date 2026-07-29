@@ -3,23 +3,13 @@ from datetime import UTC, datetime
 
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 from escolhas.choices import SituacaoChoices
-from escolhas.models import (
-    Dre,
-    Escola,
-    Escolha,
-    VagasEscolas,
-    VagasEscolasLote,
-)
+from escola.models import Dre, Escola
+from escolhas.models import Escolha
+from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
 
 
 def _set_criado_em(escolha, quando):

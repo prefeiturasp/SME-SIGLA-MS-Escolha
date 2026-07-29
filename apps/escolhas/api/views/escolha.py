@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from escolhas.middleware import get_correlation_id
 
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
-from escolhas.models import Escolha, VagasEscolas
+from escolhas.models import Escolha
 from escolhas.serializers import (
     EscolhaListSerializer,
     EscolhaReconvocacaoSerializer,
@@ -25,6 +25,7 @@ from escolhas.serializers import (
     EscolhasProdamImportacaoSerializer,
 )
 from escolhas.services import CandidatoAPIService, ConcursoAPIService
+from vagas_escolas.models import VagasEscolas
 from core.utils import CustomPagination
 
 logger = logging.getLogger(__name__)

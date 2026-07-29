@@ -7,38 +7,8 @@ import uuid
 import pytest
 
 from escolhas.choices import SituacaoChoices, TipoVagaChoices
-from escolhas.models import (
-    Dre,
-    Escola,
-    Escolha,
-    VagasEscolas,
-    VagasEscolasLote,
-)
-
-
-@pytest.fixture
-def dre():
-    """Fixture para criar uma DRE."""
-    return Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
-
-
-@pytest.fixture
-def escola(dre):
-    """Fixture para criar uma escola."""
-    return Escola.objects.create(
-        codigo_eol="000001",
-        nome_oficial="Escola Teste",
-        dre=dre,
-        cep="04001-000",
-    )
-
-
-@pytest.fixture
-def lote():
-    """Fixture para criar um lote de vagas."""
-    return VagasEscolasLote.objects.create(
-        processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
-    )
+from escolhas.models import Escolha
+from vagas_escolas.models import VagasEscolas
 
 
 @pytest.fixture

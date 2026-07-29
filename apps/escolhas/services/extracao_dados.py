@@ -6,7 +6,8 @@ from uuid import UUID
 from django.db.models import Count, F, Max, Q, QuerySet, Sum
 
 from escolhas.choices import SituacaoChoices
-from escolhas.models import Escolha, VagasEscolas
+from escolhas.models import Escolha
+from vagas_escolas.models import VagasEscolas
 
 
 def _serializar_datetime(value) -> str | None:

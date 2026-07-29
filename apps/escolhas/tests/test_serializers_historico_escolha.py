@@ -10,59 +10,10 @@ import uuid
 import pytest
 
 from escolhas.choices import SituacaoChoices
-from escolhas.models import (
-    Dre,
-    Escola,
-    Escolha,
-    HistoricoEscolha,
-    VagasEscolas,
-    VagasEscolasLote,
-)
+from escolhas.models import Escolha, HistoricoEscolha
 from escolhas.serializers.escolha import HistoricoEscolhaSerializer
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def dre():
-    """Dre."""
-    return Dre.objects.create(codigo="01", nome="DRE 01", sigla="DRE-01")
-
-
-@pytest.fixture
-def escola(dre):
-    """Escola."""
-    return Escola.objects.create(
-        codigo_eol="000001",
-        nome_oficial="Escola Teste",
-        dre=dre,
-        cep="04001-000",
-    )
-
-
-@pytest.fixture
-def lote():
-    """Lote."""
-    return VagasEscolasLote.objects.create(
-        processo_uuid=uuid.uuid4(), processo_nome="Processo Teste"
-    )
-
-
-@pytest.fixture
-def vaga_escola(escola, lote):
-    """Vaga escola."""
-    return VagasEscolas.objects.create(
-        escola=escola,
-        lote=lote,
-        data_fechamento_modulo="2025-01-01",
-        cargo_codigo=100,
-        cargo_descricao="Cargo Teste",
-        vagas_precarias=3,
-        vagas_precarias_restantes=3,
-        vagas_definitivas=5,
-        vagas_definitivas_restantes=5,
-        status="1",
-    )
 
 
 @pytest.fixture

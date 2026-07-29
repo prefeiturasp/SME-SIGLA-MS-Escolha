@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     "auditlog",
     "drf_spectacular",
     "core",
+    "escola",
+    "parametrizacao",
+    "vagas_escolas",
     "escolhas",
 ]
 

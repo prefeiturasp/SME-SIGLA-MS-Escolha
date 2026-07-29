@@ -40,7 +40,7 @@ class Escolha(BaseModel):
         default=False, verbose_name=_("É retardatário")
     )
     vaga_escola = models.ForeignKey(
-        "VagasEscolas",
+        "escolhas.VagasEscolas",
         on_delete=models.SET_NULL,
         related_name="escolhas",
         verbose_name=_("Vaga da Escola"),
