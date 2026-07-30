@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 import pytest
 from django.urls import reverse
 
-from escolhas.choices import SituacaoChoices
+from escolhas.constants import SituacaoChoices
 from escola.models import Dre, Escola
 from escolhas.models import Escolha
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote

@@ -15,7 +15,7 @@ from rest_framework.response import Response
 
 from escolhas.middleware import get_correlation_id
 
-from escolhas.choices import SituacaoChoices, TipoVagaChoices
+from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escolhas.models import Escolha
 from escolhas.serializers import (
     EscolhaListSerializer,

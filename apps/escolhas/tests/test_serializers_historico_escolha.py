@@ -9,7 +9,7 @@ import uuid
 
 import pytest
 
-from escolhas.choices import SituacaoChoices
+from escolhas.constants import SituacaoChoices
 from escolhas.models import Escolha, HistoricoEscolha
 from escolhas.serializers.escolha import HistoricoEscolhaSerializer
 

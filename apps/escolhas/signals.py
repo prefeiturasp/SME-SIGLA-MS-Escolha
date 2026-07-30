@@ -10,7 +10,7 @@ from django.db.models.functions import Greatest
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .choices import SituacaoChoices, TipoVagaChoices
+from .constants import SituacaoChoices, TipoVagaChoices
 from .models import Escolha, HistoricoEscolha
 from vagas_escolas.models import VagasEscolas
 

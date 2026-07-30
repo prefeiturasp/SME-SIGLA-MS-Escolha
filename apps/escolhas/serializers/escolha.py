@@ -6,7 +6,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from ..choices import SituacaoChoices
+from ..constants import SituacaoChoices
 from ..models import Escolha, HistoricoEscolha
 from vagas_escolas.models import VagasEscolas
 from vagas_escolas.serializers import VagasEscolasSerializer

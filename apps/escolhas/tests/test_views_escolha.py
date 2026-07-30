@@ -8,7 +8,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from escolhas.choices import SituacaoChoices, TipoVagaChoices
+from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escola.models import Dre, Escola
 from escolhas.models import Escolha
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote

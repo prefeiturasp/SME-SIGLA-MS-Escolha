@@ -9,7 +9,7 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..choices import SituacaoChoices, TipoVagaChoices
+from ..constants import SituacaoChoices, TipoVagaChoices
 from core.models import BaseModel
 
 

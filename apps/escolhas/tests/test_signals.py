@@ -6,7 +6,7 @@ import uuid
 
 import pytest
 
-from escolhas.choices import SituacaoChoices, TipoVagaChoices
+from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escolhas.models import Escolha
 from vagas_escolas.models import VagasEscolas
 

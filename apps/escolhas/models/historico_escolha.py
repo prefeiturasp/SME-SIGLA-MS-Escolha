@@ -8,7 +8,7 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..choices import SituacaoChoices
+from ..constants import SituacaoChoices
 from core.models import BaseModel
 
 

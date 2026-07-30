@@ -8,7 +8,7 @@ import pytest
 
 import escolhas.signals  # noqa: F401
 from escola.models import Dre, Escola
-from escolhas.choices import SituacaoChoices, TipoVagaChoices
+from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escolhas.models import Escolha
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 
