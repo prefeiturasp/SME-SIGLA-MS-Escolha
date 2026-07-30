@@ -9,6 +9,7 @@ from rest_framework import serializers
 from ..constants import SituacaoChoices
 from ..models import Escolha, HistoricoEscolha
 from vagas_escolas.models import VagasEscolas
+from vagas_escolas.repository import VagasEscolasRepository
 from vagas_escolas.serializers import VagasEscolasSerializer
 
 
@@ -100,7 +101,9 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             vaga_escola = attrs.get("vaga_escola")
         if vaga_escola_uuid and (not vaga_escola):
             try:
-                vaga_escola = VagasEscolas.objects.get(uuid=vaga_escola_uuid)
+                vaga_escola = VagasEscolasRepository.obter_por_uuid(
+                    vaga_escola_uuid
+                )
                 attrs["vaga_escola"] = vaga_escola
             except VagasEscolas.DoesNotExist:
                 raise serializers.ValidationError(

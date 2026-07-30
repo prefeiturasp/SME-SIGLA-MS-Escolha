@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -17,6 +16,7 @@ from escolhas.middleware import get_correlation_id
 
 from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escolhas.models import Escolha
+from escolhas.repository import EscolhaRepository
 from escolhas.serializers import (
     EscolhaListSerializer,
     EscolhaReconvocacaoSerializer,
@@ -25,7 +25,7 @@ from escolhas.serializers import (
     EscolhasProdamImportacaoSerializer,
 )
 from escolhas.services import CandidatoAPIService, ConcursoAPIService
-from vagas_escolas.models import VagasEscolas
+from vagas_escolas.repository import VagasEscolasRepository
 from core.utils import CustomPagination
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         """Carrega escolhas com vaga, escola, DRE e histórico."""
         qs = Escolha.objects.all()
         if self.action in ["list", "retrieve", "busca"]:
-            qs = qs.select_related(
+            qs = Escolha.objects.select_related(
                 "vaga_escola",
                 "vaga_escola__escola",
                 "vaga_escola__escola__dre",
@@ -221,17 +221,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 "user": request.user,
             },
         )
-        qs = (
-            self.get_queryset()
-            .filter(situacao=SituacaoChoices.ESCOLHA)
-            .values("vaga_escola__cargo_codigo")
-            .annotate(total=Count("uuid"))
-            .order_by("vaga_escola__cargo_codigo")
-        )
-        data = {
-            str(item["vaga_escola__cargo_codigo"]): int(item["total"] or 0)
-            for item in qs
-        }
+        data = EscolhaRepository.contar_por_cargo()
         logger.info(
             "Agrupando escolhas por cargo - Resultado",
             extra={
@@ -306,10 +296,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         vagas_escolas_dict = {}
         if codigos_eol and codigos_cargo:
             try:
-                vagas_escolas = VagasEscolas.objects.filter(
-                    escola__codigo_eol__in=codigos_eol,
-                    cargo_codigo__in=codigos_cargo,
-                ).select_related("escola")
+                vagas_escolas = (
+                    VagasEscolasRepository.listar_por_eols_e_cargos(
+                        codigos_eol, codigos_cargo
+                    )
+                )
                 for vaga_escola in vagas_escolas:
                     codigo_eol = vaga_escola.escola.codigo_eol
                     codigo_cargo = str(vaga_escola.cargo_codigo)
@@ -366,9 +357,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         "D": TipoVagaChoices.DEFINITIVA,
                     }
                     tipo_vaga = tipo_vaga_map.get(str(tipo_vaga_raw).upper())
-                escolha_existente = Escolha.objects.filter(
-                    candidato_uuid=candidato_uuid, concurso_uuid=concurso_uuid
-                ).first()
+                escolha_existente = (
+                    EscolhaRepository.obter_por_candidato_e_concurso(
+                        candidato_uuid, concurso_uuid
+                    )
+                )
                 if escolha_existente:
                     logger.warning(
                         "Escolha duplicada na importação (idx=%s, cpf=%s): %s",
@@ -377,7 +370,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                         escolha_existente.uuid,
                     )
                     continue
-                nova_escolha = Escolha.objects.create(
+                nova_escolha = EscolhaRepository.criar(
                     candidato_uuid=candidato_uuid,
                     concurso_uuid=concurso_uuid,
                     situacao=situacao,
