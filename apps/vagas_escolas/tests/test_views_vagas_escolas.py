@@ -145,7 +145,7 @@ def test_create_retorna_400_quando_tipo_ue_desabilitado(api_client):
         ],
     }
     with patch(
-        "vagas_escolas.api.views.vagas_escolas.processar_criacao_vagas_lote",
+        "vagas_escolas.api.views.processar_criacao_vagas_lote",
         side_effect=TipoUEDesabilitadoException("Tipo UE bloqueado"),
     ):
         resp = api_client.post(url, body, format="json")
@@ -174,7 +174,7 @@ def test_create_retorna_500_quando_excecao_generica(api_client):
         ],
     }
     with patch(
-        "vagas_escolas.api.views.vagas_escolas.processar_criacao_vagas_lote",
+        "vagas_escolas.api.views.processar_criacao_vagas_lote",
         side_effect=Exception("falha inesperada"),
     ):
         resp = api_client.post(url, body, format="json")
