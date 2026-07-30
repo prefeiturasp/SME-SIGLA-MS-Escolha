@@ -1,8 +1,7 @@
-"""
-Django settings for convocacao_processes project.
-"""
+"""Configurações Django do projeto ms-escolha."""
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,6 +12,10 @@ DJANGO_ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", "local")
 MS_PATH = os.environ.get("MS_PATH", "/ms-escolha")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Adiciona a pasta 'apps' ao sys.path do Python
+sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
+
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-your-secret-key-here"
 )
@@ -41,6 +44,10 @@ INSTALLED_APPS = [
     "corsheaders",
     "auditlog",
     "drf_spectacular",
+    "core",
+    "escola",
+    "parametrizacao",
+    "vagas_escolas",
     "escolhas",
 ]
 
