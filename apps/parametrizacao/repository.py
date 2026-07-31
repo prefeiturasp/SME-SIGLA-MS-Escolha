@@ -1,15 +1,12 @@
-"""Repositório de acesso a dados de parametrização.
-
-As consultas de leitura retornam dados já serializados (dict / list[dict]),
-não QuerySets do Django.
-"""
+"""Repositório de acesso a dados de parametrização."""
 
 from __future__ import annotations
 
-from typing import Any
-from uuid import UUID
+import logging
 
 from parametrizacao.models import Parametrizacao
+
+logger = logging.getLogger(__name__)
 
 
 class ParametrizacaoRepository:
@@ -18,6 +15,7 @@ class ParametrizacaoRepository:
     @classmethod
     def listar_tipos_ue_ativos(cls) -> list[str]:
         """Lista tipos de UE com flag usar=True."""
+        logger.info("Listando tipos de UE ativos (usar=True)")
         return list(
             Parametrizacao.objects.filter(usar=True).values_list(
                 "tipo_ue", flat=True
@@ -27,6 +25,7 @@ class ParametrizacaoRepository:
     @classmethod
     def listar_tipos_ue_bloqueados(cls) -> set[str]:
         """Conjunto de tipos de UE com flag usar=False."""
+        logger.info("Listando tipos de UE bloqueados (usar=False)")
         return set(
             Parametrizacao.objects.filter(usar=False).values_list(
                 "tipo_ue", flat=True
@@ -36,21 +35,8 @@ class ParametrizacaoRepository:
     @classmethod
     def listar_tipos_ue_existentes(cls) -> set[str]:
         """Conjunto de tipos de UE já cadastrados."""
+        logger.info("Listando tipos de UE existentes")
         return set(Parametrizacao.objects.values_list("tipo_ue", flat=True))
-
-    @classmethod
-    def listar_todos(cls) -> list[dict[str, Any]]:
-        """Lista todas as parametrizações serializadas."""
-        itens = list(Parametrizacao.objects.all().order_by("tipo_ue"))
-        return cls.montar_lista_resposta(itens)
-
-    @classmethod
-    def obter_por_uuid(
-        cls, item_uuid: str | UUID
-    ) -> dict[str, Any] | None:
-        """Busca parametrização pelo UUID serializada."""
-        item = Parametrizacao.objects.filter(uuid=item_uuid).first()
-        return cls.montar_resposta(item) if item else None
 
     @classmethod
     def bulk_atualizar_usar(cls, by_uuid: dict[str, bool]) -> int:
@@ -62,6 +48,9 @@ class ParametrizacaoRepository:
         Returns:
             Quantidade de registros atualizados.
         """
+        logger.info(
+            f"Atualizando campo usar em lote para {len(by_uuid)} registro(s)"
+        )
         if not by_uuid:
             return 0
         updates = []
@@ -82,6 +71,7 @@ class ParametrizacaoRepository:
         Returns:
             Quantidade de registros criados.
         """
+        logger.info("Sincronizando parametrização a partir das escolas")
         from escola.repository import EscolaRepository
 
         tipos_distintos = EscolaRepository.listar_tipos_ue_distintos()
@@ -94,19 +84,3 @@ class ParametrizacaoRepository:
         if novos:
             Parametrizacao.objects.bulk_create(novos)
         return len(novos)
-
-    @staticmethod
-    def montar_resposta(item: Parametrizacao) -> dict[str, Any]:
-        """Transforma uma parametrização em dicionário de resposta."""
-        from parametrizacao.serializers import ParametrizacaoSerializer
-
-        return ParametrizacaoSerializer(item).data
-
-    @classmethod
-    def montar_lista_resposta(
-        cls, itens: list[Parametrizacao]
-    ) -> list[dict[str, Any]]:
-        """Transforma uma lista de parametrizações em dicionários."""
-        from parametrizacao.serializers import ParametrizacaoSerializer
-
-        return ParametrizacaoSerializer(itens, many=True).data

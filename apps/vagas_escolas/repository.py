@@ -6,6 +6,7 @@ não QuerySets do Django.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 from uuid import UUID
 
@@ -14,6 +15,8 @@ from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Greatest
 
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote
+
+logger = logging.getLogger(__name__)
 
 
 class VagasEscolasRepository:
@@ -24,6 +27,9 @@ class VagasEscolasRepository:
         cls, processo_uuid: str | UUID
     ) -> VagasEscolasLote | None:
         """Retorna o lote mais recente do processo."""
+        logger.info(
+            f"Buscando lote mais recente do processo: {processo_uuid}"
+        )
         return (
             VagasEscolasLote.objects.filter(processo_uuid=processo_uuid)
             .order_by("-criado_em")
@@ -39,6 +45,10 @@ class VagasEscolasRepository:
         concurso_uuid: str | UUID | None = None,
     ) -> VagasEscolasLote:
         """Cria um lote de vagas do processo."""
+        logger.info(
+            f"Criando lote de vagas: processo_uuid={processo_uuid}, "
+            f"concurso_uuid={concurso_uuid}"
+        )
         return VagasEscolasLote.objects.create(
             processo_uuid=processo_uuid,
             processo_nome=processo_nome,
@@ -52,6 +62,7 @@ class VagasEscolasRepository:
         Returns:
             Quantidade de lotes excluídos.
         """
+        logger.info(f"Excluindo lotes do processo: {processo_uuid}")
         deleted, _ = VagasEscolasLote.objects.filter(
             processo_uuid=processo_uuid
         ).delete()
@@ -60,6 +71,10 @@ class VagasEscolasRepository:
     @classmethod
     def criar_vaga(cls, **dados: Any) -> VagasEscolas:
         """Persiste uma vaga de escola."""
+        logger.info(
+            f"Criando vaga de escola: cargo_codigo={dados.get('cargo_codigo')}, "
+            f"escola={dados.get('escola')}"
+        )
         return VagasEscolas.objects.create(**dados)
 
     @classmethod
@@ -67,6 +82,7 @@ class VagasEscolasRepository:
         cls, uuids: list[str | UUID]
     ) -> list[VagasEscolas]:
         """Busca vagas pelos UUIDs (modelos para atualização)."""
+        logger.info(f"Buscando vagas pelos UUIDs: {uuids}")
         return list(VagasEscolas.objects.filter(uuid__in=uuids))
 
     @classmethod
@@ -76,6 +92,7 @@ class VagasEscolasRepository:
         Raises:
             VagasEscolas.DoesNotExist: Quando não encontrada.
         """
+        logger.info(f"Buscando vaga pelo UUID: {vaga_uuid}")
         return VagasEscolas.objects.get(uuid=vaga_uuid)
 
     @classmethod
@@ -86,6 +103,9 @@ class VagasEscolasRepository:
         eols: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """Lista vagas filtradas por cargo e/ou EOLs, serializadas."""
+        logger.info(
+            f"Listando vagas por cargo_codigo={cargo_codigo} e eols={eols}"
+        )
         qs = VagasEscolas.objects.select_related("escola")
         if cargo_codigo:
             qs = qs.filter(cargo_codigo=cargo_codigo)
@@ -98,6 +118,7 @@ class VagasEscolasRepository:
         cls, eols: list[str], cargos: list[int]
     ) -> list[VagasEscolas]:
         """Lista vagas por EOLs e cargos (modelos para importação Prodam)."""
+        logger.info(f"Listando vagas por eols={eols} e cargos={cargos}")
         return list(
             VagasEscolas.objects.filter(
                 escola__codigo_eol__in=eols, cargo_codigo__in=cargos
@@ -116,6 +137,7 @@ class VagasEscolasRepository:
         Returns:
             Dicionário com ``vagas``, totais e ``dres``.
         """
+        logger.info("Montando listagem de vagas checadas com totais e DREs")
         qs = qs.filter(esta_checada=True)
         ha_utilizadas = qs.filter(
             models.Q(vagas_precarias_utilizadas__isnull=False)
@@ -160,6 +182,9 @@ class VagasEscolasRepository:
     @classmethod
     def decrementar_definitivas_restantes(cls, pk: Any) -> int:
         """Decrementa vagas definitivas restantes (mínimo 0)."""
+        logger.info(
+            f"Decrementando vagas definitivas restantes da vaga pk={pk}"
+        )
         return VagasEscolas.objects.filter(pk=pk).update(
             vagas_definitivas_restantes=Greatest(
                 0, F("vagas_definitivas_restantes") - 1
@@ -169,6 +194,9 @@ class VagasEscolasRepository:
     @classmethod
     def decrementar_precarias_restantes(cls, pk: Any) -> int:
         """Decrementa vagas precárias restantes (mínimo 0)."""
+        logger.info(
+            f"Decrementando vagas precárias restantes da vaga pk={pk}"
+        )
         return VagasEscolas.objects.filter(pk=pk).update(
             vagas_precarias_restantes=Greatest(
                 0, F("vagas_precarias_restantes") - 1
@@ -180,6 +208,9 @@ class VagasEscolasRepository:
         cls, processo_uuids: list[UUID | str] | None = None
     ) -> list[dict[str, Any]]:
         """Agrega total de vagas ofertadas por DRE."""
+        logger.info(
+            f"Agregando vagas por DRE: processo_uuids={processo_uuids}"
+        )
         qs = VagasEscolas.objects.all()
         if processo_uuids:
             qs = qs.filter(lote__processo_uuid__in=processo_uuids)
@@ -195,6 +226,10 @@ class VagasEscolasRepository:
         cls, processo_uuids: list[UUID | str] | None = None
     ) -> list[dict[str, Any]]:
         """Agrega vagas por concurso, DRE e cargo (via lote.concurso_uuid)."""
+        logger.info(
+            f"Agregando vagas por concurso/DRE/cargo: "
+            f"processo_uuids={processo_uuids}"
+        )
         qs = VagasEscolas.objects.filter(lote__concurso_uuid__isnull=False)
         if processo_uuids:
             qs = qs.filter(lote__processo_uuid__in=processo_uuids)

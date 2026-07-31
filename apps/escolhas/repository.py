@@ -1,11 +1,13 @@
 """Repositório de acesso a dados de escolhas.
 
-As consultas de leitura retornam dados já serializados (dict / list[dict]),
-não QuerySets do Django, quando aplicável à resposta da API.
+Leituras públicas retornam dict / list[dict]. Métodos privados da extração
+mantêm QuerySet internamente para compor filtros, agregações e values
+antes de materializar o resultado em dict.
 """
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 from uuid import UUID
 
@@ -14,6 +16,8 @@ from django.db.models import Count, F, Max, Q, QuerySet
 from escolhas.constants import SituacaoChoices
 from escolhas.models import Escolha, HistoricoEscolha
 from vagas_escolas.repository import VagasEscolasRepository
+
+logger = logging.getLogger(__name__)
 
 
 class EscolhaRepository:
@@ -26,6 +30,7 @@ class EscolhaRepository:
         Raises:
             Escolha.DoesNotExist: Quando não encontrada.
         """
+        logger.info(f"Buscando escolha pela PK: {pk}")
         return Escolha.objects.get(pk=pk)
 
     @classmethod
@@ -33,6 +38,10 @@ class EscolhaRepository:
         cls, candidato_uuid: Any, concurso_uuid: Any
     ) -> Escolha | None:
         """Busca a primeira escolha do candidato no concurso."""
+        logger.info(
+            f"Buscando escolha: candidato_uuid={candidato_uuid}, "
+            f"concurso_uuid={concurso_uuid}"
+        )
         return Escolha.objects.filter(
             candidato_uuid=candidato_uuid, concurso_uuid=concurso_uuid
         ).first()
@@ -40,11 +49,16 @@ class EscolhaRepository:
     @classmethod
     def criar(cls, **kwargs: Any) -> Escolha:
         """Persiste uma nova escolha."""
+        logger.info(
+            f"Criando escolha: candidato_uuid={kwargs.get('candidato_uuid')}, "
+            f"concurso_uuid={kwargs.get('concurso_uuid')}"
+        )
         return Escolha.objects.create(**kwargs)
 
     @classmethod
     def contar_por_cargo(cls) -> dict[str, int]:
         """Conta escolhas realizadas agrupadas por cargo."""
+        logger.info("Contando escolhas realizadas agrupadas por cargo")
         qs = (
             Escolha.objects.filter(situacao=SituacaoChoices.ESCOLHA)
             .values("vaga_escola__cargo_codigo")
@@ -65,41 +79,15 @@ class EscolhaRepository:
         situacao_nova: str,
     ) -> HistoricoEscolha:
         """Persiste um registro de histórico de escolha."""
+        logger.info(
+            f"Criando histórico da escolha pk={escolha.pk}: "
+            f"{situacao_anterior} -> {situacao_nova}"
+        )
         return HistoricoEscolha.objects.create(
             escolha=escolha,
             situacao_anterior=situacao_anterior,
             situacao_nova=situacao_nova,
         )
-
-    @staticmethod
-    def montar_resposta(escolha: Escolha) -> dict[str, Any]:
-        """Transforma uma escolha em dicionário de resposta."""
-        from escolhas.serializers import EscolhaSerializer
-
-        return EscolhaSerializer(escolha).data
-
-    @classmethod
-    def montar_lista_resposta(
-        cls, escolhas: list[Escolha]
-    ) -> list[dict[str, Any]]:
-        """Transforma uma lista de escolhas em dicionários de listagem."""
-        from escolhas.serializers import EscolhaListSerializer
-
-        return EscolhaListSerializer(escolhas, many=True).data
-
-    @classmethod
-    def listar_todos(cls) -> list[dict[str, Any]]:
-        """Lista todas as escolhas serializadas (mais recentes primeiro)."""
-        escolhas = list(Escolha.objects.all().order_by("-criado_em"))
-        return cls.montar_lista_resposta(escolhas)
-
-    @classmethod
-    def obter_por_uuid(
-        cls, escolha_uuid: str | UUID
-    ) -> dict[str, Any] | None:
-        """Busca escolha pelo UUID e devolve resposta serializada."""
-        escolha = Escolha.objects.filter(uuid=escolha_uuid).first()
-        return cls.montar_resposta(escolha) if escolha else None
 
     @staticmethod
     def _serializar_datetime(value: Any) -> str | None:
@@ -135,7 +123,12 @@ class EscolhaRepository:
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> QuerySet:
-        """Restringe escolhas ao escopo do filtro de extração."""
+        """Restringe escolhas ao escopo do filtro de extração.
+
+        Com ``processo_uuids``, alinha ao ano do processo de convocação (como
+        candidatos e vagas): escolhas com vaga pelo processo do lote; sem vaga,
+        mantém ``criado_em`` no ano do filtro.
+        """
         if processo_uuids:
             filtro_com_vaga = Q(
                 vaga_escola__lote__processo_uuid__in=processo_uuids
@@ -176,6 +169,10 @@ class EscolhaRepository:
         anos: list[int] | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> str | None:
+        logger.info(
+            f"Obtendo data da última escolha: concurso_uuid={concurso_uuid}, "
+            f"anos={anos}, processo_uuids={processo_uuids}"
+        )
         ultima = cls._base_escolhas_com_vaga_qs(
             concurso_uuid=concurso_uuid,
             anos=anos,
@@ -190,7 +187,22 @@ class EscolhaRepository:
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> dict[str, int]:
-        """Conta escolhas por situação."""
+        """Conta escolhas por situação.
+
+        Args:
+            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+            ano: Ano do filtro (processo ou ``criado_em`` quando sem processo).
+            processo_uuids: Processos do ano; quando informados, escolhas com vaga
+                são filtradas pelo processo do lote.
+
+        Returns:
+            Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /
+            ``nao-escolha``.
+        """
+        logger.info(
+            f"Contando escolhas por situação: concurso_uuid={concurso_uuid}, "
+            f"ano={ano}, processo_uuids={processo_uuids}"
+        )
         qs = cls._filtrar_escolhas_por_escopo(
             Escolha.objects.all(),
             concurso_uuid=concurso_uuid,
@@ -214,7 +226,20 @@ class EscolhaRepository:
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Une, por DRE, as escolhas realizadas e as vagas ofertadas."""
+        """Une, por DRE, as escolhas realizadas e as vagas ofertadas.
+
+        Args:
+            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+            ano: Ano do filtro; usado em ``criado_em`` apenas sem processos.
+            processo_uuids: Processos do ano para escolhas (via vaga) e vagas.
+
+        Returns:
+            Lista de DREs com ``nome``, ``escolhas`` e ``vagas``.
+        """
+        logger.info(
+            f"Montando DREs da extração: concurso_uuid={concurso_uuid}, "
+            f"ano={ano}, processo_uuids={processo_uuids}"
+        )
         escolhas_qs = Escolha.objects.filter(
             situacao=SituacaoChoices.ESCOLHA,
             vaga_escola__isnull=False,
@@ -255,7 +280,20 @@ class EscolhaRepository:
         anos: list[int] | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> dict[str, list[dict[str, Any]]]:
-        """Detalha, por concurso, as escolhas e vagas por DRE e cargo."""
+        """Detalha, por concurso, as escolhas e vagas por DRE e cargo.
+
+        Args:
+            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+            anos: Anos do filtro; usados em ``criado_em`` apenas sem processos.
+            processo_uuids: Processos do ano para escolhas (via vaga) e vagas.
+
+        Returns:
+            Dicionário por ``concurso_uuid`` com as linhas de DRE e cargo.
+        """
+        logger.info(
+            f"Montando DREs por concurso: concurso_uuid={concurso_uuid}, "
+            f"anos={anos}, processo_uuids={processo_uuids}"
+        )
         escolhas_qs = Escolha.objects.filter(
             situacao=SituacaoChoices.ESCOLHA,
             vaga_escola__isnull=False,
@@ -325,7 +363,22 @@ class EscolhaRepository:
         concurso_uuid: UUID | str | None = None,
         filtros: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
-        """Monta o dicionário de indicadores de escolhas."""
+        """Monta o dicionário de indicadores de escolhas.
+
+        Args:
+            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
+            filtros: Lista de ``{ano, processo_uuids}``; ausente (ou vazia) →
+                agregado direto na raiz, sem quebra por ano.
+
+        Returns:
+            Dicionário com ``concurso_uuid``, ``filtros`` (quando filtrado por ano),
+            as contagens por situação, o array ``dres`` por DRE
+            e ``dres_concursos`` detalhado por concurso.
+        """
+        logger.info(
+            f"Montando extração de dados: concurso_uuid={concurso_uuid}, "
+            f"filtros={filtros}"
+        )
         resultado: dict[str, Any] = {}
         if filtros:
             filtros_ordenados = sorted(filtros, key=lambda item: item["ano"])
