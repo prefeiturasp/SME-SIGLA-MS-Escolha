@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from parametrizacao.models import Parametrizacao
+from parametrizacao.repository import ParametrizacaoRepository
 from parametrizacao.serializers import (
     ParametrizacaoBulkItemSerializer,
     ParametrizacaoSerializer,
@@ -53,7 +54,7 @@ class ParametrizacaoViewSet(
         Returns:
             Resposta HTTP com a quantidade de registros criados.
         """
-        created = Parametrizacao.sync_from_escolas()
+        created = ParametrizacaoRepository.sincronizar_a_partir_de_escolas()
         return Response({"created": created})
 
     @action(
@@ -78,15 +79,5 @@ class ParametrizacaoViewSet(
         serializer.is_valid(raise_exception=True)
         items = serializer.validated_data
         by_uuid = {str(item["uuid"]): bool(item["usar"]) for item in items}
-        if not by_uuid:
-            return Response({"updated": 0}, status=status.HTTP_200_OK)
-        updates = []
-        for item in Parametrizacao.objects.filter(
-            uuid__in=list(by_uuid.keys())
-        ):
-            item.usar = by_uuid.get(str(item.uuid), item.usar)
-            updates.append(item)
-        if not updates:
-            return Response({"updated": 0}, status=status.HTTP_200_OK)
-        Parametrizacao.objects.bulk_update(updates, ["usar"])
-        return Response({"updated": len(updates)}, status=status.HTTP_200_OK)
+        updated = ParametrizacaoRepository.bulk_atualizar_usar(by_uuid)
+        return Response({"updated": updated}, status=status.HTTP_200_OK)

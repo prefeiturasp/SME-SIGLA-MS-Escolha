@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny
 
 from escola.models import Escola
 from escola.serializers import EscolaSerializer
-from parametrizacao.models import Parametrizacao
+from parametrizacao.repository import ParametrizacaoRepository
 from core.utils import CustomPagination
 
 
@@ -31,11 +31,7 @@ class EscolaViewSet(viewsets.ModelViewSet):
     def get_queryset(self) -> Any:
         """Filtra por tipos de UE habilitados e busca por nome."""
         qs = super().get_queryset()
-        tipos_ativos = list(
-            Parametrizacao.objects.filter(usar=True).values_list(
-                "tipo_ue", flat=True
-            )
-        )
+        tipos_ativos = ParametrizacaoRepository.listar_tipos_ue_ativos()
         if tipos_ativos:
             qs = qs.filter(tipo_ue__in=tipos_ativos)
         else:

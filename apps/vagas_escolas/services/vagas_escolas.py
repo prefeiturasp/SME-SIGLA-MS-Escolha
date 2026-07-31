@@ -7,11 +7,12 @@ from django.db import transaction
 from rest_framework import status
 
 from escola.models import Escola
-from parametrizacao.models import Parametrizacao
+from escola.repository import EscolaRepository
+from parametrizacao.repository import ParametrizacaoRepository
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote
+from vagas_escolas.repository import VagasEscolasRepository
 from vagas_escolas.serializers import (
     VagasEscolasCreateSerializer,
-    VagasEscolasInclusaoSerializer,
 )
 from vagas_escolas.services.exceptions import TipoUEDesabilitadoException
 
@@ -38,7 +39,7 @@ def criar_vagas_em_lote(
             codigo_eol = vaga_data.pop("codigo_eol")
             codigo_eol = codigo_eol.zfill(6)
             try:
-                escola = Escola.objects.get(codigo_eol=codigo_eol)
+                escola = EscolaRepository.obter_por_codigo_eol(codigo_eol)
             except Escola.DoesNotExist:
                 error_msg = (
                     f"Escola com código EOL '{codigo_eol}' "
@@ -53,7 +54,7 @@ def criar_vagas_em_lote(
                     }
                 )
                 continue
-            vaga = VagasEscolas.objects.create(
+            vaga = VagasEscolasRepository.criar_vaga(
                 escola=escola,
                 lote=lote,
                 **vaga_data,
@@ -90,22 +91,17 @@ def processar_criacao_vagas_lote(
     concurso_uuid = serializer.validated_data["concurso_uuid"]
     vagas_data = serializer.validated_data["vagas"]
 
-    tipos_bloqueados = set(
-        Parametrizacao.objects.filter(usar=False).values_list(
-            "tipo_ue", flat=True
-        )
-    )
+    tipos_bloqueados = ParametrizacaoRepository.listar_tipos_ue_bloqueados()
     if tipos_bloqueados:
         for item in vagas_data:
             codigo_eol = str(item.get("codigo_eol", "")).zfill(6)
             if not codigo_eol:
                 continue
             try:
-                escola = Escola.objects.only("tipo_ue").get(
-                    codigo_eol=codigo_eol
+                escola = EscolaRepository.obter_tipo_ue_por_codigo_eol(
+                    codigo_eol
                 )
             except Escola.DoesNotExist:
-                # Deixa o fluxo normal tratar escola inexistente
                 continue
             if escola.tipo_ue in tipos_bloqueados:
                 raise TipoUEDesabilitadoException(
@@ -114,7 +110,7 @@ def processar_criacao_vagas_lote(
                 )
 
     with transaction.atomic():
-        lote = VagasEscolasLote.objects.create(
+        lote = VagasEscolasRepository.criar_lote(
             processo_uuid=processo_uuid,
             processo_nome=processo_nome,
             concurso_uuid=concurso_uuid,
@@ -154,11 +150,9 @@ def atualizar_vagas_utilizadas_por_processo(
     Returns:
         Dicionário com UUIDs atualizados, não encontrados e total.
     """
-    from vagas_escolas.models import VagasEscolas  # import local para evitar ciclos
-
     uuid_to_item = {str(item["uuid"]): item for item in vagas}
-    vagas_escolas = VagasEscolas.objects.filter(
-        uuid__in=list(uuid_to_item.keys())
+    vagas_escolas = VagasEscolasRepository.buscar_por_uuids(
+        list(uuid_to_item.keys())
     )
 
     encontrados = set()
@@ -213,10 +207,8 @@ def adicionar_vagas_ao_lote_por_processo(
     serializer.validated_data.get("processo_nome", "")
     vagas_data = serializer.validated_data["vagas"]
 
-    lote = (
-        VagasEscolasLote.objects.filter(processo_uuid=processo_uuid)
-        .order_by("-criado_em")
-        .first()
+    lote = VagasEscolasRepository.obter_lote_mais_recente_por_processo(
+        processo_uuid
     )
     if not lote:
         return {

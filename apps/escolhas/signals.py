@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.db.models import F
-from django.db.models.functions import Greatest
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from .constants import SituacaoChoices, TipoVagaChoices
-from .models import Escolha, HistoricoEscolha
-from vagas_escolas.models import VagasEscolas
+from escolhas.constants import SituacaoChoices, TipoVagaChoices
+from escolhas.models import Escolha
+from escolhas.repository import EscolhaRepository
+from vagas_escolas.repository import VagasEscolasRepository
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ def escolha_pre_save(sender: Any, instance: Any, **kwargs: Any) -> None:
     """Captura o estado anterior de situacao antes de salvar."""
     if instance.pk:
         try:
-            old_instance = Escolha.objects.get(pk=instance.pk)
+            old_instance = EscolhaRepository.obter_por_pk(instance.pk)
             instance._situacao_anterior = old_instance.situacao
         except Escolha.DoesNotExist:
             instance._situacao_anterior = None
@@ -39,7 +38,7 @@ def escolha_post_save(
     situacao_atual = instance.situacao
     if created:
         try:
-            HistoricoEscolha.objects.create(
+            EscolhaRepository.criar_historico(
                 escolha=instance,
                 situacao_anterior=None,
                 situacao_nova=situacao_atual,
@@ -64,10 +63,8 @@ def escolha_post_save(
             try:
                 vaga_escola = instance.vaga_escola
                 if instance.tipo_vaga == TipoVagaChoices.DEFINITIVA:
-                    VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_definitivas_restantes=Greatest(
-                            0, F("vagas_definitivas_restantes") - 1
-                        )
+                    VagasEscolasRepository.decrementar_definitivas_restantes(
+                        vaga_escola.pk
                     )
                     logger.info(
                         "Vaga definitiva decrementada para escolha %s. "
@@ -77,10 +74,8 @@ def escolha_post_save(
                         vaga_escola.vagas_definitivas_restantes - 1,
                     )
                 elif instance.tipo_vaga == TipoVagaChoices.PRECARIA:
-                    VagasEscolas.objects.filter(pk=vaga_escola.pk).update(
-                        vagas_precarias_restantes=Greatest(
-                            0, F("vagas_precarias_restantes") - 1
-                        )
+                    VagasEscolasRepository.decrementar_precarias_restantes(
+                        vaga_escola.pk
                     )
                     logger.info(
                         "Vaga precária decrementada para escolha %s. "
@@ -98,7 +93,7 @@ def escolha_post_save(
                 )
     elif situacao_anterior is not None and situacao_anterior != situacao_atual:
         try:
-            HistoricoEscolha.objects.create(
+            EscolhaRepository.criar_historico(
                 escolha=instance,
                 situacao_anterior=situacao_anterior,
                 situacao_nova=situacao_atual,

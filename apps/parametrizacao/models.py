@@ -41,25 +41,9 @@ class Parametrizacao(BaseModel):
         Returns:
             Valor inteiro resultante do cálculo.
         """
-        from escola.models import Escola
+        from parametrizacao.repository import ParametrizacaoRepository
 
-        qs = (
-            Escola.objects.exclude(tipo_ue__isnull=True)
-            .exclude(tipo_ue="")
-            .order_by("tipo_ue")
-            .values_list("tipo_ue", flat=True)
-            .distinct()
-        )
-        tipos_distintos = list(qs)
-        existentes = set(cls.objects.values_list("tipo_ue", flat=True))
-        novos = []
-        for tipo in tipos_distintos:
-            if tipo in existentes:
-                continue
-            novos.append(cls(tipo_ue=tipo))
-        if novos:
-            cls.objects.bulk_create(novos)  # type: ignore[arg-type]
-        return len(novos)
+        return ParametrizacaoRepository.sincronizar_a_partir_de_escolas()
 
 
 auditlog.register(Parametrizacao)
