@@ -8,6 +8,7 @@ from auditlog.registry import auditlog
 from django.db import models
 
 from core.models import BaseModel
+
 from .dre import Dre
 
 

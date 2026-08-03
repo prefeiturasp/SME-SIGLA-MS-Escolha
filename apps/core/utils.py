@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 DEFAULT_PAGE = 1
@@ -18,29 +19,19 @@ class CustomPagination(PageNumberPagination):
     page_size = DEFAULT_PAGE_SIZE
     page_size_query_param = "page_size"
 
-    def get_paginated_response(self, data: Any) -> Any:
+    def get_paginated_response(self, data: list[Any]) -> Response:
         """Monta resposta JSON com count, page, links e results."""
-        try:
-            page = int(  # type: ignore[union-attr]
-                self.request.GET.get("page", DEFAULT_PAGE)
-            )
-        except (ValueError, TypeError):
-            page = DEFAULT_PAGE
-        try:
-            page_size = int(  # type: ignore[union-attr]
-                self.request.GET.get("page_size", self.page_size)
-            )
-        except (ValueError, TypeError):
-            page_size = self.page_size
+        page_obj: Any = self.page
+        request = cast(Request, self.request)
         return Response(
             {
                 "links": {
                     "next": self.get_next_link(),
                     "previous": self.get_previous_link(),
                 },
-                "count": self.page.paginator.count,
-                "page": page,
-                "page_size": page_size,
+                "count": page_obj.paginator.count,
+                "page": int(request.GET.get("page", DEFAULT_PAGE)),
+                "page_size": int(request.GET.get("page_size", self.page_size)),
                 "results": data,
             }
-        )  # type: ignore[has-type]
+        )

@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        exclude: .*/migrations/.*
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+        exclude: .*/migrations/.*
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+        args: [--config-file=.mypy-pre-commit.ini]
+        exclude: .*/migrations/.*

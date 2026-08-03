@@ -9,10 +9,10 @@ from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
 
+from core.utils import CustomPagination
 from escola.models import Escola
 from escola.serializers import EscolaSerializer
 from parametrizacao.repository import ParametrizacaoRepository
-from core.utils import CustomPagination
 
 
 class EscolaViewSet(viewsets.ModelViewSet):

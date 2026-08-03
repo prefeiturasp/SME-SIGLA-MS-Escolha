@@ -9,8 +9,9 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..constants import SituacaoChoices, TipoVagaChoices
 from core.models import BaseModel
+
+from ..constants import SituacaoChoices, TipoVagaChoices
 
 
 class Escolha(BaseModel):

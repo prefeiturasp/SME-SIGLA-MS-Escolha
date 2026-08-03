@@ -1,3 +1,8 @@
+[tool.black]
+line-length = 79
+target-version = ["py312"]
+exclude = "/migrations/"
+
 [tool.ruff]
 line-length = 79
 target-version = "py312"

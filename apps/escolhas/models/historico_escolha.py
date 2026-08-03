@@ -8,8 +8,9 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from ..constants import SituacaoChoices
 from core.models import BaseModel
+
+from ..constants import SituacaoChoices
 
 
 class HistoricoEscolha(BaseModel):

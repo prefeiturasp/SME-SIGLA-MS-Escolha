@@ -53,9 +53,11 @@ class CorrelationIdMiddleware:
                 "status_code": response.status_code,
                 "duration_ms": round(duration, 2),
                 "payload": payload,
-                "user": str(request.user)
-                if hasattr(request, "user")
-                else "Anonymous",
+                "user": (
+                    str(request.user)
+                    if hasattr(request, "user")
+                    else "Anonymous"
+                ),
             }
             logger.info(f"{request.method} {request.path}", extra=extra_data)
         response["X-Correlation-ID"] = cid
