@@ -192,8 +192,8 @@ class EscolhaRepository:
         Args:
             concurso_uuid: Concurso a restringir; ausente → todos os concursos.
             ano: Ano do filtro (processo ou ``criado_em`` quando sem processo).
-            processo_uuids: Processos do ano; quando informados, escolhas com vaga
-                são filtradas pelo processo do lote.
+            processo_uuids: Processos do ano; quando informados,
+                escolhas com vaga são filtradas pelo processo do lote.
 
         Returns:
             Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /
@@ -371,9 +371,10 @@ class EscolhaRepository:
                 agregado direto na raiz, sem quebra por ano.
 
         Returns:
-            Dicionário com ``concurso_uuid``, ``filtros`` (quando filtrado por ano),
-            as contagens por situação, o array ``dres`` por DRE
-            e ``dres_concursos`` detalhado por concurso.
+            Dicionário com ``concurso_uuid``, ``filtros``
+            (quando filtrado por ano), as contagens por situação,
+            o array ``dres`` por DRE e ``dres_concursos`` detalhado
+            por concurso.
         """
         logger.info(
             f"Montando extração de dados: concurso_uuid={concurso_uuid}, "
@@ -393,17 +394,21 @@ class EscolhaRepository:
                 ano = filtro["ano"]
                 processo_uuids = filtro.get("processo_uuids") or []
                 processos_uniao.extend(processo_uuids)
-                dados = cls.contar_escolhas(
-                    concurso_uuid, ano, processo_uuids=processo_uuids
-                )
-                dados["dres"] = cls._montar_dres(
-                    concurso_uuid, ano, processo_uuids
-                )
+                dados: dict[str, Any] = {
+                    **cls.contar_escolhas(
+                        concurso_uuid, ano, processo_uuids=processo_uuids
+                    ),
+                    "dres": cls._montar_dres(
+                        concurso_uuid, ano, processo_uuids
+                    ),
+                }
                 resultado[str(ano)] = dados
             anos = [f["ano"] for f in filtros_ordenados]
         else:
-            dados = cls.contar_escolhas(concurso_uuid, ano=None)
-            dados["dres"] = cls._montar_dres(concurso_uuid)
+            dados = {
+                **cls.contar_escolhas(concurso_uuid, ano=None),
+                "dres": cls._montar_dres(concurso_uuid),
+            }
             resultado.update(dados)
             anos = None
             processos_uniao = []

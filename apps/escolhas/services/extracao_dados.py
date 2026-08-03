@@ -18,9 +18,10 @@ def montar_extracao_dados(
             agregado direto na raiz, sem quebra por ano.
 
     Returns:
-        Dicionário com ``concurso_uuid``, ``filtros`` (quando filtrado por ano),
-        as contagens por situação, o array ``dres`` por DRE
-        e ``dres_concursos`` detalhado por concurso.
+        Dicionário com ``concurso_uuid``, ``filtros``
+        (quando filtrado por ano), as contagens por situação,
+        o array ``dres`` por DRE e ``dres_concursos`` detalhado
+        por concurso.
     """
     return EscolhaRepository.montar_extracao_dados(
         concurso_uuid=concurso_uuid, filtros=filtros
@@ -37,8 +38,8 @@ def contar_escolhas(
     Args:
         concurso_uuid: Concurso a restringir; ausente → todos os concursos.
         ano: Ano do filtro (processo ou ``criado_em`` quando sem processo).
-        processo_uuids: Processos do ano; quando informados, escolhas com vaga
-            são filtradas pelo processo do lote.
+        processo_uuids: Processos do ano; quando informados,
+            escolhas com vaga são filtradas pelo processo do lote.
 
     Returns:
         Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /

@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 import pytest
 from django.urls import reverse
 
-from escolhas.constants import SituacaoChoices
 from escola.models import Dre, Escola
+from escolhas.constants import SituacaoChoices
 from escolhas.models import Escolha
 from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 
@@ -175,7 +175,9 @@ def test_extracao_dados_dres_uniao_escolhas_e_vagas(api_client):
     assert set(dres.keys()) == {"DRE-A", "DRE-B"}
 
 
-def test_extracao_dados_escolhas_por_processo_independente_criado_em(api_client):
+def test_extracao_dados_escolhas_por_processo_independente_criado_em(
+    api_client,
+):
     """Processo de 2025 com escolhas registradas em outro ano contam pelo processo."""
     url = reverse("extracao-dados-list")
     concurso_uuid = uuid.uuid4()

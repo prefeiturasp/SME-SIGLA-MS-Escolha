@@ -32,7 +32,7 @@ class Parametrizacao(BaseModel):
 
     def __str__(self) -> Any:
         """Retorna representação textual do registro."""
-        return f'{self.tipo_ue} ({('usar' if self.usar else 'não usar')})'
+        return f"{self.tipo_ue} ({('usar' if self.usar else 'não usar')})"
 
     @classmethod
     def sync_from_escolas(cls) -> int:

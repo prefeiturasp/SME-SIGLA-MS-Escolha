@@ -203,9 +203,11 @@ class Command(BaseCommand):
                         changed = True
                 if changed:
                     escola.save(
-                        update_fields=["dre"] + update_fields
-                        if update_fields
-                        else ["dre"]
+                        update_fields=(
+                            ["dre"] + update_fields
+                            if update_fields
+                            else ["dre"]
+                        )
                     )
                     escolas_atualizadas += 1
                     self.stdout.write(

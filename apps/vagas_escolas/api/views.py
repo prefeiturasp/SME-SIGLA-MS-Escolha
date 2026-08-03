@@ -48,10 +48,8 @@ class VagasEscolasViewSet(ModelViewSet):
         qs = super().get_queryset()
         processo_uuid = self.request.query_params.get("processo_uuid")
         if processo_uuid:
-            lote = (
-                VagasEscolasRepository.obter_lote_mais_recente_por_processo(
-                    processo_uuid
-                )
+            lote = VagasEscolasRepository.obter_lote_mais_recente_por_processo(
+                processo_uuid
             )
             if not lote:
                 return VagasEscolas.objects.none()

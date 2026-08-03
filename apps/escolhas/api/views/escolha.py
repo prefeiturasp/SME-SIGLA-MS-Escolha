@@ -12,9 +12,9 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from escolhas.middleware import get_correlation_id
-
+from core.utils import CustomPagination
 from escolhas.constants import SituacaoChoices, TipoVagaChoices
+from escolhas.middleware import get_correlation_id
 from escolhas.models import Escolha
 from escolhas.repository import EscolhaRepository
 from escolhas.serializers import (
@@ -26,7 +26,6 @@ from escolhas.serializers import (
 )
 from escolhas.services import CandidatoAPIService, ConcursoAPIService
 from vagas_escolas.repository import VagasEscolasRepository
-from core.utils import CustomPagination
 
 logger = logging.getLogger(__name__)
 

@@ -2,6 +2,7 @@
 
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from escolhas.serializers import ExtracaoDadosSerializer
@@ -19,7 +20,8 @@ class ExtracaoDadosViewSet(viewsets.ViewSet):
 
     permission_classes = [AllowAny]
 
-    def create(self, request):
+    def create(self, request: Request) -> Response:
+        """Recebe filtros e retorna a Extração de Dados agregada."""
         serializer = ExtracaoDadosSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         dados = serializer.validated_data
