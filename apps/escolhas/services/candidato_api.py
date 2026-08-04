@@ -30,6 +30,7 @@ class CandidatoAPIService:
         self._default_headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
+            settings.API_KEY_HEADER: settings.CANDIDATOS_API_KEY,
         }
 
     def buscar_candidatos_por_cpfs(
