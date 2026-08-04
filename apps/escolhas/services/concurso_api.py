@@ -23,6 +23,14 @@ class ConcursoAPIService:
     """Consulta cargos e concursos no microserviço MS-Concursos."""
 
     @staticmethod
+    def _headers() -> dict[str, str]:
+        """Cabeçalhos padrão incluindo API key do MS-Concursos."""
+        return {
+            "Accept": "application/json",
+            settings.API_KEY_HEADER: settings.CONCURSOS_API_KEY,
+        }
+
+    @staticmethod
     def get_cargos_por_codigos(codigos: list[str]) -> dict[str, str]:
         """Busca nomes de cargos no MS-Concursos pelos códigos informados."""
         if not codigos:
@@ -37,6 +45,7 @@ class ConcursoAPIService:
         codigos_set = set(str(c) for c in codigos)
         result = {}
         url = f"{base_url}/api/v1/cargos/"
+        headers = ConcursoAPIService._headers()
         logger.info(
             "Buscando cargos",
             extra={
@@ -44,12 +53,16 @@ class ConcursoAPIService:
                 "method": "GET",
                 "url": url,
                 "codigos_set": codigos_set,
+                "headers": headers.keys(),
             },
         )
         try:
             for cod in codigos_set:
                 response = http_client.get(
-                    url, params={"codigo": cod}, timeout=30
+                    url,
+                    params={"codigo": cod},
+                    headers=headers,
+                    timeout=30,
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -80,7 +93,9 @@ class ConcursoAPIService:
         try:
             base_url = settings.CONCURSOS_API_URL
             url = f"{base_url}/api/v1/concursos/{concurso_uuid}/"
-            response = http_client.get(url, timeout=30)
+            response = http_client.get(
+                url, headers=ConcursoAPIService._headers(), timeout=30
+            )
             response.raise_for_status()
             return response.json().get("uuid")  # type: ignore[no-any-return]
 

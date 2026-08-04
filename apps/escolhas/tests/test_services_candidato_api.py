@@ -153,6 +153,8 @@ class TestCandidatoAPIService:
     def test_buscar_candidatos_por_cpfs_headers_corretos(self, settings):
         """Verifica buscar candidatos por cpfs headers corretos."""
         settings.CANDIDATOS_API_URL = "http://test-api.com"
+        settings.API_KEY_HEADER = "X-API-Key"
+        settings.CANDIDATOS_API_KEY = "test-key"
         service = CandidatoAPIService()
         cpfs = ["12345678901"]
         processo_uuid = "123e4567-e89b-12d3-a456-426614174000"
@@ -166,6 +168,7 @@ class TestCandidatoAPIService:
             headers = call_args[1]["headers"]
             assert headers["Accept"] == "application/json"
             assert headers["Content-Type"] == "application/json"
+            assert headers["X-API-Key"] == "test-key"
 
     def test_buscar_candidatos_sucesso(self, settings):
         """Verifica buscar candidatos sucesso."""

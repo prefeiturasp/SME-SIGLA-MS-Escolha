@@ -132,6 +132,20 @@ class TestConcursoAPIService:
             result = ConcursoAPIService.get_cargos_por_codigos(["10"])
             assert result == {"10": "Professor"}
 
+    def test_get_cargos_por_codigos_envia_api_key(self, settings):
+        """Cliente envia X-API-Key com CONCURSOS_API_KEY configurada."""
+        settings.CONCURSOS_API_URL = "http://test-api.com"
+        settings.API_KEY_HEADER = "X-API-Key"
+        settings.CONCURSOS_API_KEY = "test-key"
+        with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = []
+            mock_response.raise_for_status.return_value = None
+            mock_get.return_value = mock_response
+            ConcursoAPIService.get_cargos_por_codigos(["10"])
+            headers = mock_get.call_args[1]["headers"]
+            assert headers["X-API-Key"] == "test-key"
+
     def test_get_cargos_por_codigos_lista_vazia(self, settings):
         """Verifica get cargos por codigos lista vazia."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
