@@ -10,6 +10,7 @@ django-extensions==3.2.3
 django-debug-toolbar==4.3.0
 pre-commit>=3.8,<4
 ruff==0.6.9
+sphinx>=8.1,<9
 
 mypy==1.14.1
 django-stubs==5.1.1
