@@ -1,8 +1,7 @@
-"""
-Django settings for convocacao_processes project.
-"""
+"""Configurações Django do projeto ms-escolha."""
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,6 +12,10 @@ DJANGO_ENVIRONMENT = os.environ.get("DJANGO_ENVIRONMENT", "local")
 MS_PATH = os.environ.get("MS_PATH", "/ms-escolha")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Adiciona a pasta 'apps' ao sys.path do Python
+sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
+
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-your-secret-key-here"
 )
@@ -41,6 +44,10 @@ INSTALLED_APPS = [
     "corsheaders",
     "auditlog",
     "drf_spectacular",
+    "core",
+    "escola",
+    "parametrizacao",
+    "vagas_escolas",
     "escolhas",
 ]
 
@@ -155,8 +162,10 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        # "sigla_sdk.autenticacao.authentication.ApiKeyAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
+        # "rest_framework.permissions.IsAuthenticated",
         "rest_framework.permissions.AllowAny",  # Para facilitar testes
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -204,19 +213,43 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API para o sistema de escolha de sigla",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # "APPEND_COMPONENTS": {
+    #     "securitySchemes": {
+    #         "ApiKeyAuth": {
+    #             "type": "apiKey",
+    #             "in": "header",
+    #             "name": "X-API-Key",
+    #         }
+    #     }
+    # },
+    # "SECURITY": [{"ApiKeyAuth": []}],
+    "SERVE_AUTHENTICATION": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
 }
 
 SMEINTEGRACAO_API_URL = os.environ.get("SMEINTEGRACAO_API_URL")
 SMEINTEGRACAO_API_TOKEN = os.environ.get("SMEINTEGRACAO_API_TOKEN")
 
+# MS URLs e API Keys
+API_KEY = os.environ.get("API_KEY", "api-key-escolhas")
+API_KEY_HEADER = os.environ.get("API_KEY_HEADER", "X-API-Key")
+
 # External Services
 CANDIDATOS_API_URL = os.environ.get(
     "CANDIDATOS_API_URL", "http://localhost:8002"
 )
+CANDIDATOS_API_KEY = os.environ.get("CANDIDATOS_API_KEY", "api-key-candidatos")
 CANDIDATOS_API_TIMEOUT = int(os.environ.get("CANDIDATOS_API_TIMEOUT", 30))
 
 PROCESSOS_CONVOCACAO_API_URL = os.environ.get(
     "PROCESSOS_CONVOCACAO_API_URL", "http://localhost:8000"
+)
+PROCESSOS_CONVOCACAO_API_KEY = os.environ.get(
+    "PROCESSOS_CONVOCACAO_API_KEY", "api-key-processos-convocacao"
 )
 PROCESSOS_CONVOCACAO_API_TIMEOUT = int(
     os.environ.get("PROCESSOS_CONVOCACAO_API_TIMEOUT", 30)
@@ -224,6 +257,9 @@ PROCESSOS_CONVOCACAO_API_TIMEOUT = int(
 
 CONCURSOS_API_URL = os.environ.get(
     "CONCURSOS_API_URL", "http://localhost:8001"
+)
+CONCURSOS_API_KEY = os.environ.get(
+    "CONCURSOS_API_KEY", "api-key-processos-concursos"
 )
 
 from datetime import timedelta
