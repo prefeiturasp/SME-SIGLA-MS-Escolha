@@ -32,8 +32,8 @@ def contar_escolhas(
     concurso_uuid: UUID | str | None = None,
     ano: int | None = None,
     processo_uuids: list[UUID | str] | None = None,
-) -> dict[str, int]:
-    """Conta escolhas por situação.
+) -> dict[str, dict[str, int]]:
+    """Conta escolhas por situação e categoria efetiva.
 
     Args:
         concurso_uuid: Concurso a restringir; ausente → todos os concursos.
@@ -42,8 +42,8 @@ def contar_escolhas(
             escolhas com vaga são filtradas pelo processo do lote.
 
     Returns:
-        Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /
-        ``nao-escolha``.
+        Dicionário por situação com ``total`` e quebra ``geral`` / ``pcd`` /
+        ``nna``.
     """
     return EscolhaRepository.contar_escolhas(
         concurso_uuid=concurso_uuid,

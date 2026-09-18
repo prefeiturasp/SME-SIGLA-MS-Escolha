@@ -11,7 +11,11 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import BaseModel
 
-from ..constants import SituacaoChoices, TipoVagaChoices
+from ..constants import (
+    CategoriaEfetivaChoices,
+    SituacaoChoices,
+    TipoVagaChoices,
+)
 
 
 class Escolha(BaseModel):
@@ -29,6 +33,14 @@ class Escolha(BaseModel):
         choices=SituacaoChoices.choices,
         default=SituacaoChoices.ESCOLHA,
         verbose_name="Situação",
+    )
+    categoria_efetiva = models.CharField(
+        max_length=10,
+        choices=CategoriaEfetivaChoices.choices,
+        verbose_name=_("Categoria efetiva"),
+        null=True,
+        blank=True,
+        db_index=True,
     )
     tipo_vaga = models.CharField(
         max_length=20,

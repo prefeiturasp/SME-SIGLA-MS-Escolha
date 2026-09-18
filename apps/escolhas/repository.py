@@ -13,11 +13,23 @@ from uuid import UUID
 
 from django.db.models import Count, F, Max, Q, QuerySet
 
-from escolhas.constants import SituacaoChoices
+from escolhas.constants import CategoriaEfetivaChoices, SituacaoChoices
 from escolhas.models import Escolha, HistoricoEscolha
 from vagas_escolas.repository import VagasEscolasRepository
 
 logger = logging.getLogger(__name__)
+
+_CATEGORIA_VAZIA = {"total": 0, "geral": 0, "pcd": 0, "nna": 0}
+_SITUACOES_EXTRACAO = (
+    SituacaoChoices.ESCOLHA,
+    SituacaoChoices.RECONVOCACAO,
+    SituacaoChoices.NAO_ESCOLHA,
+)
+_CATEGORIA_CHAVE = {
+    CategoriaEfetivaChoices.GERAL: "geral",
+    CategoriaEfetivaChoices.PCD: "pcd",
+    CategoriaEfetivaChoices.NNA: "nna",
+}
 
 
 class EscolhaRepository:
@@ -186,8 +198,8 @@ class EscolhaRepository:
         concurso_uuid: UUID | str | None = None,
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
-    ) -> dict[str, int]:
-        """Conta escolhas por situação.
+    ) -> dict[str, dict[str, int]]:
+        """Conta escolhas por situação e categoria efetiva.
 
         Args:
             concurso_uuid: Concurso a restringir; ausente → todos os concursos.
@@ -196,8 +208,10 @@ class EscolhaRepository:
                 escolhas com vaga são filtradas pelo processo do lote.
 
         Returns:
-            Dicionário com a contagem por ``escolha`` / ``reconvocacao`` /
-            ``nao-escolha``.
+            Dicionário por situação (``escolha`` / ``reconvocacao`` /
+            ``nao-escolha``) com ``total`` e quebra ``geral`` / ``pcd`` /
+            ``nna``. Registros sem ``categoria_efetiva`` entram só no
+            ``total``.
         """
         logger.info(
             f"Contando escolhas por situação: concurso_uuid={concurso_uuid}, "
@@ -209,15 +223,22 @@ class EscolhaRepository:
             ano=ano,
             processo_uuids=processo_uuids or None,
         )
-        contagens = qs.values("situacao").annotate(total=Count("uuid"))
-        por_situacao: dict[str, int] = {
-            item["situacao"]: item["total"] for item in contagens
+        resultado = {
+            situacao: dict(_CATEGORIA_VAZIA) for situacao in _SITUACOES_EXTRACAO
         }
-        return {
-            "escolha": por_situacao.get(SituacaoChoices.ESCOLHA, 0),
-            "reconvocacao": por_situacao.get(SituacaoChoices.RECONVOCACAO, 0),
-            "nao-escolha": por_situacao.get(SituacaoChoices.NAO_ESCOLHA, 0),
-        }
+        contagens = qs.values("situacao", "categoria_efetiva").annotate(
+            total=Count("uuid")
+        )
+        for item in contagens:
+            situacao = item["situacao"]
+            if situacao not in resultado:
+                continue
+            quantidade = int(item["total"] or 0)
+            resultado[situacao]["total"] += quantidade
+            chave_categoria = _CATEGORIA_CHAVE.get(item["categoria_efetiva"])
+            if chave_categoria:
+                resultado[situacao][chave_categoria] += quantidade
+        return resultado
 
     @classmethod
     def _montar_dres(

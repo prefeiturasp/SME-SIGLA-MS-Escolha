@@ -88,6 +88,55 @@ class CandidatoAPIService:
         )
         return data  # type: ignore[no-any-return]
 
+    def buscar_habilitados_por_uuids(
+        self, uuids: list[str]
+    ) -> list[dict] | None:
+        """Busca habilitados (ConcursoCandidato) por UUIDs.
+
+        Args:
+            uuids: Lista de UUIDs de concurso-candidato.
+
+        Returns:
+            Lista com os habilitados encontrados. Se a lista de códigos
+            estiver vazia, devolve lista vazia. Se a consulta falhar,
+            devolve ``None``.
+        """
+        if not uuids:
+            return []
+        url = f"{self.base_url}/api/v1/habilitados/buscar-por-uuids/"
+        payload = {"uuids": [str(item) for item in uuids]}
+        logger.info(
+            "Buscando habilitados por UUIDs",
+            extra={
+                "method": "POST",
+                "correlation_id": get_correlation_id(),
+                "url": url,
+                "uuids": uuids,
+            },
+        )
+        try:
+            response = http_client.post(
+                url,
+                json=payload,
+                headers=self._default_headers,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+        except Exception as exc:
+            logger.error(
+                "Erro ao buscar habilitados por UUIDs %s: %s",
+                uuids,
+                exc,
+                exc_info=True,
+            )
+            return None
+        data = response.json()
+        if isinstance(data, dict) and "results" in data:
+            return data["results"]  # type: ignore[no-any-return]
+        if isinstance(data, list):
+            return data
+        return None
+
     def buscar_candidatos(
         self,
         nome: str | None = None,
