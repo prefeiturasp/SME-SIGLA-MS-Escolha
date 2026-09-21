@@ -199,7 +199,14 @@ class EscolhaRepository:
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> dict[str, dict[str, int]]:
-        """Conta escolhas por situação e categoria efetiva.
+        """Conta escolhas por situação e categoria efetiva do candidato.
+
+        1. Filtra as escolhas do escopo (concurso / ano / processos).
+        2. Coleta os ``candidato_uuid`` dessas escolhas.
+        3. Busca no MS-Candidatos a ``categoria_efetiva`` de cada um
+           (``?fields=uuid,categoria_efetiva``).
+        4. Cruza escolhas × categorias e calcula
+           ``total`` / ``geral`` / ``pcd`` / ``nna`` por situação.
 
         Args:
             concurso_uuid: Concurso a restringir; ausente → todos os concursos.
@@ -210,8 +217,8 @@ class EscolhaRepository:
         Returns:
             Dicionário por situação (``escolha`` / ``reconvocacao`` /
             ``nao-escolha``) com ``total`` e quebra ``geral`` / ``pcd`` /
-            ``nna``. Registros sem ``categoria_efetiva`` entram só no
-            ``total``.
+            ``nna``. Sem categoria conhecida (API ausente ou falha),
+            o registro entra só no ``total``.
         """
         logger.info(
             f"Contando escolhas por situação: concurso_uuid={concurso_uuid}, "
@@ -223,22 +230,68 @@ class EscolhaRepository:
             ano=ano,
             processo_uuids=processo_uuids or None,
         )
+        pares = list(qs.values_list("candidato_uuid", "situacao"))
         resultado = {
-            situacao: dict(_CATEGORIA_VAZIA) for situacao in _SITUACOES_EXTRACAO
+            situacao: dict(_CATEGORIA_VAZIA)
+            for situacao in _SITUACOES_EXTRACAO
         }
-        contagens = qs.values("situacao", "categoria_efetiva").annotate(
-            total=Count("uuid")
+        if not pares:
+            return resultado
+
+        candidato_uuids = sorted(
+            {
+                str(candidato_uuid)
+                for candidato_uuid, _ in pares
+                if candidato_uuid
+            }
         )
-        for item in contagens:
-            situacao = item["situacao"]
+        categorias_por_uuid = cls._buscar_categorias_efetivas(candidato_uuids)
+
+        for candidato_uuid, situacao in pares:
             if situacao not in resultado:
                 continue
-            quantidade = int(item["total"] or 0)
-            resultado[situacao]["total"] += quantidade
-            chave_categoria = _CATEGORIA_CHAVE.get(item["categoria_efetiva"])
+            resultado[situacao]["total"] += 1
+            categoria = categorias_por_uuid.get(str(candidato_uuid))
+            chave_categoria = _CATEGORIA_CHAVE.get(categoria)
             if chave_categoria:
-                resultado[situacao][chave_categoria] += quantidade
+                resultado[situacao][chave_categoria] += 1
         return resultado
+
+    @staticmethod
+    def _buscar_categorias_efetivas(
+        candidato_uuids: list[str],
+    ) -> dict[str, str]:
+        """Consulta no MS-Candidatos a categoria efetiva de cada habilitado.
+
+        Args:
+            candidato_uuids: UUIDs de concurso-candidato das escolhas.
+
+        Returns:
+            Mapa ``uuid → categoria_efetiva`` (GERAL / PCD / NNA).
+            Vazio se a lista for vazia ou a API falhar.
+        """
+        from escolhas.services.candidato_api import CandidatoAPIService
+
+        if not candidato_uuids:
+            return {}
+
+        habilitados = CandidatoAPIService().buscar_habilitados_por_uuids(
+            candidato_uuids,
+            fields=["uuid", "categoria_efetiva"],
+        )
+        if not habilitados:
+            return {}
+
+        categorias: dict[str, str] = {}
+        valores_validos = {choice.value for choice in CategoriaEfetivaChoices}
+        for item in habilitados:
+            if not isinstance(item, dict):
+                continue
+            uuid_candidato = item.get("uuid")
+            categoria = item.get("categoria_efetiva")
+            if uuid_candidato and categoria in valores_validos:
+                categorias[str(uuid_candidato)] = str(categoria)
+        return categorias
 
     @classmethod
     def _montar_dres(

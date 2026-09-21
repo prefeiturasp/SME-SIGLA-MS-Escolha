@@ -89,12 +89,21 @@ class CandidatoAPIService:
         return data  # type: ignore[no-any-return]
 
     def buscar_habilitados_por_uuids(
-        self, uuids: list[str]
+        self,
+        uuids: list[str],
+        fields: list[str] | None = None,
     ) -> list[dict] | None:
-        """Busca habilitados (ConcursoCandidato) por UUIDs.
+        """Busca habilitados pelos códigos de identificação (UUIDs).
+
+        Serve para, dada uma lista de identificadores (um por vínculo
+        candidato–concurso), trazer as informações desses habilitados no
+        serviço de candidatos — por exemplo só ``uuid`` e
+        ``categoria_efetiva`` quando ``fields`` for informado.
 
         Args:
-            uuids: Lista de UUIDs de concurso-candidato.
+            uuids: Códigos de identificação dos habilitados a localizar.
+            fields: Campos a retornar (query ``?fields=``). Ausente →
+                resposta completa do habilitado.
 
         Returns:
             Lista com os habilitados encontrados. Se a lista de códigos
@@ -105,6 +114,7 @@ class CandidatoAPIService:
             return []
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-uuids/"
         payload = {"uuids": [str(item) for item in uuids]}
+        params = {"fields": ",".join(fields)} if fields else None
         logger.info(
             "Buscando habilitados por UUIDs",
             extra={
@@ -112,12 +122,14 @@ class CandidatoAPIService:
                 "correlation_id": get_correlation_id(),
                 "url": url,
                 "uuids": uuids,
+                "fields": fields,
             },
         )
         try:
             response = http_client.post(
                 url,
                 json=payload,
+                params=params,
                 headers=self._default_headers,
                 timeout=self.timeout_seconds,
             )

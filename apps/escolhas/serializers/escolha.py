@@ -10,9 +10,8 @@ from vagas_escolas.models import VagasEscolas
 from vagas_escolas.repository import VagasEscolasRepository
 from vagas_escolas.serializers import VagasEscolasSerializer
 
-from ..constants import CategoriaEfetivaChoices, SituacaoChoices
+from ..constants import SituacaoChoices
 from ..models import Escolha, HistoricoEscolha
-from ..services.candidato_api import CandidatoAPIService
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer):
@@ -59,7 +58,6 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             "candidato_uuid",
             "concurso_uuid",
             "situacao",
-            "categoria_efetiva",
             "tipo_vaga",
             "e_retardatario",
             "vaga_escola_uuid",
@@ -77,41 +75,8 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             "candidato_uuid": {"allow_null": False, "required": True},
             "concurso_uuid": {"allow_null": False, "required": True},
             "situacao": {"required": True},
-            "categoria_efetiva": {"allow_null": True, "required": False},
             "tipo_vaga": {"allow_null": True, "required": False},
         }
-
-    def create(self, validated_data: Any) -> Escolha:
-        """Persiste a escolha preenchendo categoria efetiva quando ausente."""
-        if not validated_data.get("categoria_efetiva"):
-            categoria = self._resolver_categoria_efetiva(
-                validated_data.get("candidato_uuid")
-            )
-            if categoria:
-                validated_data["categoria_efetiva"] = categoria
-        return super().create(validated_data)
-
-    @staticmethod
-    def _resolver_categoria_efetiva(candidato_uuid: Any) -> str | None:
-        """Busca categoria efetiva no MS-Candidatos (best-effort)."""
-        if not candidato_uuid:
-            return None
-        try:
-            dados = CandidatoAPIService().buscar_habilitados_por_uuids(
-                [str(candidato_uuid)]
-            )
-        except Exception:
-            return None
-        if not dados:
-            return None
-        primeiro = dados[0] if isinstance(dados, list) and dados else None
-        if not isinstance(primeiro, dict):
-            return None
-        categoria = primeiro.get("categoria_efetiva")
-        valores = {choice.value for choice in CategoriaEfetivaChoices}
-        if categoria in valores:
-            return str(categoria)
-        return None
 
     def to_representation(self, instance: Any) -> Any:
         """Converte a ForeignKey vaga_escola para UUID na representação."""
@@ -195,7 +160,6 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
             "uuid",
             "candidato_uuid",
             "situacao",
-            "categoria_efetiva",
             "tipo_vaga",
             "e_retardatario",
             "vaga_escola_uuid",

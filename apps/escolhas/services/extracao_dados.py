@@ -33,7 +33,7 @@ def contar_escolhas(
     ano: int | None = None,
     processo_uuids: list[UUID | str] | None = None,
 ) -> dict[str, dict[str, int]]:
-    """Conta escolhas por situação e categoria efetiva.
+    """Conta escolhas por situação, com quebra GERAL/PCD/NNA via MS-Candidatos.
 
     Args:
         concurso_uuid: Concurso a restringir; ausente → todos os concursos.
@@ -43,7 +43,7 @@ def contar_escolhas(
 
     Returns:
         Dicionário por situação com ``total`` e quebra ``geral`` / ``pcd`` /
-        ``nna``.
+        ``nna`` (categoria efetiva consultada no MS-Candidatos).
     """
     return EscolhaRepository.contar_escolhas(
         concurso_uuid=concurso_uuid,
