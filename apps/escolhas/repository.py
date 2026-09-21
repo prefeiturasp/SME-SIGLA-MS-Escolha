@@ -15,7 +15,6 @@ from django.db.models import Count, F, Max, Q, QuerySet
 
 from escolhas.constants import SituacaoChoices
 from escolhas.models import Escolha, HistoricoEscolha
-from vagas_escolas.repository import VagasEscolasRepository
 
 logger = logging.getLogger(__name__)
 
@@ -96,25 +95,6 @@ class EscolhaRepository:
         return value.isoformat()
 
     @classmethod
-    def _base_escolhas_com_vaga_qs(
-        cls,
-        concurso_uuid: UUID | str | None = None,
-        anos: list[int] | None = None,
-        processo_uuids: list[UUID | str] | None = None,
-    ) -> QuerySet:
-        qs = Escolha.objects.filter(
-            situacao=SituacaoChoices.ESCOLHA,
-            vaga_escola__isnull=False,
-        )
-        if concurso_uuid:
-            qs = qs.filter(concurso_uuid=concurso_uuid)
-        if processo_uuids:
-            qs = qs.filter(vaga_escola__lote__processo_uuid__in=processo_uuids)
-        elif anos:
-            qs = qs.filter(criado_em__year__in=anos)
-        return qs
-
-    @classmethod
     def _filtrar_escolhas_por_escopo(
         cls,
         qs: QuerySet,
@@ -148,63 +128,26 @@ class EscolhaRepository:
         return qs
 
     @classmethod
-    def _montar_filtros_resposta(
-        cls, filtros: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        return [
-            {
-                "ano": filtro["ano"],
-                "processo_uuids": [
-                    str(processo_uuid)
-                    for processo_uuid in (filtro.get("processo_uuids") or [])
-                ],
-            }
-            for filtro in sorted(filtros, key=lambda item: item["ano"])
-        ]
-
-    @classmethod
-    def _obter_ultima_escolha_em(
+    def buscar_escolhas_por_escopo(
         cls,
-        concurso_uuid: UUID | str | None = None,
-        anos: list[int] | None = None,
-        processo_uuids: list[UUID | str] | None = None,
-    ) -> str | None:
-        logger.info(
-            f"Obtendo data da última escolha: concurso_uuid={concurso_uuid}, "
-            f"anos={anos}, processo_uuids={processo_uuids}"
-        )
-        ultima = cls._base_escolhas_com_vaga_qs(
-            concurso_uuid=concurso_uuid,
-            anos=anos,
-            processo_uuids=processo_uuids,
-        ).aggregate(ultima=Max("criado_em"))["ultima"]
-        return cls._serializar_datetime(ultima)
-
-    @classmethod
-    def contar_escolhas(
-        cls,
+        *,
         concurso_uuid: UUID | str | None = None,
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
-    ) -> dict[str, dict[str, int]]:
-        """Conta escolhas por situação e categoria efetiva do candidato.
+    ) -> list[dict[str, Any]]:
+        """Busca escolhas no escopo, retornando candidato e situação.
 
         Args:
-            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
-            ano: Ano do filtro (processo ou ``criado_em`` quando sem processo).
-            processo_uuids: Processos do ano; quando informados,
-                escolhas com vaga são filtradas pelo processo do lote.
+            concurso_uuid: Concurso a restringir; ausente → todos.
+            ano: Ano do filtro (usado em ``criado_em`` quando sem processo).
+            processo_uuids: Processos do ano; quando informados, filtra pelo
+                processo do lote da vaga.
 
         Returns:
-            Dicionário por situação (``escolha`` / ``reconvocacao`` /
-            ``nao-escolha``) com ``total`` e quebra ``geral`` / ``pcd`` /
-            ``nna``. Sem categoria conhecida, o registro entra só no
-            ``total``.
+            Lista de ``{candidato_uuid, situacao}``.
         """
-        from escolhas.services.extracao_dados import buscar_categorias_efetivas
-
         logger.info(
-            f"Contando escolhas por situação: concurso_uuid={concurso_uuid}, "
+            f"Buscando escolhas por escopo: concurso_uuid={concurso_uuid}, "
             f"ano={ano}, processo_uuids={processo_uuids}"
         )
         qs = cls._filtrar_escolhas_por_escopo(
@@ -213,234 +156,120 @@ class EscolhaRepository:
             ano=ano,
             processo_uuids=processo_uuids or None,
         )
-        candidato_uuids = sorted(
-            {
-                str(candidato_uuid)
-                for candidato_uuid in qs.values_list(
-                    "candidato_uuid", flat=True
-                )
-                if candidato_uuid
-            }
+        return list(
+            qs.exclude(candidato_uuid__isnull=True).values(
+                "candidato_uuid", "situacao"
+            )
         )
-        escolhas = list(qs.values_list("candidato_uuid", "situacao"))
-        resultado = {
-            situacao: {"total": 0, "geral": 0, "pcd": 0, "nna": 0}
-            for situacao in SituacaoChoices.values
-        }
-        if not escolhas:
-            return resultado
-
-        categorias_por_uuid = buscar_categorias_efetivas(candidato_uuids)
-
-        for candidato_uuid, situacao in escolhas:
-            if situacao not in resultado:
-                continue
-            resultado[situacao]["total"] += 1
-            categoria = categorias_por_uuid.get(str(candidato_uuid))
-            if categoria:
-                resultado[situacao][categoria.lower()] += 1
-        return resultado
 
     @classmethod
-    def _montar_dres(
+    def agregar_escolhas_por_dre(
         cls,
+        *,
         concurso_uuid: UUID | str | None = None,
         ano: int | None = None,
         processo_uuids: list[UUID | str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Une, por DRE, as escolhas realizadas e as vagas ofertadas.
-
-        Args:
-            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
-            ano: Ano do filtro; usado em ``criado_em`` apenas sem processos.
-            processo_uuids: Processos do ano para escolhas (via vaga) e vagas.
+        """Agrega contagem de escolhas realizadas por DRE.
 
         Returns:
-            Lista de DREs com ``nome``, ``escolhas`` e ``vagas``.
+            Lista com ``dre_uuid``, ``nome`` e ``escolhas``.
         """
         logger.info(
-            f"Montando DREs da extração: concurso_uuid={concurso_uuid}, "
+            f"Agregando escolhas por DRE: concurso_uuid={concurso_uuid}, "
             f"ano={ano}, processo_uuids={processo_uuids}"
         )
-        escolhas_qs = Escolha.objects.filter(
+        qs = Escolha.objects.filter(
             situacao=SituacaoChoices.ESCOLHA,
             vaga_escola__isnull=False,
         )
-        escolhas_qs = cls._filtrar_escolhas_por_escopo(
-            escolhas_qs,
+        qs = cls._filtrar_escolhas_por_escopo(
+            qs,
             concurso_uuid=concurso_uuid,
             ano=ano,
             processo_uuids=processo_uuids or None,
         )
-        escolhas_qs = escolhas_qs.values(
-            dre_uuid=F("vaga_escola__escola__dre__uuid"),
-            nome=F("vaga_escola__escola__dre__nome"),
-        ).annotate(escolhas=Count("uuid"))
-
-        vagas_qs = VagasEscolasRepository.agregar_vagas_por_dre(processo_uuids)
-
-        dres: dict[Any, dict[str, Any]] = {}
-        for item in escolhas_qs:
-            dres[item["dre_uuid"]] = {
-                "nome": item["nome"],
-                "escolhas": item["escolhas"],
-                "vagas": 0,
-            }
-        for item in vagas_qs:
-            entrada = dres.setdefault(
-                item["dre_uuid"],
-                {"nome": item["nome"], "escolhas": 0, "vagas": 0},
-            )
-            entrada["vagas"] = item["vagas"] or 0
-
-        return list(dres.values())
+        return list(
+            qs.values(
+                dre_uuid=F("vaga_escola__escola__dre__uuid"),
+                nome=F("vaga_escola__escola__dre__nome"),
+            ).annotate(escolhas=Count("uuid"))
+        )
 
     @classmethod
-    def _montar_dres_concursos(
+    def agregar_escolhas_por_concurso_dre_cargo(
         cls,
+        *,
         concurso_uuid: UUID | str | None = None,
         anos: list[int] | None = None,
         processo_uuids: list[UUID | str] | None = None,
-    ) -> dict[str, list[dict[str, Any]]]:
-        """Detalha, por concurso, as escolhas e vagas por DRE e cargo.
-
-        Args:
-            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
-            anos: Anos do filtro; usados em ``criado_em`` apenas sem processos.
-            processo_uuids: Processos do ano para escolhas (via vaga) e vagas.
+    ) -> list[dict[str, Any]]:
+        """Agrega escolhas realizadas por concurso, DRE e cargo.
 
         Returns:
-            Dicionário por ``concurso_uuid`` com as linhas de DRE e cargo.
+            Lista com concurso, DRE, cargo e contagens.
         """
         logger.info(
-            f"Montando DREs por concurso: concurso_uuid={concurso_uuid}, "
-            f"anos={anos}, processo_uuids={processo_uuids}"
+            f"Agregando escolhas por concurso/DRE/cargo: "
+            f"concurso_uuid={concurso_uuid}, anos={anos}, "
+            f"processo_uuids={processo_uuids}"
         )
-        escolhas_qs = Escolha.objects.filter(
+        qs = Escolha.objects.filter(
             situacao=SituacaoChoices.ESCOLHA,
             vaga_escola__isnull=False,
         )
         if concurso_uuid:
-            escolhas_qs = escolhas_qs.filter(concurso_uuid=concurso_uuid)
+            qs = qs.filter(concurso_uuid=concurso_uuid)
         if processo_uuids:
-            escolhas_qs = escolhas_qs.filter(
+            qs = qs.filter(
                 vaga_escola__lote__processo_uuid__in=processo_uuids
             )
         elif anos:
-            escolhas_qs = escolhas_qs.filter(criado_em__year__in=anos)
+            qs = qs.filter(criado_em__year__in=anos)
 
-        contagem_qs = escolhas_qs.values(
-            "concurso_uuid",
-            dre_uuid=F("vaga_escola__escola__dre__uuid"),
-            nome=F("vaga_escola__escola__dre__nome"),
-            codigo_cargo=F("vaga_escola__cargo_codigo"),
-            cargo_descricao=F("vaga_escola__cargo_descricao"),
-        ).annotate(
-            escolhas=Count("uuid"),
-            ultima_escolha_em=Max("criado_em"),
-        )
-
-        por_concurso: dict[str, dict[tuple, dict[str, Any]]] = {}
-        for item in contagem_qs:
-            cuuid = str(item["concurso_uuid"])
-            chave = (item["dre_uuid"], item["codigo_cargo"])
-            por_concurso.setdefault(cuuid, {})[chave] = {
-                "nome": item["nome"],
-                "escolhas": item["escolhas"],
-                "vagas": 0,
-                "codigo_cargo": item["codigo_cargo"],
-                "cargo_descricao": item["cargo_descricao"],
-                "ultima_escolha_em": cls._serializar_datetime(
-                    item["ultima_escolha_em"]
-                ),
-            }
-
-        vagas_qs = VagasEscolasRepository.agregar_vagas_por_concurso_dre_cargo(
-            processo_uuids
-        )
-
-        for vaga in vagas_qs:
-            cuuid = str(vaga["concurso"])
-            chave = (vaga["dre_uuid"], vaga["cargo_codigo"])
-            linha = por_concurso.setdefault(cuuid, {}).setdefault(
-                chave,
-                {
-                    "nome": vaga["nome"],
-                    "escolhas": 0,
-                    "vagas": 0,
-                    "codigo_cargo": vaga["cargo_codigo"],
-                    "cargo_descricao": vaga["cargo_descricao"],
-                },
+        rows = list(
+            qs.values(
+                "concurso_uuid",
+                dre_uuid=F("vaga_escola__escola__dre__uuid"),
+                nome=F("vaga_escola__escola__dre__nome"),
+                codigo_cargo=F("vaga_escola__cargo_codigo"),
+                cargo_descricao=F("vaga_escola__cargo_descricao"),
+            ).annotate(
+                escolhas=Count("uuid"),
+                ultima_escolha_em=Max("criado_em"),
             )
-            linha["vagas"] += vaga["vagas"] or 0
-
-        return {
-            cuuid: list(linhas.values())
-            for cuuid, linhas in por_concurso.items()
-        }
+        )
+        for row in rows:
+            row["ultima_escolha_em"] = cls._serializar_datetime(
+                row["ultima_escolha_em"]
+            )
+        return rows
 
     @classmethod
-    def montar_extracao_dados(
+    def obter_ultima_escolha_em(
         cls,
+        *,
         concurso_uuid: UUID | str | None = None,
-        filtros: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any]:
-        """Monta o dicionário de indicadores de escolhas.
-
-        Args:
-            concurso_uuid: Concurso a restringir; ausente → todos os concursos.
-            filtros: Lista de ``{ano, processo_uuids}``; ausente (ou vazia) →
-                agregado direto na raiz, sem quebra por ano.
-
-        Returns:
-            Dicionário com ``concurso_uuid``, ``filtros``
-            (quando filtrado por ano), as contagens por situação,
-            o array ``dres`` por DRE e ``dres_concursos`` detalhado
-            por concurso.
-        """
+        anos: list[int] | None = None,
+        processo_uuids: list[UUID | str] | None = None,
+    ) -> str | None:
+        """Retorna a data ISO da última escolha realizada no escopo."""
         logger.info(
-            f"Montando extração de dados: concurso_uuid={concurso_uuid}, "
-            f"filtros={filtros}"
+            f"Obtendo data da última escolha: concurso_uuid={concurso_uuid}, "
+            f"anos={anos}, processo_uuids={processo_uuids}"
         )
-        resultado: dict[str, Any] = {}
-        if filtros:
-            filtros_ordenados = sorted(filtros, key=lambda item: item["ano"])
-            if concurso_uuid:
-                resultado["concurso_uuid"] = str(concurso_uuid)
-            resultado["filtros"] = cls._montar_filtros_resposta(
-                filtros_ordenados
+        qs = Escolha.objects.filter(
+            situacao=SituacaoChoices.ESCOLHA,
+            vaga_escola__isnull=False,
+        )
+        if concurso_uuid:
+            qs = qs.filter(concurso_uuid=concurso_uuid)
+        if processo_uuids:
+            qs = qs.filter(
+                vaga_escola__lote__processo_uuid__in=processo_uuids
             )
+        elif anos:
+            qs = qs.filter(criado_em__year__in=anos)
 
-            processos_uniao: list = []
-            for filtro in filtros_ordenados:
-                ano = filtro["ano"]
-                processo_uuids = filtro.get("processo_uuids") or []
-                processos_uniao.extend(processo_uuids)
-                dados: dict[str, Any] = {
-                    **cls.contar_escolhas(
-                        concurso_uuid, ano, processo_uuids=processo_uuids
-                    ),
-                    "dres": cls._montar_dres(
-                        concurso_uuid, ano, processo_uuids
-                    ),
-                }
-                resultado[str(ano)] = dados
-            anos = [f["ano"] for f in filtros_ordenados]
-        else:
-            dados = {
-                **cls.contar_escolhas(concurso_uuid, ano=None),
-                "dres": cls._montar_dres(concurso_uuid),
-            }
-            resultado.update(dados)
-            anos = None
-            processos_uniao = []
-
-        resultado["dres_concursos"] = cls._montar_dres_concursos(
-            concurso_uuid, anos, processos_uniao
-        )
-        resultado["ultima_escolha_em"] = cls._obter_ultima_escolha_em(
-            concurso_uuid=concurso_uuid,
-            anos=anos,
-            processo_uuids=processos_uniao or None,
-        )
-        return resultado
+        ultima = qs.aggregate(ultima=Max("criado_em"))["ultima"]
+        return cls._serializar_datetime(ultima)
