@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from escolhas.repository import EscolhaRepository
+from escolhas.services.candidato_api import CandidatoAPIService
 
 
 def montar_extracao_dados(
@@ -50,3 +51,31 @@ def contar_escolhas(
         ano=ano,
         processo_uuids=processo_uuids,
     )
+
+
+def buscar_categorias_efetivas(
+    candidato_uuids: list[str],
+) -> dict[str, str]:
+    """Consulta no MS-Candidatos a categoria efetiva de cada habilitado.
+
+    Args:
+        candidato_uuids: UUIDs de concurso-candidato das escolhas.
+
+    Returns:
+        Mapa ``uuid → categoria_efetiva`` (GERAL / PCD / NNA).
+        Vazio se a lista for vazia ou a API falhar.
+    """
+    if not candidato_uuids:
+        return {}
+
+    habilitados = CandidatoAPIService().buscar_habilitados_por_uuids(
+        candidato_uuids,
+        fields=["uuid", "categoria_efetiva"],
+    )
+    if not habilitados:
+        return {}
+
+    return {
+        item.get("uuid"): item.get("categoria_efetiva")
+        for item in habilitados
+    }

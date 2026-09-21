@@ -13,23 +13,11 @@ from uuid import UUID
 
 from django.db.models import Count, F, Max, Q, QuerySet
 
-from escolhas.constants import CategoriaEfetivaChoices, SituacaoChoices
+from escolhas.constants import SituacaoChoices
 from escolhas.models import Escolha, HistoricoEscolha
 from vagas_escolas.repository import VagasEscolasRepository
 
 logger = logging.getLogger(__name__)
-
-_CATEGORIA_VAZIA = {"total": 0, "geral": 0, "pcd": 0, "nna": 0}
-_SITUACOES_EXTRACAO = (
-    SituacaoChoices.ESCOLHA,
-    SituacaoChoices.RECONVOCACAO,
-    SituacaoChoices.NAO_ESCOLHA,
-)
-_CATEGORIA_CHAVE = {
-    CategoriaEfetivaChoices.GERAL: "geral",
-    CategoriaEfetivaChoices.PCD: "pcd",
-    CategoriaEfetivaChoices.NNA: "nna",
-}
 
 
 class EscolhaRepository:
@@ -201,13 +189,6 @@ class EscolhaRepository:
     ) -> dict[str, dict[str, int]]:
         """Conta escolhas por situação e categoria efetiva do candidato.
 
-        1. Filtra as escolhas do escopo (concurso / ano / processos).
-        2. Coleta os ``candidato_uuid`` dessas escolhas.
-        3. Busca no MS-Candidatos a ``categoria_efetiva`` de cada um
-           (``?fields=uuid,categoria_efetiva``).
-        4. Cruza escolhas × categorias e calcula
-           ``total`` / ``geral`` / ``pcd`` / ``nna`` por situação.
-
         Args:
             concurso_uuid: Concurso a restringir; ausente → todos os concursos.
             ano: Ano do filtro (processo ou ``criado_em`` quando sem processo).
@@ -217,9 +198,11 @@ class EscolhaRepository:
         Returns:
             Dicionário por situação (``escolha`` / ``reconvocacao`` /
             ``nao-escolha``) com ``total`` e quebra ``geral`` / ``pcd`` /
-            ``nna``. Sem categoria conhecida (API ausente ou falha),
-            o registro entra só no ``total``.
+            ``nna``. Sem categoria conhecida, o registro entra só no
+            ``total``.
         """
+        from escolhas.services.extracao_dados import buscar_categorias_efetivas
+
         logger.info(
             f"Contando escolhas por situação: concurso_uuid={concurso_uuid}, "
             f"ano={ano}, processo_uuids={processo_uuids}"
@@ -230,68 +213,33 @@ class EscolhaRepository:
             ano=ano,
             processo_uuids=processo_uuids or None,
         )
-        pares = list(qs.values_list("candidato_uuid", "situacao"))
-        resultado = {
-            situacao: dict(_CATEGORIA_VAZIA)
-            for situacao in _SITUACOES_EXTRACAO
-        }
-        if not pares:
-            return resultado
-
         candidato_uuids = sorted(
             {
                 str(candidato_uuid)
-                for candidato_uuid, _ in pares
+                for candidato_uuid in qs.values_list(
+                    "candidato_uuid", flat=True
+                )
                 if candidato_uuid
             }
         )
-        categorias_por_uuid = cls._buscar_categorias_efetivas(candidato_uuids)
+        escolhas = list(qs.values_list("candidato_uuid", "situacao"))
+        resultado = {
+            situacao: {"total": 0, "geral": 0, "pcd": 0, "nna": 0}
+            for situacao in SituacaoChoices.values
+        }
+        if not escolhas:
+            return resultado
 
-        for candidato_uuid, situacao in pares:
+        categorias_por_uuid = buscar_categorias_efetivas(candidato_uuids)
+
+        for candidato_uuid, situacao in escolhas:
             if situacao not in resultado:
                 continue
             resultado[situacao]["total"] += 1
             categoria = categorias_por_uuid.get(str(candidato_uuid))
-            chave_categoria = _CATEGORIA_CHAVE.get(categoria)
-            if chave_categoria:
-                resultado[situacao][chave_categoria] += 1
+            if categoria:
+                resultado[situacao][categoria.lower()] += 1
         return resultado
-
-    @staticmethod
-    def _buscar_categorias_efetivas(
-        candidato_uuids: list[str],
-    ) -> dict[str, str]:
-        """Consulta no MS-Candidatos a categoria efetiva de cada habilitado.
-
-        Args:
-            candidato_uuids: UUIDs de concurso-candidato das escolhas.
-
-        Returns:
-            Mapa ``uuid → categoria_efetiva`` (GERAL / PCD / NNA).
-            Vazio se a lista for vazia ou a API falhar.
-        """
-        from escolhas.services.candidato_api import CandidatoAPIService
-
-        if not candidato_uuids:
-            return {}
-
-        habilitados = CandidatoAPIService().buscar_habilitados_por_uuids(
-            candidato_uuids,
-            fields=["uuid", "categoria_efetiva"],
-        )
-        if not habilitados:
-            return {}
-
-        categorias: dict[str, str] = {}
-        valores_validos = {choice.value for choice in CategoriaEfetivaChoices}
-        for item in habilitados:
-            if not isinstance(item, dict):
-                continue
-            uuid_candidato = item.get("uuid")
-            categoria = item.get("categoria_efetiva")
-            if uuid_candidato and categoria in valores_validos:
-                categorias[str(uuid_candidato)] = str(categoria)
-        return categorias
 
     @classmethod
     def _montar_dres(
