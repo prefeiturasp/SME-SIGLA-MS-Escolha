@@ -12,6 +12,10 @@ from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 pytestmark = pytest.mark.django_db
 
 
+def contagem(total, geral=0, pcd=0, nna=0):
+    return {"total": total, "geral": geral, "pcd": pcd, "nna": nna}
+
+
 def _set_criado_em(escolha, quando):
     """criado_em é auto_now_add; sobrescreve via update()."""
     Escolha.objects.filter(pk=escolha.pk).update(criado_em=quando)
@@ -109,15 +113,15 @@ def test_extracao_dados_conta_situacoes_por_ano(api_client):
 
     # sem processo_uuids e sem escolhas com vaga -> dres vazio
     assert data["2026"] == {
-        "escolha": 2,
-        "reconvocacao": 1,
-        "nao-escolha": 1,
+        "escolha": contagem(2),
+        "reconvocacao": contagem(1),
+        "nao-escolha": contagem(1),
         "dres": [],
     }
     assert data["2025"] == {
-        "escolha": 1,
-        "reconvocacao": 0,
-        "nao-escolha": 0,
+        "escolha": contagem(1),
+        "reconvocacao": contagem(0),
+        "nao-escolha": contagem(0),
         "dres": [],
     }
 
@@ -163,9 +167,9 @@ def test_extracao_dados_dres_uniao_escolhas_e_vagas(api_client):
     ]
     ano = data["2026"]
 
-    assert ano["escolha"] == 2
-    assert ano["reconvocacao"] == 1
-    assert ano["nao-escolha"] == 1
+    assert ano["escolha"]["total"] == 2
+    assert ano["reconvocacao"]["total"] == 1
+    assert ano["nao-escolha"]["total"] == 1
 
     dres = {d["nome"]: d for d in ano["dres"]}
     assert dres["DRE-A"] == {"nome": "DRE-A", "escolhas": 2, "vagas": 120}
@@ -212,7 +216,7 @@ def test_extracao_dados_escolhas_por_processo_independente_criado_em(
     assert resp.status_code == 200, resp.content
     data = resp.json()["2025"]
 
-    assert data["escolha"] == 5
+    assert data["escolha"]["total"] == 5
     assert data["dres"] == [
         {"nome": "DRE-A", "escolhas": 5, "vagas": 100},
     ]
@@ -252,9 +256,9 @@ def test_extracao_dados_sem_filtros_retorna_total(api_client):
         "dres_concursos",
         "ultima_escolha_em",
     }
-    assert data["escolha"] == 2
-    assert data["reconvocacao"] == 1
-    assert data["nao-escolha"] == 1
+    assert data["escolha"]["total"] == 2
+    assert data["reconvocacao"]["total"] == 1
+    assert data["nao-escolha"]["total"] == 1
 
     dres = {d["nome"]: d for d in data["dres"]}
     # DRE-A: 2 escolhas (anos diferentes agregados) + todas as vagas
@@ -283,8 +287,8 @@ def test_extracao_dados_body_vazio_agrega_tudo(api_client):
         "dres_concursos",
         "ultima_escolha_em",
     }
-    assert data["escolha"] == 1
-    assert data["nao-escolha"] == 1
+    assert data["escolha"]["total"] == 1
+    assert data["nao-escolha"]["total"] == 1
 
 
 def test_extracao_dados_rejeita_mais_de_dois_filtros(api_client):
@@ -648,3 +652,4 @@ def test_ultima_escolha_em_retorna_a_mais_recente_entre_dois_anos(api_client):
     linhas = data["dres_concursos"][str(concurso_uuid)]
     linha = next(item for item in linhas if item["codigo_cargo"] == 1001)
     assert linha["ultima_escolha_em"].startswith("2026-03-10T09:15:00")
+
