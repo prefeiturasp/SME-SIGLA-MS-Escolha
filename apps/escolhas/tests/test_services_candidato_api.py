@@ -246,3 +246,43 @@ class TestCandidatoAPIService:
             mock_get.side_effect = requests.exceptions.ConnectionError()
             result = service.buscar_candidatos(cpf="123")
             assert result is None
+
+    def test_buscar_habilitados_por_uuids_com_fields(self, settings):
+        """Envia ?fields=uuid,categoria_efetiva na busca por UUIDs."""
+        settings.CANDIDATOS_API_URL = "http://test-api.com"
+        service = CandidatoAPIService()
+        uuids = ["11111111-1111-1111-1111-111111111111"]
+        mock_data = {
+            "results": [
+                {"uuid": uuids[0], "categoria_efetiva": "GERAL"},
+            ]
+        }
+        with patch("sigla_sdk.http.api_client.http_client.post") as mock_post:
+            mock_response = Mock()
+            mock_response.json.return_value = mock_data
+            mock_response.raise_for_status.return_value = None
+            mock_post.return_value = mock_response
+
+            result = service.buscar_habilitados_por_uuids(
+                uuids, fields=["uuid", "categoria_efetiva"]
+            )
+
+            assert result == mock_data["results"]
+            call_args = mock_post.call_args
+            assert (
+                call_args[0][0]
+                == "http://test-api.com/api/v1/habilitados/buscar-por-uuids/"
+            )
+            assert call_args[1]["params"] == {
+                "fields": "uuid,categoria_efetiva"
+            }
+            assert call_args[1]["json"] == {"uuids": uuids}
+
+    def test_buscar_habilitados_por_uuids_lista_vazia(self, settings):
+        """Lista vazia não chama a API."""
+        settings.CANDIDATOS_API_URL = "http://test-api.com"
+        service = CandidatoAPIService()
+        with patch("sigla_sdk.http.api_client.http_client.post") as mock_post:
+            result = service.buscar_habilitados_por_uuids([])
+            assert result == []
+            mock_post.assert_not_called()
