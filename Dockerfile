@@ -1,5 +1,5 @@
 # Use Python 3.12.9 slim image as base
-FROM python:3.12.9-bullseye
+FROM python:3.12.9-bookworm
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
