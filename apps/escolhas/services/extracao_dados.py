@@ -17,8 +17,6 @@ from vagas_escolas.repository import VagasEscolasRepository
 
 logger = logging.getLogger(__name__)
 
-CATEGORIAS = tuple(CategoriaEfetivaChoices.values)
-
 
 def _bloco_contagem_vazio() -> dict[str, int]:
     return {"total": 0, "geral": 0, "pcd": 0, "nna": 0}
@@ -94,7 +92,7 @@ def contar_escolhas_por_situacao_e_categoria(
         if not candidato_uuid:
             continue
         categoria = categorias_por_uuid.get(str(candidato_uuid))
-        if not categoria or categoria not in CATEGORIAS:
+        if not categoria or categoria not in CategoriaEfetivaChoices.values:
             continue
         resultado[situacao][categoria.lower()] += 1
     return resultado
