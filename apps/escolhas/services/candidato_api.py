@@ -88,6 +88,67 @@ class CandidatoAPIService:
         )
         return data  # type: ignore[no-any-return]
 
+    def buscar_habilitados_por_uuids(
+        self,
+        uuids: list[str],
+        fields: list[str] | None = None,
+    ) -> list[dict] | None:
+        """Busca habilitados pelos códigos de identificação (UUIDs).
+
+        Serve para, dada uma lista de identificadores (um por vínculo
+        candidato–concurso), trazer as informações desses habilitados no
+        serviço de candidatos — por exemplo só ``uuid`` e
+        ``categoria_efetiva`` quando ``fields`` for informado.
+
+        Args:
+            uuids: Códigos de identificação dos habilitados a localizar.
+            fields: Campos a retornar (query ``?fields=``). Ausente →
+                resposta completa do habilitado.
+
+        Returns:
+            Lista com os habilitados encontrados. Se a lista de códigos
+            estiver vazia, devolve lista vazia. Se a consulta falhar,
+            devolve ``None``.
+        """
+        if not uuids:
+            return []
+        url = f"{self.base_url}/api/v1/habilitados/buscar-por-uuids/"
+        payload = {"uuids": [str(item) for item in uuids]}
+        params = {"fields": ",".join(fields)} if fields else None
+        logger.info(
+            "Buscando habilitados por UUIDs",
+            extra={
+                "method": "POST",
+                "correlation_id": get_correlation_id(),
+                "url": url,
+                "uuids": uuids,
+                "fields": fields,
+            },
+        )
+        try:
+            response = http_client.post(
+                url,
+                json=payload,
+                params=params,
+                headers=self._default_headers,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+        except Exception as exc:
+            logger.error(
+                "Erro ao buscar habilitados por UUIDs %s: %s",
+                uuids,
+                exc,
+                exc_info=True,
+            )
+            return None
+        data = response.json()
+        if isinstance(data, dict) and "results" in data:
+            return data["results"]  # type: ignore[no-any-return]
+        if isinstance(data, list):
+            return data
+        return None
+
     def buscar_candidatos(
         self,
         nome: str | None = None,

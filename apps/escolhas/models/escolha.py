@@ -11,7 +11,10 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import BaseModel
 
-from ..constants import SituacaoChoices, TipoVagaChoices
+from ..constants import (
+    SituacaoChoices,
+    TipoVagaChoices,
+)
 
 
 class Escolha(BaseModel):
