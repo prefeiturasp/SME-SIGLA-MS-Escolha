@@ -273,3 +273,67 @@ class EscolhaRepository:
 
         ultima = qs.aggregate(ultima=Max("criado_em"))["ultima"]
         return cls._serializar_datetime(ultima)
+
+    @classmethod
+    def agregar_por_processo_e_situacao(
+        cls,
+        processo_uuids: list[UUID | str],
+    ) -> dict[str, dict[str, dict[str, Any]]]:
+        """Agrega candidatos por processo de convocação e situação.
+
+        Filtra pelo campo ``processo_uuid`` da própria escolha.
+
+        Args:
+            processo_uuids: Lista de UUIDs de processos de convocação.
+
+        Returns:
+            Estrutura::
+
+                {
+                    "<processo_uuid>": {
+                        "escolha": {"total": N, "candidatos_uuids": [...]},
+                        "nao-escolha": {"total": N, "candidatos_uuids": [...]},
+                        "reconvocacao": {"total": N, "candidatos_uuids": [...]},
+                    }
+                }
+        """
+        situacoes = (
+            SituacaoChoices.ESCOLHA.value,
+            SituacaoChoices.NAO_ESCOLHA.value,
+            SituacaoChoices.RECONVOCACAO.value,
+        )
+
+        def _bloco_vazio() -> dict[str, dict[str, Any]]:
+            return {
+                sit: {"total": 0, "candidatos_uuids": []} for sit in situacoes
+            }
+
+        resultado: dict[str, dict[str, dict[str, Any]]] = {
+            str(pid): _bloco_vazio() for pid in processo_uuids
+        }
+        if not processo_uuids:
+            return resultado
+
+        rows = (
+            Escolha.objects.filter(
+                processo_uuid__in=processo_uuids,
+                situacao__in=situacoes,
+            )
+            .exclude(candidato_uuid__isnull=True)
+            .values("processo_uuid", "situacao", "candidato_uuid")
+        )
+        for row in rows:
+            processo_key = str(row["processo_uuid"])
+            situacao = row["situacao"]
+            if situacao not in situacoes:
+                continue
+            if processo_key not in resultado:
+                resultado[processo_key] = _bloco_vazio()
+            candidato_uuid = row["candidato_uuid"]
+            if candidato_uuid is None:
+                continue
+            resultado[processo_key][situacao]["candidatos_uuids"].append(
+                str(candidato_uuid)
+            )
+            resultado[processo_key][situacao]["total"] += 1
+        return resultado

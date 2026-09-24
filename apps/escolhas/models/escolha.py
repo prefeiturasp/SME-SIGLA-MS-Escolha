@@ -27,6 +27,9 @@ class Escolha(BaseModel):
     concurso_uuid = models.UUIDField(
         verbose_name=_("UUID do Concurso"), null=True, blank=True
     )
+    processo_uuid = models.UUIDField(
+        verbose_name=_("UUID do Processo"), null=True, blank=True
+    )
     situacao = models.CharField(
         max_length=20,
         choices=SituacaoChoices.choices,
