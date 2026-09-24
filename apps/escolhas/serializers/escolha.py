@@ -57,6 +57,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             "uuid",
             "candidato_uuid",
             "concurso_uuid",
+            "processo_uuid",
             "situacao",
             "tipo_vaga",
             "e_retardatario",
@@ -74,6 +75,7 @@ class EscolhaSerializer(DynamicFieldsSerializer):
         extra_kwargs = {
             "candidato_uuid": {"allow_null": False, "required": True},
             "concurso_uuid": {"allow_null": False, "required": True},
+            "processo_uuid": {"allow_null": True, "required": False},
             "situacao": {"required": True},
             "tipo_vaga": {"allow_null": True, "required": False},
         }
@@ -159,6 +161,8 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
         fields = [
             "uuid",
             "candidato_uuid",
+            "concurso_uuid",
+            "processo_uuid",
             "situacao",
             "tipo_vaga",
             "e_retardatario",

@@ -40,6 +40,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         "candidato_uuid": ["exact"],
         "concurso_uuid": ["exact"],
+        "processo_uuid": ["exact"],
         "situacao": ["exact", "in"],
         "vaga_escola__cargo_codigo": ["exact"],
         "vaga_escola__lote__processo_uuid": ["exact"],
@@ -118,6 +119,39 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(concurso_uuid=concurso_uuid)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=["post"], detail=False, url_path="busca-por-convocacao")
+    def busca_por_convocacao(self, request: Any) -> Any:
+        """Agrega escolhas por processo de convocação e situação.
+
+        Body::
+
+            {"processo_uuids": ["<uuid>", ...]}
+
+        Returns:
+            Estrutura com total e candidatos_uuids por escolha /
+            nao-escolha / reconvocacao.
+        """
+        processo_uuids = request.data.get("processo_uuids")
+        if not isinstance(processo_uuids, list) or not processo_uuids:
+            return Response(
+                {"detail": "processo_uuids é obrigatório e deve ser uma lista"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        logger.info(
+            "Agregando escolhas por convocação",
+            extra={
+                "correlation_id": get_correlation_id(),
+                "method": request.method,
+                "path": request.path,
+                "processo_uuids": processo_uuids,
+                "user": request.user,
+            },
+        )
+        resultado = EscolhaRepository.agregar_por_processo_e_situacao(
+            processo_uuids
+        )
+        return Response(resultado)
 
     @action(methods=["get"], detail=False, url_path="reconvocacao")
     def reconvocacao(self, request: Any) -> Any:
@@ -372,6 +406,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 nova_escolha = EscolhaRepository.criar(
                     candidato_uuid=candidato_uuid,
                     concurso_uuid=concurso_uuid,
+                    processo_uuid=processo_uuid,
                     situacao=situacao,
                     tipo_vaga=tipo_vaga,
                     vaga_escola=vaga_escola,
