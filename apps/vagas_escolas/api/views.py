@@ -59,14 +59,10 @@ class VagasEscolasViewSet(ModelViewSet):
     def list(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """Lista vagas checadas com totais agregados e DREs."""
         logger.info(
-            "Listando vagas das escolas",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "user": request.user,
-            },
+            f"Listando vagas das escolas | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | user={request.user}"
         )
         qs = self.filter_queryset(self.get_queryset())
         return Response(VagasEscolasRepository.montar_listagem(qs))
@@ -74,17 +70,14 @@ class VagasEscolasViewSet(ModelViewSet):
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """Cria vagas das escolas em lote."""
         logger.info(
-            "Criando vagas das escolas em lote",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "processo_uuid": request.data.get("processo_uuid"),
-                "processo_nome": request.data.get("processo_nome"),
-                "vagas": len(request.data.get("vagas", [])),
-                "user": request.user,
-            },
+            f"Criando vagas das escolas em lote | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | "
+            f"processo_uuid={request.data.get('processo_uuid')} | "
+            f"processo_nome={request.data.get('processo_nome')} | "
+            f"vagas={len(request.data.get('vagas', []))} | "
+            f"user={request.user}"
         )
         try:
             response_data, status_code = processar_criacao_vagas_lote(
@@ -110,15 +103,11 @@ class VagasEscolasViewSet(ModelViewSet):
     def utilizadas(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         """Atualiza vagas utilizadas e flags de checagem em lote."""
         logger.info(
-            "Atualizando vagas utilizadas",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "data": request.data,
-                "user": request.user,
-            },
+            f"Atualizando vagas utilizadas | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | data={request.data} | "
+            f"user={request.user}"
         )
         payload = VagaEscolaUtilizadaItemSerializer(
             data=request.data, many=True
@@ -144,14 +133,10 @@ class VagasEscolasViewSet(ModelViewSet):
     ) -> Any:
         """Filtra vagas por cargo_codigo e/ou códigos EOL."""
         logger.info(
-            "Buscando vagas por cargo e escolas",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "user": request.user,
-                "params": request.query_params,
-            },
+            f"Buscando vagas por cargo e escolas | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"user={request.user} | params={request.query_params}"
         )
         codigo_cargo = request.query_params.get("cargo_codigo")
         eols = request.query_params.getlist("codigo_eol") or (
@@ -177,12 +162,9 @@ class VagasEscolasViewSet(ModelViewSet):
             processo_uuid
         )
         logger.info(
-            "Lotes de vagas excluídos por processo",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "processo_uuid": processo_uuid,
-                "lotes_excluidos": deleted,
-            },
+            f"Lotes de vagas excluídos por processo | "
+            f"correlation_id={get_correlation_id()} | "
+            f"processo_uuid={processo_uuid} | lotes_excluidos={deleted}"
         )
         return Response(
             {"lotes_excluidos": deleted}, status=status.HTTP_200_OK

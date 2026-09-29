@@ -47,18 +47,16 @@ class CorrelationIdMiddleware:
         response = self.get_response(request)
         if request.method != "OPTIONS":
             duration = (time.perf_counter() - start_time) * 1000
-            extra_data = {
-                "method": request.method,
-                "path": request.path,
-                "status_code": response.status_code,
-                "duration_ms": round(duration, 2),
-                "payload": payload,
-                "user": (
-                    str(request.user)
-                    if hasattr(request, "user")
-                    else "Anonymous"
-                ),
-            }
-            logger.info(f"{request.method} {request.path}", extra=extra_data)
+            user = (
+                str(request.user)
+                if hasattr(request, "user")
+                else "Anonymous"
+            )
+            logger.info(
+                f"{request.method} {request.path} | "
+                f"status_code={response.status_code} | "
+                f"duration_ms={round(duration, 2)} | "
+                f"payload={payload} | user={user}"
+            )
         response["X-Correlation-ID"] = cid
         return response

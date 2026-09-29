@@ -89,15 +89,11 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def busca(self, request: Any) -> Any:
         """Filtra escolhas por lista de candidato_uuid e concurso."""
         logger.info(
-            "Buscando escolhas por candidato_uuid",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "user": request.user,
-                "data": request.data,
-            },
+            f"Buscando escolhas por candidato_uuid | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | user={request.user} | "
+            f"data={request.data}"
         )
         candidato_ids = request.data.get("candidato_uuid", [])
         if not isinstance(candidato_ids, list):
@@ -139,14 +135,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         logger.info(
-            "Agregando escolhas por convocação",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "processo_uuids": processo_uuids,
-                "user": request.user,
-            },
+            f"Agregando escolhas por convocação | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"processo_uuids={processo_uuids} | user={request.user}"
         )
         resultado = EscolhaRepository.agregar_por_processo_e_situacao(
             processo_uuids
@@ -157,14 +149,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def reconvocacao(self, request: Any) -> Any:
         """Lista escolhas com situação de reconvocação."""
         logger.info(
-            "Buscando escolhas com situação de reconvocação",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "user": request.user,
-            },
+            f"Buscando escolhas com situação de reconvocação | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | user={request.user}"
         )
         queryset = self.get_queryset().filter(
             situacao=SituacaoChoices.RECONVOCACAO
@@ -176,14 +164,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def buscar_candidatos(self, request: Any) -> Any:
         """Consulta MS-Candidatos e enriquece com nomes de cargo."""
         logger.info(
-            "Buscando candidatos",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "user": request.user,
-            },
+            f"Buscando candidatos | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | user={request.user}"
         )
         nome = request.query_params.get("nome", "").strip()
         cpf = request.query_params.get("cpf", "").strip()
@@ -231,14 +215,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     if nome_cargo:
                         cc["descricao_cargo"] = nome_cargo
         logger.info(
-            "Candidatos encontrados",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "params": request.query_params,
-                "user": request.user,
-            },
+            f"Candidatos encontrados | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"params={request.query_params} | user={request.user}"
         )
         return Response(candidatos)
 
@@ -246,24 +226,17 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     def agrupar_por_cargo(self, request: Any) -> Any:
         """Agrupa escolhas por cargo e retorna totais por vaga."""
         logger.info(
-            "Agrupando escolhas por cargo",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "user": request.user,
-            },
+            f"Agrupando escolhas por cargo | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"user={request.user}"
         )
         data = EscolhaRepository.contar_por_cargo()
         logger.info(
-            "Agrupando escolhas por cargo - Resultado",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "user": request.user,
-                "data": data,
-            },
+            f"Agrupando escolhas por cargo - Resultado | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"user={request.user} | data={data}"
         )
         return Response(data)
 
@@ -278,14 +251,10 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             Resposta HTTP com escolhas criadas e eventuais erros.
         """
         logger.info(
-            "Iniciando importação de escolhas da Prodam",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": request.method,
-                "path": request.path,
-                "data": request.data,
-                "user": request.user,
-            },
+            f"Iniciando importação de escolhas da Prodam | "
+            f"correlation_id={get_correlation_id()} | "
+            f"method={request.method} | path={request.path} | "
+            f"data={request.data} | user={request.user}"
         )
         serializer = EscolhasProdamImportacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -340,10 +309,9 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                     chave = (codigo_eol, codigo_cargo)
                     vagas_escolas_dict[chave] = vaga_escola
                 logger.info(
-                    "Vagas encontradas: %s (EOL=%s, cargos=%s)",
-                    len(vagas_escolas_dict),
-                    len(codigos_eol),
-                    len(codigos_cargo),
+                    f"Vagas encontradas: {len(vagas_escolas_dict)} "
+                    f"(EOL={len(codigos_eol)}, "
+                    f"cargos={len(codigos_cargo)})"
                 )
             except Exception as exc:
                 logger.error(f"Erro ao buscar vagas_escolas: {exc}")
@@ -397,10 +365,8 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 )
                 if escolha_existente:
                     logger.warning(
-                        "Escolha duplicada na importação (idx=%s, cpf=%s): %s",
-                        idx,
-                        cpf_escolha,
-                        escolha_existente.uuid,
+                        f"Escolha duplicada na importação | idx={idx} | "
+                        f"cpf={cpf_escolha} | uuid={escolha_existente.uuid}"
                     )
                     continue
                 nova_escolha = EscolhaRepository.criar(
@@ -435,17 +401,14 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         }
         if erros:
             logger.info(
-                "Erros ao criar escolhas",
-                extra={"correlation_id": get_correlation_id(), "erros": erros},
+                f"Erros ao criar escolhas | "
+                f"correlation_id={get_correlation_id()} | erros={erros}"
             )
             response_data["erros"] = erros
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         logger.info(
-            "Escolhas criadas",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "escolhas_criadas": len(escolhas_criadas),
-                "escolhas": escolhas_criadas[:10],
-            },
+            f"Escolhas criadas | correlation_id={get_correlation_id()} | "
+            f"escolhas_criadas={len(escolhas_criadas)} | "
+            f"escolhas={escolhas_criadas[:10]}"
         )
         return Response(response_data, status=status.HTTP_201_CREATED)
