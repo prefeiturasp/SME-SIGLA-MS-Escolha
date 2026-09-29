@@ -48,15 +48,9 @@ class CandidatoAPIService:
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
         payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
         logger.info(
-            "Buscando candidatos por CPFs",
-            extra={
-                "method": "POST",
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "processo_uuid": processo_uuid,
-                "cpfs": cpfs,
-                "headers": self._default_headers,
-            },
+            f"Buscando candidatos por CPFs | method=POST | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
         )
         try:
             response = http_client.post(
@@ -68,23 +62,16 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                "Erro ao buscar candidatos por CPFs %s no processo %s: %s",
-                cpfs,
-                processo_uuid,
-                exc,
+                f"Erro ao buscar candidatos por CPFs {cpfs} "
+                f"no processo {processo_uuid}: {exc}",
                 exc_info=True,
             )
             return None
         data = response.json()
         logger.info(
-            "Candidatos encontrados",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": "POST",
-                "url": url,
-                "processo_uuid": processo_uuid,
-                "cpfs": cpfs,
-            },
+            f"Candidatos encontrados | correlation_id={get_correlation_id()} | "
+            f"method=POST | url={url} | "
+            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
         )
         return data  # type: ignore[no-any-return]
 
@@ -116,14 +103,9 @@ class CandidatoAPIService:
         payload = {"uuids": [str(item) for item in uuids]}
         params = {"fields": ",".join(fields)} if fields else None
         logger.info(
-            "Buscando habilitados por UUIDs",
-            extra={
-                "method": "POST",
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "uuids": uuids,
-                "fields": fields,
-            },
+            f"Buscando habilitados por UUIDs | method=POST | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"uuids={uuids} | fields={fields}"
         )
         try:
             response = http_client.post(
@@ -136,9 +118,7 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                "Erro ao buscar habilitados por UUIDs %s: %s",
-                uuids,
-                exc,
+                f"Erro ao buscar habilitados por UUIDs {uuids}: {exc}",
                 exc_info=True,
             )
             return None
@@ -173,17 +153,10 @@ class CandidatoAPIService:
             return []
         url = f"{self.base_url}/api/v1/candidatos/buscar/"
         logger.info(
-            "Buscando candidatos no MS-Candidatos",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "nome": nome,
-                "cpf": cpf,
-                "rg": rg,
-                "registro_funcional": registro_funcional,
-                "method": "GET",
-                "headers": self._default_headers,
-            },
+            f"Buscando candidatos no MS-Candidatos | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"nome={nome} | cpf={cpf} | rg={rg} | "
+            f"registro_funcional={registro_funcional} | method=GET"
         )
         params = {}
         if nome and str(nome).strip():
@@ -204,24 +177,16 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                "Erro ao buscar candidatos: %s",
-                exc,
+                f"Erro ao buscar candidatos: {exc}",
                 exc_info=True,
             )
             return None
         logger.info(
-            "Candidatos encontrados",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "nome": nome,
-                "cpf": cpf,
-                "rg": rg,
-                "registro_funcional": registro_funcional,
-                "method": "GET",
-                "headers": self._default_headers,
-                "status_code": response.status_code,
-                "response": str(response.json())[:100],
-            },
+            f"Candidatos encontrados | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"nome={nome} | cpf={cpf} | rg={rg} | "
+            f"registro_funcional={registro_funcional} | method=GET | "
+            f"status_code={response.status_code} | "
+            f"response={str(response.json())[:100]}"
         )
         return response.json()  # type: ignore[no-any-return]
