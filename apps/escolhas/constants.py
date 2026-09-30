@@ -17,3 +17,11 @@ class TipoVagaChoices(models.TextChoices):
 
     DEFINITIVA = "definitiva", _("Definitiva")
     PRECARIA = "precaria", _("Precária")
+
+
+class CategoriaEfetivaChoices(models.TextChoices):
+    """Choices para categoria efetiva (tipo de vaga/lista)."""
+
+    GERAL = "GERAL", _("Geral")
+    PCD = "PCD", _("PCD")
+    NNA = "NNA", _("NNA")

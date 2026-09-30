@@ -47,14 +47,8 @@ class ConcursoAPIService:
         url = f"{base_url}/api/v1/cargos/"
         headers = ConcursoAPIService._headers()
         logger.info(
-            "Buscando cargos",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": "GET",
-                "url": url,
-                "codigos_set": codigos_set,
-                "headers": headers.keys(),
-            },
+            f"Buscando cargos | correlation_id={get_correlation_id()} | "
+            f"method=GET | url={url} | codigos_set={codigos_set}"
         )
         try:
             for cod in codigos_set:
@@ -74,8 +68,7 @@ class ConcursoAPIService:
             return result
         except Exception as exc:
             logger.warning(
-                "Erro ao buscar cargos no MS-Concursos: %s",
-                exc,
+                f"Erro ao buscar cargos no MS-Concursos: {exc}",
                 exc_info=True,
             )
             return {}

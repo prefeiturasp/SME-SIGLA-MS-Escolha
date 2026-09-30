@@ -48,15 +48,9 @@ class CandidatoAPIService:
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
         payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
         logger.info(
-            "Buscando candidatos por CPFs",
-            extra={
-                "method": "POST",
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "processo_uuid": processo_uuid,
-                "cpfs": cpfs,
-                "headers": self._default_headers,
-            },
+            f"Buscando candidatos por CPFs | method=POST | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
         )
         try:
             response = http_client.post(
@@ -68,25 +62,72 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                "Erro ao buscar candidatos por CPFs %s no processo %s: %s",
-                cpfs,
-                processo_uuid,
-                exc,
+                f"Erro ao buscar candidatos por CPFs {cpfs} "
+                f"no processo {processo_uuid}: {exc}",
                 exc_info=True,
             )
             return None
         data = response.json()
         logger.info(
-            "Candidatos encontrados",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "method": "POST",
-                "url": url,
-                "processo_uuid": processo_uuid,
-                "cpfs": cpfs,
-            },
+            f"Candidatos encontrados | correlation_id={get_correlation_id()} | "
+            f"method=POST | url={url} | "
+            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
         )
         return data  # type: ignore[no-any-return]
+
+    def buscar_habilitados_por_uuids(
+        self,
+        uuids: list[str],
+        fields: list[str] | None = None,
+    ) -> list[dict] | None:
+        """Busca habilitados pelos códigos de identificação (UUIDs).
+
+        Serve para, dada uma lista de identificadores (um por vínculo
+        candidato–concurso), trazer as informações desses habilitados no
+        serviço de candidatos — por exemplo só ``uuid`` e
+        ``categoria_efetiva`` quando ``fields`` for informado.
+
+        Args:
+            uuids: Códigos de identificação dos habilitados a localizar.
+            fields: Campos a retornar (query ``?fields=``). Ausente →
+                resposta completa do habilitado.
+
+        Returns:
+            Lista com os habilitados encontrados. Se a lista de códigos
+            estiver vazia, devolve lista vazia. Se a consulta falhar,
+            devolve ``None``.
+        """
+        if not uuids:
+            return []
+        url = f"{self.base_url}/api/v1/habilitados/buscar-por-uuids/"
+        payload = {"uuids": [str(item) for item in uuids]}
+        params = {"fields": ",".join(fields)} if fields else None
+        logger.info(
+            f"Buscando habilitados por UUIDs | method=POST | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"uuids={uuids} | fields={fields}"
+        )
+        try:
+            response = http_client.post(
+                url,
+                json=payload,
+                params=params,
+                headers=self._default_headers,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+        except Exception as exc:
+            logger.error(
+                f"Erro ao buscar habilitados por UUIDs {uuids}: {exc}",
+                exc_info=True,
+            )
+            return None
+        data = response.json()
+        if isinstance(data, dict) and "results" in data:
+            return data["results"]  # type: ignore[no-any-return]
+        if isinstance(data, list):
+            return data
+        return None
 
     def buscar_candidatos(
         self,
@@ -112,17 +153,10 @@ class CandidatoAPIService:
             return []
         url = f"{self.base_url}/api/v1/candidatos/buscar/"
         logger.info(
-            "Buscando candidatos no MS-Candidatos",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "nome": nome,
-                "cpf": cpf,
-                "rg": rg,
-                "registro_funcional": registro_funcional,
-                "method": "GET",
-                "headers": self._default_headers,
-            },
+            f"Buscando candidatos no MS-Candidatos | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"nome={nome} | cpf={cpf} | rg={rg} | "
+            f"registro_funcional={registro_funcional} | method=GET"
         )
         params = {}
         if nome and str(nome).strip():
@@ -143,24 +177,16 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                "Erro ao buscar candidatos: %s",
-                exc,
+                f"Erro ao buscar candidatos: {exc}",
                 exc_info=True,
             )
             return None
         logger.info(
-            "Candidatos encontrados",
-            extra={
-                "correlation_id": get_correlation_id(),
-                "url": url,
-                "nome": nome,
-                "cpf": cpf,
-                "rg": rg,
-                "registro_funcional": registro_funcional,
-                "method": "GET",
-                "headers": self._default_headers,
-                "status_code": response.status_code,
-                "response": str(response.json())[:100],
-            },
+            f"Candidatos encontrados | "
+            f"correlation_id={get_correlation_id()} | url={url} | "
+            f"nome={nome} | cpf={cpf} | rg={rg} | "
+            f"registro_funcional={registro_funcional} | method=GET | "
+            f"status_code={response.status_code} | "
+            f"response={str(response.json())[:100]}"
         )
         return response.json()  # type: ignore[no-any-return]
