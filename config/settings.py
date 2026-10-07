@@ -228,7 +228,7 @@ LOGGING = {
 
 ELASTIC_APM = {
     "SERVICE_NAME": os.environ.get(
-        "ELASTIC_APM_SERVICE_NAME", "SME-SIGLA-MS-Relatorios"
+        "ELASTIC_APM_SERVICE_NAME", "sme-sigla-ms-escolhas"
     ),
     "SECRET_TOKEN": os.environ.get("ELASTIC_APM_SECRET_TOKEN", ""),
     "SERVER_URL": os.environ.get(
