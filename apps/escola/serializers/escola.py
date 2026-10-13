@@ -2,14 +2,23 @@
 
 from rest_framework import serializers
 
+from core.serializers import PaginaSerializer
+
 from ..models import Escola
+from .descricoes import DESCRICOES_ESCOLA
 from .dre import DreSerializer
 
 
 class EscolaSerializer(serializers.ModelSerializer):
-    """Escola completa com dados da DRE aninhada."""
+    """Unidade escolar com os dados cadastrais e a DRE a que pertence."""
 
-    dre = DreSerializer(read_only=True)
+    dre = DreSerializer(
+        read_only=True,
+        help_text=(
+            "DRE da escola. Somente leitura: não pode ser informada nem "
+            "alterada pela API."
+        ),
+    )
 
     class Meta:
         """Representa Meta."""
@@ -48,6 +57,13 @@ class EscolaSerializer(serializers.ModelSerializer):
             "atualizado_em",
         ]
         read_only_fields = ["uuid", "criado_em", "atualizado_em"]
+        extra_kwargs = DESCRICOES_ESCOLA
+
+
+class EscolaPaginadaSerializer(PaginaSerializer):
+    """Página da listagem de escolas."""
+
+    results = EscolaSerializer(many=True, help_text="Escolas da página.")
 
 
 class EscolaSelectSerializer(serializers.ModelSerializer):

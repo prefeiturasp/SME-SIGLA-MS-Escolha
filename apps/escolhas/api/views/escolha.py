@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -13,6 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.utils import CustomPagination
+from escolhas.api.schemas import OPERACOES_ESCOLHAS, TAG_ESCOLHAS
 from escolhas.constants import SituacaoChoices, TipoVagaChoices
 from escolhas.middleware import get_correlation_id
 from escolhas.models import Escolha
@@ -30,6 +32,8 @@ from vagas_escolas.repository import VagasEscolasRepository
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=[TAG_ESCOLHAS])
+@extend_schema_view(**OPERACOES_ESCOLHAS)
 class EscolhaViewSet(viewsets.ModelViewSet):
     """CRUD e ações de busca, reconvocação e importação Prodam."""
 
@@ -85,7 +89,12 @@ class EscolhaViewSet(viewsets.ModelViewSet):
             kwargs["fields"] = fields.split(",")
         return serializer_class(*args, **kwargs)
 
-    @action(methods=["post"], detail=False, url_path="busca")
+    @action(
+        methods=["post"],
+        detail=False,
+        url_path="busca",
+        pagination_class=None,
+    )
     def busca(self, request: Any) -> Any:
         """Filtra escolhas por lista de candidato_uuid e concurso."""
         logger.info(
@@ -145,7 +154,12 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         )
         return Response(resultado)
 
-    @action(methods=["get"], detail=False, url_path="reconvocacao")
+    @action(
+        methods=["get"],
+        detail=False,
+        url_path="reconvocacao",
+        pagination_class=None,
+    )
     def reconvocacao(self, request: Any) -> Any:
         """Lista escolhas com situação de reconvocação."""
         logger.info(
@@ -160,7 +174,12 @@ class EscolhaViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(methods=["get"], detail=False, url_path="buscar-candidatos")
+    @action(
+        methods=["get"],
+        detail=False,
+        url_path="buscar-candidatos",
+        pagination_class=None,
+    )
     def buscar_candidatos(self, request: Any) -> Any:
         """Consulta MS-Candidatos e enriquece com nomes de cargo."""
         logger.info(

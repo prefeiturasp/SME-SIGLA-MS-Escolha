@@ -273,20 +273,113 @@ ELASTIC_APM = {
     'CAPTURE_TRANSACTION_STACKTRACES_LIMIT': 10,
 }
 
+DESCRICAO_API = """
+API do microsserviço de **escolhas** do SIGLA (SME-SP). Mantém as DREs e
+as escolas, os tipos de unidade habilitados, as vagas ofertadas por
+processo de convocação e a escolha de vaga de cada candidato, além dos
+indicadores usados na extração de dados.
+
+## Autenticação
+
+Envie o token **JWT** emitido pelo microsserviço de usuários no header
+`Authorization: Bearer <token>`. Também são aceitos HTTP Basic e a sessão
+do Django Admin. As rotas atendem chamadas sem credencial, mas uma
+credencial **inválida** é recusada com **403**: o serviço não responde 401.
+
+## Erros
+
+- **400** com `{"<campo>": ["..."]}`: dados ou filtros inválidos. Em
+  campos que são listas, o valor repete a estrutura enviada.
+- **400** com `[{...}, {...}]`: nas atualizações em lote, um objeto de
+  erros por item enviado.
+- **400** com `{"detail": "..."}`: parâmetro obrigatório ausente, falha ao
+  consultar outro serviço ou corpo que não é JSON válido.
+- **400** com `{"errors": {...}}` ou `{"detail": "...", "code": "..."}`:
+  lote de vagas recusado.
+- **207** ou **400** com a lista `erros`: lote de vagas ou importação de
+  escolhas em que parte dos itens falhou.
+- **403** com `{"detail": "...", "code": "..."}`: credencial recusada.
+- **404** com `{"detail": "..."}`: registro ou página não encontrados.
+- **500**: erro inesperado, sem corpo JSON. Só a criação de vagas em lote
+  devolve `{"detail": "...", "code": "..."}` nesse caso.
+
+## Paginação
+
+As listagens de DREs, escolas e escolhas usam `page` e `page_size` (padrão
+10) e respondem com `links`, `count`, `page`, `page_size` e `results`. A de
+escolhas devolve um array simples quando recebe `no_page`. As demais
+listagens não são paginadas.
+"""
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Escolha Sigla API",
-    "DESCRIPTION": "API para o sistema de escolha de sigla",
+    "DESCRIPTION": DESCRICAO_API,
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-    # "APPEND_COMPONENTS": {
-    #     "securitySchemes": {
-    #         "ApiKeyAuth": {
-    #             "type": "apiKey",
-    #             "in": "header",
-    #             "name": "X-API-Key",
-    #         }
-    #     }
-    # },
+    "TAGS": [
+        {
+            "name": "DREs",
+            "description": "Diretorias Regionais de Educação.",
+        },
+        {
+            "name": "Escolas",
+            "description": (
+                "Unidades escolares dos tipos habilitados na "
+                "parametrização."
+            ),
+        },
+        {
+            "name": "Parametrização",
+            "description": (
+                "Tipos de unidade escolar que entram no fluxo de escolha. "
+                "Os registros nascem da sincronização com as escolas; não "
+                "há criação avulsa."
+            ),
+        },
+        {
+            "name": "Vagas das escolas",
+            "description": (
+                "Vagas definitivas e precárias por escola e cargo, "
+                "agrupadas no lote de cada processo de convocação."
+            ),
+        },
+        {
+            "name": "Escolhas",
+            "description": (
+                "Escolha de vaga de cada candidato: escolha, não escolha "
+                "ou reconvocação, com o histórico de situações."
+            ),
+        },
+        {
+            "name": "Extração de dados",
+            "description": (
+                "Totais de escolhas e de vagas por situação, ano, DRE e "
+                "cargo, para relatórios."
+            ),
+        },
+    ],
+    "ENUM_NAME_OVERRIDES": {
+        "SituacaoEscolhaEnum": "escolhas.constants.SituacaoChoices",
+        "TipoVagaEnum": "escolhas.constants.TipoVagaChoices",
+    },
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": (
+                    "Token JWT emitido pelo microsserviço de usuários do "
+                    "SIGLA, enviado em `Authorization: Bearer <token>`."
+                ),
+            },
+            # "ApiKeyAuth": {
+            #     "type": "apiKey",
+            #     "in": "header",
+            #     "name": "X-API-Key",
+            # },
+        }
+    },
     # "SECURITY": [{"ApiKeyAuth": []}],
     "SERVE_AUTHENTICATION": [
         "rest_framework.authentication.SessionAuthentication",
