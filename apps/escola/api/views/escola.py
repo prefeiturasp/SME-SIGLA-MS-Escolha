@@ -5,16 +5,20 @@ from __future__ import annotations
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
 
 from core.utils import CustomPagination
+from escola.api.schemas.escola import OPERACOES_ESCOLAS, TAG_ESCOLAS
 from escola.models import Escola
 from escola.serializers import EscolaSerializer
 from parametrizacao.repository import ParametrizacaoRepository
 
 
+@extend_schema(tags=[TAG_ESCOLAS])
+@extend_schema_view(**OPERACOES_ESCOLAS)
 class EscolaViewSet(viewsets.ModelViewSet):
     """Lista escolas ativas conforme parametrização de tipo_ue."""
 

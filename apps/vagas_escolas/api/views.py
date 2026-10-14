@@ -6,12 +6,17 @@ import logging
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from escolhas.middleware import get_correlation_id
+from vagas_escolas.api.schemas import (
+    OPERACOES_VAGAS_ESCOLAS,
+    TAG_VAGAS_ESCOLAS,
+)
 from vagas_escolas.models import VagasEscolas
 from vagas_escolas.repository import VagasEscolasRepository
 from vagas_escolas.serializers import (
@@ -28,6 +33,8 @@ from vagas_escolas.services.vagas_escolas import (
 logger = logging.getLogger(__name__)
 
 
+@extend_schema(tags=[TAG_VAGAS_ESCOLAS])
+@extend_schema_view(**OPERACOES_VAGAS_ESCOLAS)
 class VagasEscolasViewSet(ModelViewSet):
     """Gerencia vagas por processo, cargo e escola."""
 
