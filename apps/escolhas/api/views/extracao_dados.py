@@ -1,14 +1,21 @@
 """ViewSet de extração de dados de escolhas."""
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from escolhas.api.schemas import (
+    OPERACOES_EXTRACAO_DADOS,
+    TAG_EXTRACAO_DADOS,
+)
 from escolhas.serializers import ExtracaoDadosSerializer
 from escolhas.services import montar_extracao_dados
 
 
+@extend_schema(tags=[TAG_EXTRACAO_DADOS])
+@extend_schema_view(**OPERACOES_EXTRACAO_DADOS)
 class ExtracaoDadosViewSet(viewsets.ViewSet):
     """ViewSet de escolhas para extração de dados.
 

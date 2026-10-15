@@ -4,14 +4,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.serializers import PaginaSerializer
 from vagas_escolas.models import VagasEscolas
 from vagas_escolas.repository import VagasEscolasRepository
 from vagas_escolas.serializers import VagasEscolasSerializer
 
 from ..constants import SituacaoChoices
 from ..models import Escolha, HistoricoEscolha
+from .descricoes import DESCRICOES_ESCOLHA, DESCRICOES_HISTORICO
 
 
 class DynamicFieldsSerializer(serializers.ModelSerializer):
@@ -29,7 +32,7 @@ class DynamicFieldsSerializer(serializers.ModelSerializer):
 
 
 class HistoricoEscolhaSerializer(serializers.ModelSerializer):
-    """Serializa transições de situação no histórico."""
+    """Mudança de situação de uma escolha."""
 
     class Meta:
         """Representa Meta."""
@@ -37,16 +40,20 @@ class HistoricoEscolhaSerializer(serializers.ModelSerializer):
         model = HistoricoEscolha
         fields = ["uuid", "situacao_anterior", "situacao_nova", "criado_em"]
         read_only_fields = ["uuid", "criado_em"]
+        extra_kwargs = DESCRICOES_HISTORICO
 
 
 class EscolhaSerializer(DynamicFieldsSerializer):
-    """Valida escolhas convertendo vaga_escola_uuid em FK."""
+    """Escolha de vaga de um candidato em um concurso."""
 
     vaga_escola_uuid = serializers.UUIDField(
         write_only=True,
         required=False,
         allow_null=True,
-        help_text="UUID da vaga da escola. Será convertido para ForeignKey internamente.",  # noqa: E501
+        help_text=(
+            "UUID da vaga escolhida. Obrigatório quando a situação é "
+            "`escolha`. Enviar nulo não desfaz o vínculo com a vaga atual."
+        ),
     )
 
     class Meta:
@@ -73,11 +80,28 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             "vaga_escola",
         ]
         extra_kwargs = {
-            "candidato_uuid": {"allow_null": False, "required": True},
-            "concurso_uuid": {"allow_null": False, "required": True},
-            "processo_uuid": {"allow_null": True, "required": False},
-            "situacao": {"required": True},
-            "tipo_vaga": {"allow_null": True, "required": False},
+            **DESCRICOES_ESCOLHA,
+            "candidato_uuid": {
+                **DESCRICOES_ESCOLHA["candidato_uuid"],
+                "allow_null": False,
+                "required": True,
+            },
+            "concurso_uuid": {
+                **DESCRICOES_ESCOLHA["concurso_uuid"],
+                "allow_null": False,
+                "required": True,
+            },
+            "processo_uuid": {
+                **DESCRICOES_ESCOLHA["processo_uuid"],
+                "allow_null": True,
+                "required": False,
+            },
+            "situacao": {**DESCRICOES_ESCOLHA["situacao"], "required": True},
+            "tipo_vaga": {
+                **DESCRICOES_ESCOLHA["tipo_vaga"],
+                "allow_null": True,
+                "required": False,
+            },
         }
 
     def to_representation(self, instance: Any) -> Any:
@@ -147,12 +171,37 @@ class EscolhaSelectSerializer(serializers.ModelSerializer):
         fields = ["value", "label"]
 
 
-class EscolhaListSerializer(DynamicFieldsSerializer):
-    """Listagem de escolhas com vaga, histórico e campos dinâmicos."""
+class EscolhaDetalheSerializer(EscolhaSerializer):
+    """Escolha de vaga de um candidato em um concurso."""
 
-    vaga_escola_uuid = serializers.SerializerMethodField()
-    vaga_escola = VagasEscolasSerializer(read_only=True)
-    historico = HistoricoEscolhaSerializer(many=True, read_only=True)
+    vaga_escola_uuid = serializers.UUIDField(
+        read_only=True,
+        allow_null=True,
+        help_text=(
+            "UUID da vaga escolhida, ou nulo se não há vaga. Repete "
+            "`vaga_escola` e vem mesmo quando `fields` não o pede."
+        ),
+    )
+
+
+class EscolhaListSerializer(DynamicFieldsSerializer):
+    """Escolha com os dados da vaga e o histórico de situações."""
+
+    vaga_escola_uuid = serializers.SerializerMethodField(
+        help_text="UUID da vaga escolhida, ou nulo se não há vaga."
+    )
+    vaga_escola = VagasEscolasSerializer(
+        read_only=True,
+        allow_null=True,
+        help_text=(
+            "Vaga escolhida, com a escola e a DRE, ou nulo se não há vaga."
+        ),
+    )
+    historico = HistoricoEscolhaSerializer(
+        many=True,
+        read_only=True,
+        help_text="Mudanças de situação, da mais recente para a mais antiga.",
+    )
 
     class Meta:
         """Representa Meta."""
@@ -172,17 +221,28 @@ class EscolhaListSerializer(DynamicFieldsSerializer):
             "criado_em",
             "atualizado_em",
         ]
+        extra_kwargs = DESCRICOES_ESCOLHA
 
+    @extend_schema_field(
+        {"type": "string", "format": "uuid", "nullable": True}
+    )
     def get_vaga_escola_uuid(self, obj: Any) -> Any:
         """Expõe UUID da vaga_escola na listagem, ou None se ausente."""
         return str(obj.vaga_escola.uuid) if obj.vaga_escola else None
 
 
 class EscolhaReconvocacaoSerializer(serializers.ModelSerializer):
-    """Serializer para reconvocação, retorna apenas uuid e candidato_uuid."""
+    """Escolha em situação de reconvocação, só com os identificadores."""
 
     class Meta:
         """Representa Meta."""
 
         model = Escolha
         fields = ["uuid", "candidato_uuid"]
+        extra_kwargs = DESCRICOES_ESCOLHA
+
+
+class EscolhaPaginadaSerializer(PaginaSerializer):
+    """Página da listagem de escolhas."""
+
+    results = EscolhaListSerializer(many=True, help_text="Escolhas da página.")
