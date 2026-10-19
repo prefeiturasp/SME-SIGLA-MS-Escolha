@@ -222,7 +222,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 if cod is not None and str(cod).strip():
                     codigos_cargo.add(str(cod).strip())
         cargos_map = (
-            ConcursoAPIService.get_cargos_por_codigos(list(codigos_cargo))
+            ConcursoAPIService().get_cargos_por_codigos(list(codigos_cargo))
             if codigos_cargo
             else {}
         )
