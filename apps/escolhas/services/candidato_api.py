@@ -8,6 +8,8 @@ from django.conf import settings
 from sigla_sdk.context import get_correlation_id
 from sigla_sdk.http.api_client import http_client
 
+from escolhas.services.http_log import mascarar_headers
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,9 +50,11 @@ class CandidatoAPIService:
         url = f"{self.base_url}/api/v1/habilitados/buscar-por-cpfs/"
         payload = {"processo_uuid": str(processo_uuid), "cpfs": cpfs}
         logger.info(
-            f"Buscando candidatos por CPFs | method=POST | "
+            "Buscando candidatos por CPFs | method=POST | "
             f"correlation_id={get_correlation_id()} | url={url} | "
-            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
+            f"processo_uuid={processo_uuid} | cpfs={cpfs} | "
+            f"headers={mascarar_headers(self._default_headers)} | "
+            f"timeout_seconds={self.timeout_seconds}"
         )
         try:
             response = http_client.post(
@@ -62,16 +66,20 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                f"Erro ao buscar candidatos por CPFs {cpfs} "
-                f"no processo {processo_uuid}: {exc}",
+                f"Erro ao buscar candidatos por CPFs {cpfs} | "
+                f"no processo {processo_uuid}: {exc} | "
+                f"correlation_id={get_correlation_id()} | url={url} | "
+                f"processo_uuid={processo_uuid} | cpfs={cpfs} | "
+                f"method=POST | ",
                 exc_info=True,
             )
             return None
         data = response.json()
         logger.info(
-            f"Candidatos encontrados | correlation_id={get_correlation_id()} | "
+            "Candidatos encontrados | "
+            f"correlation_id={get_correlation_id()} | "
             f"method=POST | url={url} | "
-            f"processo_uuid={processo_uuid} | cpfs={cpfs}"
+            f"processo_uuid={processo_uuid} | cpfs={cpfs} | "
         )
         return data  # type: ignore[no-any-return]
 
@@ -103,9 +111,11 @@ class CandidatoAPIService:
         payload = {"uuids": [str(item) for item in uuids]}
         params = {"fields": ",".join(fields)} if fields else None
         logger.info(
-            f"Buscando habilitados por UUIDs | method=POST | "
+            "Buscando habilitados por UUIDs | method=POST | "
             f"correlation_id={get_correlation_id()} | url={url} | "
-            f"uuids={uuids} | fields={fields}"
+            f"uuids={uuids} | fields={fields} | "
+            f"headers={mascarar_headers(self._default_headers)} | "
+            f"timeout_seconds={self.timeout_seconds}"
         )
         try:
             response = http_client.post(
@@ -118,7 +128,9 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                f"Erro ao buscar habilitados por UUIDs {uuids}: {exc}",
+                f"Erro ao buscar habilitados por UUIDs {uuids}: {exc} | "
+                f"correlation_id={get_correlation_id()} | url={url} | "
+                f"uuids={uuids} | fields={fields} | method=POST | ",
                 exc_info=True,
             )
             return None
@@ -153,10 +165,12 @@ class CandidatoAPIService:
             return []
         url = f"{self.base_url}/api/v1/candidatos/buscar/"
         logger.info(
-            f"Buscando candidatos no MS-Candidatos | "
+            "Buscando candidatos no MS-Candidatos | "
             f"correlation_id={get_correlation_id()} | url={url} | "
             f"nome={nome} | cpf={cpf} | rg={rg} | "
-            f"registro_funcional={registro_funcional} | method=GET"
+            f"registro_funcional={registro_funcional} | method=GET | "
+            f"headers={mascarar_headers(self._default_headers)} | "
+            f"timeout_seconds={self.timeout_seconds}"
         )
         params = {}
         if nome and str(nome).strip():
@@ -177,16 +191,19 @@ class CandidatoAPIService:
             response.raise_for_status()
         except Exception as exc:
             logger.error(
-                f"Erro ao buscar candidatos: {exc}",
+                f"Erro ao buscar candidatos: {exc} | "
+                f"correlation_id={get_correlation_id()} | url={url} | "
+                f"nome={nome} | cpf={cpf} | rg={rg} | "
+                f"registro_funcional={registro_funcional} | method=GET | ",
                 exc_info=True,
             )
             return None
         logger.info(
-            f"Candidatos encontrados | "
+            "Candidatos encontrados | "
             f"correlation_id={get_correlation_id()} | url={url} | "
             f"nome={nome} | cpf={cpf} | rg={rg} | "
             f"registro_funcional={registro_funcional} | method=GET | "
             f"status_code={response.status_code} | "
-            f"response={str(response.json())[:100]}"
+            f"response={str(response.json())[:100]} | "
         )
         return response.json()  # type: ignore[no-any-return]

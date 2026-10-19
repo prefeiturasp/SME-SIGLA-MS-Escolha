@@ -22,7 +22,7 @@ class TestConcursoAPIService:
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result == concurso_uuid
             mock_get.assert_called_once()
             call_args = mock_get.call_args
@@ -30,7 +30,7 @@ class TestConcursoAPIService:
                 call_args[0][0]
                 == f"http://test-api.com/api/v1/concursos/{concurso_uuid}/"
             )
-            assert call_args[1]["timeout"] == 30
+            assert call_args[1]["timeout"] == ConcursoAPIService.TIMEOUT_SECONDS
 
     def test_buscar_concurso_uuid_nao_encontrado(self, settings):
         """Verifica buscar concurso uuid nao encontrado."""
@@ -42,7 +42,7 @@ class TestConcursoAPIService:
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_http_error_404(self, settings):
@@ -53,7 +53,7 @@ class TestConcursoAPIService:
             mock_get.side_effect = requests.exceptions.HTTPError(
                 "404 Not Found"
             )
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_http_error_500(self, settings):
@@ -64,7 +64,7 @@ class TestConcursoAPIService:
             mock_get.side_effect = requests.exceptions.HTTPError(
                 "500 Internal Server Error"
             )
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_connection_error(self, settings):
@@ -75,7 +75,7 @@ class TestConcursoAPIService:
             mock_get.side_effect = requests.exceptions.ConnectionError(
                 "Connection failed"
             )
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_timeout(self, settings):
@@ -86,7 +86,7 @@ class TestConcursoAPIService:
             mock_get.side_effect = requests.exceptions.Timeout(
                 "Request timeout"
             )
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_excecao_generica(self, settings):
@@ -95,7 +95,7 @@ class TestConcursoAPIService:
         concurso_uuid = "123e4567-e89b-12d3-a456-426614174000"
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
             mock_get.side_effect = Exception("Erro genérico")
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
     def test_buscar_concurso_uuid_resposta_sem_uuid(self, settings):
@@ -108,17 +108,21 @@ class TestConcursoAPIService:
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
-            result = ConcursoAPIService.buscar_concurso_uuid(concurso_uuid)
+            result = ConcursoAPIService().buscar_concurso_uuid(concurso_uuid)
             assert result is None
 
-    def test_buscar_concurso_uuid_metodo_estatico(self):
-        """Verifica buscar concurso uuid metodo estatico."""
-        import inspect
-
-        assert (
-            inspect.ismethod(ConcursoAPIService.buscar_concurso_uuid) is False
-        )
-        assert hasattr(ConcursoAPIService, "buscar_concurso_uuid")
+    def test_init_define_headers(self, settings):
+        """Verifica que os headers ficam no atributo da instância."""
+        settings.CONCURSOS_API_URL = "http://test-api.com"
+        settings.API_KEY_HEADER = "X-API-Key"
+        settings.CONCURSOS_API_KEY = "test-key"
+        service = ConcursoAPIService()
+        assert service.headers == {
+            "Accept": "application/json",
+            "X-API-Key": "test-key",
+        }
+        assert service.base_url == "http://test-api.com"
+        assert service.timeout_seconds == ConcursoAPIService.TIMEOUT_SECONDS
 
     def test_get_cargos_por_codigos_sucesso(self, settings):
         """Verifica get cargos por codigos sucesso."""
@@ -129,7 +133,7 @@ class TestConcursoAPIService:
             mock_response.json.return_value = mock_response_data
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
-            result = ConcursoAPIService.get_cargos_por_codigos(["10"])
+            result = ConcursoAPIService().get_cargos_por_codigos(["10"])
             assert result == {"10": "Professor"}
 
     def test_get_cargos_por_codigos_envia_api_key(self, settings):
@@ -142,7 +146,7 @@ class TestConcursoAPIService:
             mock_response.json.return_value = []
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
-            ConcursoAPIService.get_cargos_por_codigos(["10"])
+            ConcursoAPIService().get_cargos_por_codigos(["10"])
             headers = mock_get.call_args[1]["headers"]
             assert headers["X-API-Key"] == "test-key"
 
@@ -150,7 +154,7 @@ class TestConcursoAPIService:
         """Verifica get cargos por codigos lista vazia."""
         settings.CONCURSOS_API_URL = "http://test-api.com"
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
-            result = ConcursoAPIService.get_cargos_por_codigos([])
+            result = ConcursoAPIService().get_cargos_por_codigos([])
             assert result == {}
             mock_get.assert_not_called()
 
@@ -158,7 +162,7 @@ class TestConcursoAPIService:
         """Verifica get cargos por codigos sem url."""
         settings.CONCURSOS_API_URL = ""
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
-            result = ConcursoAPIService.get_cargos_por_codigos(["10"])
+            result = ConcursoAPIService().get_cargos_por_codigos(["10"])
             assert result == {}
             mock_get.assert_not_called()
 
@@ -167,5 +171,5 @@ class TestConcursoAPIService:
         settings.CONCURSOS_API_URL = "http://test-api.com"
         with patch("sigla_sdk.http.api_client.http_client.get") as mock_get:
             mock_get.side_effect = requests.exceptions.ConnectionError("err")
-            result = ConcursoAPIService.get_cargos_por_codigos(["10"])
+            result = ConcursoAPIService().get_cargos_por_codigos(["10"])
             assert result == {}
