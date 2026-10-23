@@ -18,6 +18,7 @@ class DreViewSet(viewsets.ModelViewSet):
     """Expõe CRUD de DREs com busca, ordenação e paginação."""
 
     queryset = Dre.objects.all()
+    lookup_field = "uuid"
     serializer_class = DreSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]

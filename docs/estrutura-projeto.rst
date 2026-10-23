@@ -30,7 +30,8 @@ Pasta ``apps/``
 
 **Para que serve:** Evita repetir código. Todo modelo do sistema herda de ``BaseModel``, que já traz:
 
-- Identificador único (UUID)
+- Identificador interno numérico (``id``), usado só dentro do banco
+- Identificador público (``uuid``), usado na API e pelos outros serviços
 - Data de criação
 - Data da última atualização
 - Campo de histórico de auditoria

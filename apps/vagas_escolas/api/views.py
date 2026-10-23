@@ -41,6 +41,7 @@ class VagasEscolasViewSet(ModelViewSet):
     queryset = VagasEscolas.objects.select_related(
         "escola", "escola__dre", "lote"
     ).all()
+    lookup_field = "uuid"
     serializer_class = VagasEscolasSerializer
     pagination_class = None
     filter_backends = [DjangoFilterBackend]

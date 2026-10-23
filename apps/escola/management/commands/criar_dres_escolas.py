@@ -189,7 +189,7 @@ class Command(BaseCommand):
                     )
                     continue
                 changed = False
-                if escola.dre_id != dre.id:  # type: ignore[attr-defined]
+                if escola.dre_id != dre.id:
                     escola.dre = dre
                     changed = True
                 update_fields = []

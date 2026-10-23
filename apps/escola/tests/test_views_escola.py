@@ -102,7 +102,7 @@ class TestEscolaViewSet:
     def test_retrieve_escola(self, api_client, dre_bt, param_ativo_emef):
         """Verifica retrieve escola."""
         escola = criar_escola(dre_bt, 3)
-        url = reverse("escola-detail", kwargs={"pk": escola.uuid})
+        url = reverse("escola-detail", kwargs={"uuid": escola.uuid})
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["uuid"] == str(escola.uuid)
@@ -110,6 +110,15 @@ class TestEscolaViewSet:
         assert response.data["dre"]["codigo"] == dre_bt.codigo
         assert response.data["dre"]["nome"] == dre_bt.nome
         assert response.data["dre"]["sigla"] == dre_bt.sigla
+
+    def test_detalhe_por_id_inteiro_retorna_404(
+        self, api_client, dre_bt, param_ativo_emef
+    ):
+        """Verifica que o id inteiro não localiza a escola."""
+        escola = criar_escola(dre_bt, 3)
+        url = reverse("escola-detail", kwargs={"uuid": escola.id})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_search_escolas(self, api_client, dre_bt, param_ativo_emef):
         """Verifica search escolas."""

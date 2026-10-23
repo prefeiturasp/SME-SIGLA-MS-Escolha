@@ -9,7 +9,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from vagas_escolas.models import VagasEscolas
+from vagas_escolas.models import VagasEscolas, VagasEscolasLote
 from vagas_escolas.services.exceptions import TipoUEDesabilitadoException
 
 pytestmark = pytest.mark.django_db
@@ -46,6 +46,39 @@ def payload(processo_uuid, eol1="123456", eol2=None):
         "concurso_uuid": str(uuid4()),
         "vagas": vagas,
     }
+
+
+@pytest.fixture
+def vaga_criada(escola_1):
+    """Vaga persistida em um lote, para os testes de detalhe."""
+    lote = VagasEscolasLote.objects.create(
+        processo_uuid=uuid4(), processo_nome="Processo Teste"
+    )
+    return VagasEscolas.objects.create(
+        escola=escola_1,
+        lote=lote,
+        data_fechamento_modulo="2025-09-10",
+        cargo_codigo=123,
+        cargo_descricao="Professor de Matemática",
+        vagas_precarias=2,
+        vagas_definitivas=3,
+    )
+
+
+def test_detalhe_por_uuid_retorna_200(api_client, vaga_criada):
+    """Verifica que o detalhe localiza a vaga pelo uuid, sem expor o id."""
+    url = reverse("vagas-escolas-detail", kwargs={"uuid": vaga_criada.uuid})
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["uuid"] == str(vaga_criada.uuid)
+    assert "id" not in resp.data
+
+
+def test_detalhe_por_id_inteiro_retorna_404(api_client, vaga_criada):
+    """Verifica que o id inteiro não localiza a vaga."""
+    url = reverse("vagas-escolas-detail", kwargs={"uuid": vaga_criada.id})
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_post_cria_lote_e_vagas_e_list_retorna_so_ultimo_lote(
