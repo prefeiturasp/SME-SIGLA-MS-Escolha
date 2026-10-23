@@ -58,13 +58,22 @@ class TestDreViewSet:
     def test_retrieve(self, api_client, dres_criadas):
         """Verifica retrieve."""
         dre = dres_criadas[0]
-        url = reverse("dre-detail", kwargs={"pk": dre.uuid})
+        url = reverse("dre-detail", kwargs={"uuid": dre.uuid})
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["uuid"] == str(dre.uuid)
         assert response.data["codigo"] == dre.codigo
         assert response.data["nome"] == dre.nome
         assert response.data["sigla"] == dre.sigla
+
+    def test_detalhe_por_id_inteiro_retorna_404(
+        self, api_client, dres_criadas
+    ):
+        """Verifica que o id inteiro não localiza a DRE."""
+        dre = dres_criadas[0]
+        url = reverse("dre-detail", kwargs={"uuid": dre.id})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_search(self, api_client, dres_criadas):
         """Verifica search."""

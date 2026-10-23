@@ -23,6 +23,7 @@ class EscolaViewSet(viewsets.ModelViewSet):
     """Lista escolas ativas conforme parametrização de tipo_ue."""
 
     queryset = Escola.objects.select_related("dre").all()
+    lookup_field = "uuid"
     serializer_class = EscolaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
