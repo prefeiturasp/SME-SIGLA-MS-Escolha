@@ -38,6 +38,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     """CRUD e ações de busca, reconvocação e importação Prodam."""
 
     queryset = Escolha.objects.all()
+    lookup_field = "uuid"
     serializer_class = EscolhaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]

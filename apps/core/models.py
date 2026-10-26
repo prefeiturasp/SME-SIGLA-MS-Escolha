@@ -6,11 +6,12 @@ from django.db import models
 
 
 class BaseModel(models.Model):
-    """Model base com UUID, criado_em e atualizado_em."""
+    """Model base com id padrão do Django e uuid público.
 
-    uuid = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
+    Também traz criado_em e atualizado_em.
+    """
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     criado_em = models.DateTimeField(
         auto_now_add=True, verbose_name="Data de Criação"
     )

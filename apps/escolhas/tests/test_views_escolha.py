@@ -129,9 +129,44 @@ def test_create_escolha_dados_invalidos(api_client, escolha_data_invalid):
 
 
 @pytest.mark.django_db
+def test_detalhe_da_escolha_devolve_vaga_escola_como_uuid(
+    api_client, escolha_matematica
+):
+    """Verifica que o detalhe expõe vaga_escola como uuid, sem id."""
+    url = reverse("escolha-detail", kwargs={"uuid": escolha_matematica.uuid})
+    response = api_client.get(url)
+    assert response.status_code == status.HTTP_200_OK
+    corpo = response.json()
+    assert corpo["vaga_escola"] == str(escolha_matematica.vaga_escola.uuid)
+    assert "id" not in corpo
+
+
+@pytest.mark.django_db
+def test_detalhe_da_escolha_sem_vaga_devolve_vaga_escola_nula(api_client):
+    """Verifica que o detalhe devolve vaga_escola nula quando não há vaga."""
+    escolha = Escolha.objects.create(
+        candidato_uuid=uuid.uuid4(),
+        concurso_uuid=uuid.uuid4(),
+        situacao=SituacaoChoices.NAO_ESCOLHA,
+    )
+    url = reverse("escolha-detail", kwargs={"uuid": escolha.uuid})
+    response = api_client.get(url)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["vaga_escola"] is None
+
+
+@pytest.mark.django_db
+def test_detalhe_por_id_inteiro_retorna_404(api_client, escolha_matematica):
+    """Verifica que o id inteiro não localiza a escolha."""
+    url = reverse("escolha-detail", kwargs={"uuid": escolha_matematica.id})
+    response = api_client.get(url)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
 def test_update_escolha(api_client, escolha_matematica, escolha_data_updated):
     """Verifica update escolha."""
-    url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
+    url = reverse("escolha-detail", kwargs={"uuid": escolha_matematica.uuid})
     response = api_client.put(url, escolha_data_updated)
     assert response.status_code == status.HTTP_200_OK
     assert response.data["situacao"] == escolha_data_updated["situacao"]
@@ -147,7 +182,7 @@ def test_update_escolha(api_client, escolha_matematica, escolha_data_updated):
 @pytest.mark.django_db
 def test_partial_update_escolha(api_client, escolha_matematica):
     """Verifica partial update escolha."""
-    url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
+    url = reverse("escolha-detail", kwargs={"uuid": escolha_matematica.uuid})
     payload = {"e_retardatario": True}
     response = api_client.patch(url, payload)
     assert response.status_code == status.HTTP_200_OK
@@ -159,7 +194,7 @@ def test_partial_update_escolha(api_client, escolha_matematica):
 @pytest.mark.django_db
 def test_delete_escolha(api_client, escolha_matematica):
     """Verifica delete escolha."""
-    url = reverse("escolha-detail", kwargs={"pk": escolha_matematica.uuid})
+    url = reverse("escolha-detail", kwargs={"uuid": escolha_matematica.uuid})
     response = api_client.delete(url)
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not Escolha.objects.filter(uuid=escolha_matematica.uuid).exists()
