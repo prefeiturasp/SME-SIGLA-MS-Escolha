@@ -263,8 +263,6 @@ ELASTIC_APM = {
     ),
     'RECORDING': True,
     'TRANSACTIONS_ROOT_UNNAMED': True,
-    'CAPTURE_BODY': 'all',
-    'CAPTURE_HEADERS': True,
     'CAPTURE_ERRORS': True,
     'CAPTURE_PERFORMANCE': True,
     'CAPTURE_TRANSACTIONS': True,

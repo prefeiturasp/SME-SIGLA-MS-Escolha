@@ -38,6 +38,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
     """CRUD e ações de busca, reconvocação e importação Prodam."""
 
     queryset = Escolha.objects.all()
+    lookup_field = "uuid"
     serializer_class = EscolhaSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -222,7 +223,7 @@ class EscolhaViewSet(viewsets.ModelViewSet):
                 if cod is not None and str(cod).strip():
                     codigos_cargo.add(str(cod).strip())
         cargos_map = (
-            ConcursoAPIService.get_cargos_por_codigos(list(codigos_cargo))
+            ConcursoAPIService().get_cargos_por_codigos(list(codigos_cargo))
             if codigos_cargo
             else {}
         )

@@ -55,6 +55,15 @@ class EscolhaSerializer(DynamicFieldsSerializer):
             "`escolha`. Enviar nulo não desfaz o vínculo com a vaga atual."
         ),
     )
+    vaga_escola: serializers.SlugRelatedField[VagasEscolas] = (
+        serializers.SlugRelatedField(
+            slug_field="uuid",
+            read_only=True,
+            allow_null=True,
+            label="Vaga da Escola",
+            help_text=DESCRICOES_ESCOLHA["vaga_escola"]["help_text"],
+        )
+    )
 
     class Meta:
         """Representa Meta."""
